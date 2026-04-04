@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#f5a623">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="abinci Admin">
+  <link rel="apple-touch-icon" href="/icon-192.png">
+  <meta name="mobile-web-app-capable" content="yes">
+<title>abinci.food — Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'DM Sans',sans-serif;background:#0f0e0c;color:#f0ede8;min-height:100vh;max-width:680px;margin:0 auto}
+h1,h2,h3{font-family:'Syne',sans-serif}
+.screen{display:none;min-height:100vh;padding-bottom:40px}
+.screen.active{display:block}
+.topbar{padding:20px 20px 12px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;background:#0f0e0c}
+.topbar-logo{font-family:'Syne',sans-serif;font-size:22px;font-weight:800}
+.topbar-logo span{color:#f5a623}
+.form-label{font-size:12px;color:#8a8680;font-weight:500;letter-spacing:.5px;text-transform:uppercase;margin-bottom:6px;display:block}
+.form-input{width:100%;background:#242220;border:1px solid #2e2c29;border-radius:12px;padding:12px 14px;color:#f0ede8;font-size:14px;font-family:'DM Sans',sans-serif;outline:none;transition:border .2s}
+.form-input:focus{border-color:#f5a623}
+.big-btn{width:100%;background:#f5a623;color:#000;border:none;border-radius:16px;padding:16px;font-size:16px;font-weight:700;font-family:'Syne',sans-serif;cursor:pointer;margin-top:8px}
+.big-btn:hover{opacity:.85}
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:0 20px 20px}
+.stat-card{background:#1a1916;border:1px solid #2e2c29;border-radius:16px;padding:16px}
+.stat-num{font-size:28px;font-weight:800;font-family:'Syne',sans-serif;color:#f5a623}
+.stat-label{font-size:11px;color:#8a8680;margin-top:4px}
+.stat-sub{font-size:12px;color:#4caf7d;margin-top:2px;font-weight:600}
+.tab-bar{display:flex;background:#242220;border-radius:14px;padding:4px;margin:0 20px 16px;gap:4px}
+.tab{flex:1;padding:8px 4px;border:none;border-radius:10px;font-size:12px;font-weight:600;font-family:'Syne',sans-serif;cursor:pointer;background:transparent;color:#8a8680;transition:all .2s}
+.tab.active{background:#1a1916;color:#f0ede8}
+.card{background:#1a1916;border:1px solid #2e2c29;border-radius:14px;padding:14px;margin-bottom:10px}
+.btn{padding:8px 14px;border-radius:10px;border:none;font-size:12px;font-weight:700;font-family:'Syne',sans-serif;cursor:pointer}
+.btn-green{background:#4caf7d;color:#fff}
+.btn-red{background:#e05c5c;color:#fff}
+.badge-ok{display:inline-flex;align-items:center;background:rgba(76,175,125,.12);color:#4caf7d;border:1px solid rgba(76,175,125,.25);border-radius:20px;padding:2px 8px;font-size:10px;font-weight:600}
+.badge-warn{display:inline-flex;align-items:center;background:rgba(245,166,35,.12);color:#f5a623;border:1px solid rgba(245,166,35,.25);border-radius:20px;padding:2px 8px;font-size:10px;font-weight:600}
+#toast{position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#1a1916;border:1px solid #4caf7d;color:#f0ede8;padding:10px 20px;border-radius:12px;font-size:13px;z-index:9999;max-width:320px;text-align:center;transition:opacity .3s;pointer-events:none;opacity:0}
+
+/* ═══════════════════════════════════════════════════
+   RESPONSIVE — Mobile-first, fits all screen sizes
+═══════════════════════════════════════════════════ */
+
+/* App container */
+html, body {
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+/* All screens fill viewport */
+.screen {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: calc(80px + env(safe-area-inset-bottom));
+  box-sizing: border-box;
+}
+
+.screen:not(.active) { display: none !important; }
+.screen.active { display: block !important; }
+
+/* Bottom nav safe area */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding-bottom: env(safe-area-inset-bottom);
+  z-index: 100;
+}
+
+/* Prevent input zoom on iOS */
+input, select, textarea {
+  font-size: 16px !important;
+  max-width: 100%;
+}
+
+/* Images never overflow */
+img { max-width: 100%; height: auto; }
+
+/* Topbar always at top */
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+/* Forms fill width */
+.form-input, .form-select, .big-btn {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Cards never overflow */
+.order-card, .menu-card, .vendor-card {
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* Modal full width on mobile */
+.modal-overlay {
+  padding: 0 !important;
+}
+
+/* Safe scrolling for KYC */
+#screen-kyc-step1,
+#screen-kyc-step2,
+#screen-kyc-step3 {
+  padding-bottom: 60px !important;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+</style>
+</head>
+<body>
+
+<div class="screen active" id="screen-login">
+  <div style="padding:80px 24px 0;text-align:center">
+    <div style="font-size:48px;margin-bottom:16px">🔐</div>
+    <div style="font-family:'Syne',sans-serif;font-size:28px;font-weight:800;margin-bottom:6px">abinci<span style="color:#f5a623">.admin</span></div>
+    <div style="color:#8a8680;font-size:14px;margin-bottom:40px">Restricted access</div>
+    <div style="margin-bottom:18px;text-align:left">
+      <label class="form-label">Password</label>
+      <input class="form-input" id="admin-pass" type="password" placeholder="Admin password" onkeydown="if(event.key==='Enter')adminLogin()">
+    </div>
+    <button class="big-btn" onclick="adminLogin()">Sign In →</button>
+  </div>
+</div>
+
+<div class="screen" id="screen-dashboard">
+  <div class="topbar">
+    <div class="topbar-logo">abinci<span>.admin</span></div>
+    <div style="display:flex;align-items:center;gap:10px">
+      <span style="font-size:12px;color:#4caf7d">● Live</span>
+      <button onclick="adminLogout()" style="background:#e05c5c;color:#fff;border:none;border-radius:8px;padding:6px 12px;font-size:11px;font-weight:700;cursor:pointer">Sign Out</button>
+    </div>
+  </div>
+
+  <div class="stat-grid">
+    <div class="stat-card"><div class="stat-num" id="s-vendors">—</div><div class="stat-label">Vendors</div><div class="stat-sub" id="s-vendors-sub"></div></div>
+    <div class="stat-card"><div class="stat-num" id="s-orders">—</div><div class="stat-label">Orders today</div><div class="stat-sub" id="s-gmv"></div></div>
+    <div class="stat-card"><div class="stat-num" id="s-drivers">—</div><div class="stat-label">Drivers</div><div class="stat-sub" id="s-drivers-sub"></div></div>
+    <div class="stat-card"><div class="stat-num" id="s-revenue">—</div><div class="stat-label">Commission (12%)</div></div>
+  </div>
+
+  <div class="tab-bar">
+    <button class="tab active" id="tab-approvals" onclick="switchTab('approvals')">Approvals</button>
+    <button class="tab" id="tab-orders" onclick="switchTab('orders')">Orders</button>
+    <button class="tab" id="tab-drivers" onclick="switchTab('drivers')">Drivers</button>
+    <button class="tab" id="tab-vendors" onclick="switchTab('vendors')">Vendors</button>
+    <button class="tab" id="tab-commission" onclick="switchTab('commission')" style="position:relative">Commission<span id="comm-badge" style="display:none;position:absolute;top:-4px;right:-4px;background:#e05c5c;color:#fff;font-size:9px;font-weight:700;padding:2px 5px;border-radius:8px"></span></button>
+  </div>
+
+  <div style="padding:0 20px" id="tab-content">
+    <div style="padding:20px;text-align:center;color:#8a8680;font-size:13px">Loading…</div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+var SB_URL  = 'https://kikeyhwbziumyhcnsvhi.supabase.co';
+var SB_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtpa2V5aHdieml1bXloY25zdmhpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI4OTk5OTMsImV4cCI6MjA4ODQ3NTk5M30.4R9XP1DOx358SJE0VPm3y8NimoCoVKVcJqPDSvLiHJc';
+var PASS    = null; // password now verified server-side
+var sb      = supabase.createClient(SB_URL, SB_ANON);
+
+// Image thumbnail helper — tap to view full size
+function imgThumb(src, label) {
+  if (!src) {
+    return '<div style="flex:1;background:#1a1916;border:1px dashed #2e2c29;border-radius:8px;height:90px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px">'
+      + '<div style="font-size:18px;opacity:.3">📄</div>'
+      + '<div style="font-size:10px;color:#8a8680">' + label + '</div>'
+      + '</div>';
+  }
+  return '<div style="flex:1;cursor:pointer" onclick="viewImg(\'' + src.substring(0,50) + '...\',\'' + label + '\',this)">'
+    + '<img src="' + src + '" style="width:100%;height:90px;object-fit:cover;border-radius:8px;border:1px solid #2e2c29" data-full="' + src + '">'
+    + '<div style="font-size:10px;color:#8a8680;margin-top:3px;text-align:center">' + label + ' 🔍</div>'
+    + '</div>';
+}
+
+// Full screen image viewer
+function viewImg(_, label, el) {
+  var img = el.querySelector ? el.querySelector('img') : el;
+  if (!img) return;
+  var src = img.getAttribute('data-full') || img.src;
+  var overlay = document.createElement('div');
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.95);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px';
+  overlay.innerHTML = '<div style="color:#8a8680;font-size:12px;text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px">' + label + '</div>'
+    + '<img src="' + src + '" style="max-width:100%;max-height:80vh;object-fit:contain;border-radius:12px">'
+    + '<button onclick="this.parentElement.remove()" style="margin-top:20px;background:#e05c5c;color:#fff;border:none;border-radius:10px;padding:10px 28px;font-size:14px;font-weight:700;cursor:pointer">Close ✕</button>';
+  overlay.onclick = function(e) { if(e.target===overlay) overlay.remove(); };
+  document.body.appendChild(overlay);
+}
+
+function toast(msg, type) {
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.borderColor = type==='err' ? '#e05c5c' : '#4caf7d';
+  t.style.opacity = '1';
+  clearTimeout(t._x);
+  t._x = setTimeout(function(){ t.style.opacity='0'; }, 3000);
+}
+
+function go(id) {
+  document.querySelectorAll('.screen').forEach(function(s){ s.classList.remove('active'); });
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0,0);
+}
+
+function fmt(n) { return '₦' + Number(n||0).toLocaleString(); }
+function fmtDate(d) { return new Date(d).toLocaleDateString(); }
+function set(id,v) { var e=document.getElementById(id); if(e) e.textContent=v; }
+
+async function adminLogin() {
+  var pass = (document.getElementById('admin-pass').value||'').trim();
+  if (!pass) { toast('Enter the password','info'); return; }
+  var btn = document.querySelector('#screen-login button');
+  if (btn) { btn.textContent = 'Verifying…'; btn.disabled = true; }
+  try {
+    var res = await fetch('/api/admin-auth', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password: pass })
+    });
+    var data = await res.json();
+    if (data.ok) {
+      localStorage.setItem('abinci_admin','1');
+      go('screen-dashboard');
+      loadStats();
+      switchTab('approvals');
+    } else {
+      toast('Wrong password','err');
+    }
+  } catch(e) {
+    toast('Connection error — try again','err');
+  }
+  if (btn) { btn.textContent = 'Sign In →'; btn.disabled = false; }
+}
+
+function adminLogout() {
+  localStorage.removeItem('abinci_admin');
+  document.getElementById('admin-pass').value = '';
+  go('screen-login');
+}
+
+async function loadStats() {
+  try {
+    var today = new Date(); today.setHours(0,0,0,0);
+    var results = await Promise.all([
+      sb.from('vendors').select('id',{count:'exact',head:true}),
+      sb.from('vendors').select('id',{count:'exact',head:true}).eq('is_approved',false),
+      sb.from('riders').select('id',{count:'exact',head:true}),
+      sb.from('riders').select('id',{count:'exact',head:true}).eq('is_online',true),
+      sb.from('orders').select('total_amount').gte('created_at',today.toISOString()),
+    ]);
+    var gmv = (results[4].data||[]).reduce(function(s,o){ return s+(o.total_amount||0); }, 0);
+    set('s-vendors', results[0].count||0);
+    set('s-vendors-sub', results[1].count ? results[1].count+' pending' : 'All approved ✓');
+    set('s-orders', (results[4].data||[]).length);
+    set('s-gmv', fmt(gmv)+' GMV');
+    set('s-drivers', results[2].count||0);
+    set('s-drivers-sub', (results[3].count||0)+' online now');
+    set('s-revenue', fmt(Math.round(gmv*0.12)));
+    // Commission badge
+    try {
+      var pr = await sb.from('commissions').select('id',{count:'exact',head:true}).eq('status','unpaid');
+      var badge = document.getElementById('comm-badge');
+      if (badge) { badge.textContent = pr.count||''; badge.style.display = pr.count ? 'inline' : 'none'; }
+    } catch(e) {}
+  } catch(e) { console.error('Stats error:', e); }
+}
+
+async function switchTab(tab) {
+  ['approvals','orders','drivers','vendors','commission'].forEach(function(t){
+    var btn = document.getElementById('tab-'+t);
+    if (btn) btn.classList.toggle('active', t===tab);
+  });
+  var el = document.getElementById('tab-content');
+  el.innerHTML = '<div style="padding:20px;text-align:center;color:#8a8680;font-size:13px">Loading…</div>';
+  if (tab==='approvals') await renderApprovals(el);
+  else if (tab==='orders') await renderOrders(el);
+  else if (tab==='drivers') await renderDrivers(el);
+  else if (tab==='vendors') await renderVendors(el);
+  else if (tab==='commission') await renderCommission(el);
+}
+
+async function renderApprovals(el) {
+  var vr = await sb.from('vendors').select('*,users(full_name,phone)').eq('is_approved',false).order('created_at',{ascending:false});
+  var dr = await sb.from('riders').select('*,users(full_name,phone)').eq('is_approved',false).order('created_at',{ascending:false});
+  var vendors = vr.data||[], drivers = dr.data||[];
+  if (!vendors.length && !drivers.length) {
+    el.innerHTML = '<div style="padding:40px;text-align:center;color:#8a8680"><div style="font-size:32px;margin-bottom:8px">✅</div><div style="font-size:15px;font-weight:600;color:#f0ede8">All caught up!</div></div>';
+    return;
+  }
+  var html = '';
+  if (vendors.length) {
+    html += '<div style="font-size:11px;color:#8a8680;text-transform:uppercase;letter-spacing:.5px;margin:12px 0 8px">Vendors ('+vendors.length+')</div>';
+    vendors.forEach(function(v){
+      html += '<div class="card">'
+        + '<div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:12px">'
+        + '<div><div style="font-size:15px;font-weight:700">'+v.business_name+'</div>'
+        + '<div style="font-size:12px;color:#8a8680;margin-top:2px">'+(v.users&&v.users.full_name||'—')+' · '+(v.users&&v.users.phone||'—')+'</div></div>'
+        + '<span class="badge-warn">Pending</span></div>'
+        + '<div style="background:#0f0e0c;border-radius:10px;padding:12px;margin-bottom:12px;display:grid;grid-template-columns:1fr 1fr;gap:10px">'
+        + '<div><div style="font-size:10px;color:#8a8680;text-transform:uppercase;letter-spacing:.5px">Kitchen Name</div><div style="font-size:13px;color:#f0ede8;margin-top:3px">'+v.business_name+'</div></div>'
+        + '<div><div style="font-size:10px;color:#8a8680;text-transform:uppercase;letter-spacing:.5px">Food Types</div><div style="font-size:13px;color:#f0ede8;margin-top:3px">'+(v.food_types||[]).join(', ')||'—'+'</div></div>'
+        + '<div><div style="font-size:10px;color:#8a8680;text-transform:uppercase;letter-spacing:.5px">Location</div><div style="font-size:13px;color:#f0ede8;margin-top:3px">'+(v.area||'—')+', '+(v.city||'—')+'</div></div>'
+        + '<div><div style="font-size:10px;color:#8a8680;text-transform:uppercase;letter-spacing:.5px">State</div><div style="font-size:13px;color:#f0ede8;margin-top:3px">'+(v.state||'—')+'</div></div>'
+        + '<div><div style="font-size:10px;color:#8a8680;text-transform:uppercase;letter-spacing:.5px">Delivery</div><div style="font-size:13px;color:#f0ede8;margin-top:3px">'+(v.delivery_option||'—')+'</div></div>'
+        + '<div><div style="font-size:10px;color:#8a8680;text-transform:uppercase;letter-spacing:.5px">Hours</div><div style="font-size:13px;color:#f0ede8;margin-top:3px">'+(v.open_time||'—')+' – '+(v.close_time||'—')+'</div></div>'
+        + '<div style="grid-column:1/-1"><div style="font-size:10px;color:#8a8680;text-transform:uppercase;letter-spacing:.5px">Bio</div><div style="font-size:13px;color:#f0ede8;margin-top:3px;line-height:1.5">'+(v.bio||'No bio provided')+'</div></div>'
+        + '<div><div style="font-size:10px;color:#8a8680;text-transform:uppercase;letter-spacing:.5px">Address</div><div style="font-size:13px;color:#f0ede8;margin-top:3px">'+(v.address||'—')+'</div></div>'
+        + '<div><div style="font-size:10px;color:#8a8680;text-transform:uppercase;letter-spacing:.5px">Min Order</div><div style="font-size:13px;color:#f0ede8;margin-top:3px">'+(v.min_order?'₦'+Number(v.min_order).toLocaleString():'—')+'</div></div>'
+        + '</div>'
+        + (v.logo_url ? '<div style="margin-bottom:12px"><div style="font-size:10px;color:#8a8680;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Kitchen Photo</div><img src="'+v.logo_url+'" style="width:100%;height:120px;object-fit:cover;border-radius:8px;border:1px solid #2e2c29" onclick="viewImg(\'\',\'Kitchen Photo\',this.parentElement)" data-full="'+v.logo_url+'"></div>' : '')
+        + '<div style="display:flex;gap:8px">'
+        + '<button class="btn btn-green" style="flex:1;padding:10px" onclick="approveVendor(\''+v.id+'\')">✓ Approve Vendor</button>'
+        + '<button class="btn btn-red" style="padding:10px" onclick="rejectVendor(\''+v.id+'\')">✕ Reject</button>'
+        + '</div></div>';
+    });
+  }
+  if (drivers.length) {
+    html += '<div style="font-size:11px;color:#8a8680;text-transform:uppercase;letter-spacing:.5px;margin:16px 0 8px">Drivers ('+drivers.length+')</div>';
+    drivers.forEach(function(d){
+      html += '<div class="card">'
+        + '<div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:12px">'
+        + '<div><div style="font-size:15px;font-weight:700">'+(d.users&&d.users.full_name||'Driver')+'</div>'
+        + '<div style="font-size:12px;color:#8a8680;margin-top:2px">'+(d.users&&d.users.phone||'—')+'</div></div>'
+        + '<span class="badge-warn">KYC Review</span></div>'
+        + '<div style="background:#0f0e0c;border-radius:10px;padding:12px;margin-bottom:12px;display:grid;grid-template-columns:1fr 1fr;gap:10px">'
+        + '<div><div style="font-size:10px;color:#8a8680;text-transform:uppercase;letter-spacing:.5px">Vehicle</div><div style="font-size:13px;color:#f0ede8;margin-top:3px">'+(d.vehicle_type||'—')+'</div></div>'
+        + '<div><div style="font-size:10px;color:#8a8680;text-transform:uppercase;letter-spacing:.5px">Plate</div><div style="font-size:13px;color:#f0ede8;margin-top:3px">'+(d.vehicle_plate||'—')+'</div></div>'
+        + '<div><div style="font-size:10px;color:#8a8680;text-transform:uppercase;letter-spacing:.5px">Service Area</div><div style="font-size:13px;color:#f0ede8;margin-top:3px">'+(d.service_area||'—')+'</div></div>'
+        + '<div><div style="font-size:10px;color:#8a8680;text-transform:uppercase;letter-spacing:.5px">NIN</div><div style="font-size:13px;color:#f0ede8;margin-top:3px">'+(d.nin||'—')+'</div></div>'
+        + '<div><div style="font-size:10px;color:#8a8680;text-transform:uppercase;letter-spacing:.5px">Bank</div><div style="font-size:13px;color:#f0ede8;margin-top:3px">'+(d.bank_name||'—')+'</div></div>'
+        + '<div><div style="font-size:10px;color:#8a8680;text-transform:uppercase;letter-spacing:.5px">Account No.</div><div style="font-size:13px;color:#f0ede8;margin-top:3px">'+(d.account_number||'—')+'</div></div>'
+        + '<div style="grid-column:1/-1"><div style="font-size:10px;color:#8a8680;text-transform:uppercase;letter-spacing:.5px">Account Name</div><div style="font-size:13px;color:#f0ede8;margin-top:3px">'+(d.account_name||'—')+'</div></div>'
+        + '<div style="grid-column:1/-1"><div style="font-size:10px;color:#8a8680;text-transform:uppercase;letter-spacing:.5px">Submitted</div><div style="font-size:13px;color:#f0ede8;margin-top:3px">'+(d.kyc_submitted_at?fmtDate(d.kyc_submitted_at):'—')+'</div></div>'
+        + '</div>'
+        + '<div style="font-size:10px;color:#8a8680;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Documents</div>'
+        + '<div style="display:flex;gap:8px;margin-bottom:12px">'
+        + imgThumb(d.doc_gov_id, 'Gov ID')
+        + imgThumb(d.doc_selfie, 'Selfie')
+        + imgThumb(d.doc_vehicle, 'Vehicle')
+        + '</div>'
+        + '<div style="display:flex;gap:8px">'
+        + '<button class="btn btn-green" style="flex:1;padding:10px" onclick="approveDriver(\''+d.id+'\')">✓ Approve Driver</button>'
+        + '<button class="btn btn-red" style="padding:10px" onclick="rejectDriver(\''+d.id+'\')">✕ Reject</button>'
+        + '</div></div>';
+    });
+  }
+  el.innerHTML = html;
+}
+
+async function renderOrders(el) {
+  var r = await sb.from('orders').select('*,vendors(business_name)').order('created_at',{ascending:false}).limit(30);
+  var orders = r.data||[];
+  if (!orders.length) { el.innerHTML = '<div style="padding:20px;text-align:center;color:#8a8680;font-size:13px">No orders yet</div>'; return; }
+  var col = {pending:'#f5a623',accepted:'#4caf7d',rejected:'#e05c5c',ready:'#5b9cf6',out_for_delivery:'#5b9cf6',delivered:'#8a8680'};
+  el.innerHTML = orders.map(function(o){
+    var c = col[o.status]||'#8a8680';
+    return '<div class="card"><div style="display:flex;justify-content:space-between;margin-bottom:6px"><div style="font-size:13px;font-weight:700">'+(o.vendors&&o.vendors.business_name||'Vendor')+'</div><span style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:10px;background:'+c+'22;color:'+c+'">'+o.status+'</span></div><div style="font-size:12px;color:#8a8680">'+(o.customer_name||'—')+' · '+fmtDate(o.created_at)+'</div><div style="display:flex;justify-content:space-between;margin-top:6px"><span style="font-size:12px;color:#8a8680">'+(o.items||[]).length+' item(s)</span><span style="font-size:13px;font-weight:700;color:#f5a623">'+fmt(o.total_amount)+'</span></div></div>';
+  }).join('');
+}
+
+async function renderDrivers(el) {
+  var r = await sb.from('riders').select('*,users(full_name,phone)').order('is_online',{ascending:false}).order('created_at',{ascending:false});
+  var drivers = r.data||[];
+  if (!drivers.length) { el.innerHTML = '<div style="padding:40px;text-align:center;color:#8a8680"><div style="font-size:32px;margin-bottom:8px">🛵</div><div style="font-size:15px;font-weight:600;color:#f0ede8">No drivers yet</div></div>'; return; }
+  var online = drivers.filter(function(d){ return d.is_online; }).length;
+  el.innerHTML = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">'
+    + '<div style="font-size:13px;color:#4caf7d;font-weight:600">● '+online+' online now</div>'
+    + '<button onclick="switchTab(\'drivers\')" style="background:#242220;border:1px solid #2e2c29;color:#8a8680;border-radius:8px;padding:6px 12px;font-size:12px;cursor:pointer">↻ Refresh</button>'
+    + '</div>'
+    + drivers.map(function(d){
+    return '<div class="card" style="border-color:'+(d.is_online?'#4caf7d':'#2e2c29')+'">'
+      +'<div style="display:flex;justify-content:space-between;align-items:start">'
+      +'<div>'
+      +'<div style="display:flex;align-items:center;gap:8px">'
+      +'<div style="width:8px;height:8px;border-radius:50%;background:'+(d.is_online?'#4caf7d':'#2e2c29')+';flex-shrink:0"></div>'
+      +'<div style="font-size:14px;font-weight:700">'+(d.users&&d.users.full_name||'Driver')+'</div>'
+      +'</div>'
+      +'<div style="font-size:12px;color:#8a8680;margin-top:4px;margin-left:16px">'+(d.users&&d.users.phone||'—')+' · '+(d.vehicle_type||'—')+'</div>'
+      +'<div style="font-size:12px;margin-top:4px;margin-left:16px;color:#f0ede8">'+(d.trips_count||0)+' trips · ★ '+(d.rating||'—')+'</div>'
+      +'<div style="font-size:11px;color:'+(d.is_online?'#4caf7d':'#8a8680')+';margin-top:4px;margin-left:16px;font-weight:600">'+(d.is_online?'● Online now':'● Offline')+'</div>'
+      +'</div>'
+      +'<span class="'+(d.is_approved?'badge-ok':'badge-warn')+'">'+(d.is_approved?'✓ Approved':'Pending')+'</span>'
+      +'</div>'
+      +'<div style="margin-top:10px;display:flex;gap:6px">'
+      +(!d.is_approved?'<button class="btn btn-green" onclick="approveDriver(\''+d.id+'\')">✓ Approve</button><button class="btn btn-red" onclick="rejectDriver(\''+d.id+'\')">✕ Reject</button>':'<button class="btn" style="background:#242220;color:#8a8680" onclick="suspendDriver(\''+d.id+'\')">Suspend</button>')
+      +'</div></div>';
+  }).join('');
+}
+
+async function renderVendors(el) {
+  var r = await sb.from('vendors').select('id,business_name,city,is_approved,is_available,rating,review_count').order('created_at',{ascending:false}).limit(30);
+  var vendors = r.data||[];
+  if (!vendors.length) { el.innerHTML = '<div style="padding:20px;text-align:center;color:#8a8680;font-size:13px">No vendors yet</div>'; return; }
+  el.innerHTML = vendors.map(function(v){
+    return '<div class="card"><div style="display:flex;justify-content:space-between;align-items:start"><div><div style="font-size:14px;font-weight:700">'+v.business_name+'</div><div style="font-size:12px;color:#8a8680">📍 '+(v.city||'—')+' · ★ '+(v.rating||'—')+' ('+( v.review_count||0)+')</div></div><div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">'+(v.is_approved?'<span class="badge-ok">✓ Verified</span>':'<span class="badge-warn">Pending</span>')+'<span style="font-size:11px;color:'+(v.is_available?'#4caf7d':'#8a8680')+'">'+(v.is_available?'Open':'Closed')+'</span></div></div><div style="margin-top:10px;display:flex;gap:6px">'+(!v.is_approved?'<button class="btn btn-green" onclick="approveVendor(\''+v.id+'\')">✓ Approve</button>':'')+(v.is_approved?'<button class="btn btn-red" style="font-size:11px" onclick="suspendVendor(\''+v.id+'\')">Suspend</button>':'')+'</div></div>';
+  }).join('');
+}
+
+async function approveVendor(id) {
+  var r = await sb.from('vendors').update({is_approved:true}).eq('id',id);
+  if (r.error) { toast('Error: ' + r.error.message, 'err'); return; }
+  toast('Vendor approved ✓'); loadStats(); switchTab('approvals');
+}
+async function rejectVendor(id) {
+  if(!confirm('Reject vendor?')) return;
+  var r = await sb.from('vendors').update({is_approved:false}).eq('id',id);
+  if (r.error) { toast('Error: ' + r.error.message, 'err'); return; }
+  toast('Vendor rejected'); switchTab('approvals');
+}
+async function suspendVendor(id) {
+  if(!confirm('Suspend vendor?')) return;
+  var r = await sb.from('vendors').update({is_approved:false,is_available:false}).eq('id',id);
+  if (r.error) { toast('Error: ' + r.error.message, 'err'); return; }
+  toast('Vendor suspended'); switchTab('vendors');
+}
+async function approveDriver(id) {
+  var r = await sb.from('riders').update({is_approved:true}).eq('id',id);
+  if (r.error) { toast('Error: ' + r.error.message, 'err'); return; }
+  toast('Driver approved ✓'); loadStats(); switchTab('approvals');
+}
+async function rejectDriver(id) {
+  if(!confirm('Reject driver?')) return;
+  var r = await sb.from('riders').update({is_approved:false}).eq('id',id);
+  if (r.error) { toast('Error: ' + r.error.message, 'err'); return; }
+  toast('Driver rejected'); switchTab('approvals');
+}
+async function suspendDriver(id) {
+  if(!confirm('Suspend driver?')) return;
+  var r = await sb.from('riders').update({is_approved:false,is_online:false}).eq('id',id);
+  if (r.error) { toast('Error: ' + r.error.message, 'err'); return; }
+  toast('Driver suspended'); switchTab('drivers');
+}
+
+// Auto-login check
+
+async function renderCommission(el) {
+  el.innerHTML = '<div style="padding:20px;text-align:center;color:#8a8680;font-size:13px">Loading…</div>';
+  try {
+    var commRes = await sb.from('commissions')
+      .select('id,vendor_id,order_amount,commission_amt,status,created_at,vendors(business_name,area,city)')
+      .order('created_at',{ascending:false});
+    var comms = commRes.data || [];
+    var unpaid = comms.filter(function(c){ return c.status==='unpaid'; });
+    var confirmed = comms.filter(function(c){ return c.status==='confirmed'; });
+    var badge = document.getElementById('comm-badge');
+    if (badge) { badge.textContent=unpaid.length||''; badge.style.display=unpaid.length?'inline':'none'; }
+    var html = '';
+    var threeDaysAgo = new Date(Date.now()-3*24*60*60*1000);
+    // Group unpaid by vendor
+    var byVendor = {};
+    unpaid.forEach(function(c){
+      var vid = c.vendor_id;
+      if (!byVendor[vid]) byVendor[vid]={name:c.vendors&&c.vendors.business_name||'Vendor',loc:c.vendors?(c.vendors.area||'')+', '+(c.vendors.city||''):'',total:0,ids:[],overdue:false};
+      byVendor[vid].total += c.commission_amt;
+      byVendor[vid].ids.push(c.id);
+      if (new Date(c.created_at)<threeDaysAgo) byVendor[vid].overdue=true;
+    });
+    var entries = Object.entries(byVendor);
+    var totalOwed = entries.reduce(function(s,e){return s+e[1].total;},0);
+    if (totalOwed>0) {
+      html += '<div style="background:linear-gradient(135deg,rgba(245,166,35,.12),rgba(232,96,60,.08));border:1.5px solid rgba(245,166,35,.3);border-radius:16px;padding:16px;margin-bottom:16px">'
+        +'<div style="font-size:12px;font-weight:700;color:#f5a623;text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px">Outstanding Balances</div>'
+        +entries.map(function(e){
+          var v=e[1];
+          var ovr=v.overdue?'<span style="font-size:10px;font-weight:700;background:rgba(224,92,92,.2);color:#e05c5c;padding:2px 6px;border-radius:6px;margin-left:6px">⚠ Overdue</span>':'';
+          return '<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid rgba(245,166,35,.15)">'
+            +'<div><div style="font-size:13px;font-weight:700">'+v.name+ovr+'</div>'
+            +'<div style="font-size:11px;color:#8a8680">'+v.loc+' · '+v.ids.length+' order'+(v.ids.length!==1?'s':'')+'</div></div>'
+            +'<div style="display:flex;align-items:center;gap:10px">'
+            +'<div style="font-size:16px;font-weight:800;color:#f5a623">₦'+Number(v.total).toLocaleString()+'</div>'
+            +'<button class="btn btn-green" style="padding:6px 14px;font-size:12px" '
+            +'data-vid="'+e[0]+'" data-name="'+v.name.replace(/"/g,"'")+'" data-total="'+v.total+'" data-ids="'+encodeURIComponent(JSON.stringify(v.ids))+'" '
+            +'onclick="markPaidVendor(this)">Mark Paid</button>'
+            +'</div></div>';
+        }).join('')
+        +'<div style="display:flex;justify-content:space-between;padding-top:12px;margin-top:4px">'
+        +'<div style="font-size:13px;font-weight:700">Total Outstanding</div>'
+        +'<div style="font-size:18px;font-weight:800;color:#f5a623">₦'+Number(totalOwed).toLocaleString()+'</div>'
+        +'</div></div>';
+    } else {
+      html += '<div style="background:rgba(76,175,125,.08);border:1px solid rgba(76,175,125,.2);border-radius:14px;padding:14px 16px;margin-bottom:16px;font-size:13px;color:#4caf7d;font-weight:600">✓ All commissions settled</div>';
+    }
+    if (confirmed.length) {
+      html += '<div style="font-size:12px;font-weight:700;color:#8a8680;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Recently Confirmed</div>';
+      html += confirmed.slice(0,15).map(function(c){
+        return '<div class="card" style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px">'
+          +'<div><div style="font-size:13px;font-weight:600">'+(c.vendors&&c.vendors.business_name||'Vendor')+'</div>'
+          +'<div style="font-size:11px;color:#8a8680">₦'+Number(c.order_amount).toLocaleString()+' order · '+new Date(c.created_at).toLocaleDateString('en-NG',{day:'numeric',month:'short'})+'</div></div>'
+          +'<div style="text-align:right"><div style="font-size:13px;font-weight:700;color:#4caf7d">₦'+Number(c.commission_amt).toLocaleString()+'</div>'
+          +'<div style="font-size:10px;color:#4caf7d">✓ Paid</div></div></div>';
+      }).join('');
+    }
+    if (!html) html='<div style="padding:40px;text-align:center;color:#8a8680"><div style="font-size:40px;margin-bottom:12px">💰</div><div style="font-size:15px;font-weight:600">No commission activity yet</div><div style="font-size:12px;margin-top:6px">Logged automatically when orders are delivered</div></div>';
+    el.innerHTML = html;
+  } catch(e) { el.innerHTML='<div style="padding:20px;text-align:center;color:#e05c5c;font-size:13px">Error: '+e.message+'</div>'; }
+}
+
+async function markPaidVendor(btn) {
+  var vendorName = btn.dataset.name;
+  var total = btn.dataset.total;
+  var ids = JSON.parse(decodeURIComponent(btn.dataset.ids));
+  if (!confirm('Mark ₦'+Number(total).toLocaleString()+' as paid for '+vendorName+'?')) return;
+  try {
+    var r = await sb.from('commissions').update({status:'confirmed'}).in('id',ids);
+    if (r.error) { toast('Error: '+r.error.message,'err'); return; }
+    toast('✓ Marked as paid — '+vendorName);
+    loadStats(); switchTab('commission');
+  } catch(e) { toast('Error: '+e.message,'err'); }
+}
+
+if (localStorage.getItem('abinci_admin')==='1') { go('screen-dashboard'); loadStats(); switchTab('approvals'); }
+</script>
+
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js').catch(() => {});
+      });
+    }
+    // PWA install prompt
+    let deferredPrompt;
+    window.addEventListener('beforeinstallprompt', e => {
+      e.preventDefault();
+      deferredPrompt = e;
+      const btn = document.getElementById('pwa-install-btn');
+      if (btn) btn.style.display = 'flex';
+    });
+    function installPWA() {
+      if (!deferredPrompt) return;
+      deferredPrompt.prompt();
+      deferredPrompt.userChoice.then(() => { deferredPrompt = null; });
+    }
+    window.addEventListener('appinstalled', () => {
+      const btn = document.getElementById('pwa-install-btn');
+      if (btn) btn.style.display = 'none';
+    });
+  </script>
+</body>
+</html>

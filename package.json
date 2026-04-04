@@ -1,0 +1,19 @@
+{
+  "name": "abinci-food",
+  "version": "1.0.0",
+  "description": "abinci.food — Home food delivery platform for Nigeria",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev:customer": "npx serve customer-app -p 3001",
+    "dev:driver": "npx serve driver-app -p 3002",
+    "dev:admin": "npx serve admin-app -p 3003"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "serve": "^14.2.3"
+  }
+}

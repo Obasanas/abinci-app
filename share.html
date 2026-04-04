@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta property="og:title" id="og-title" content="abinci.food">
+<meta property="og:description" id="og-desc" content="Homemade food, made with love">
+<meta property="og:image" id="og-img" content="">
+<title id="page-title">abinci.food</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'DM Sans',sans-serif;background:#0f0e0c;color:#f0ede8;min-height:100vh;max-width:430px;margin:0 auto}
+.hero{position:relative;height:280px;background:linear-gradient(135deg,#1e1508,#2e1f0a);overflow:hidden}
+.hero img{width:100%;height:100%;object-fit:cover}
+.hero-overlay{position:absolute;inset:0;background:linear-gradient(to bottom,rgba(15,14,12,.2) 0%,rgba(15,14,12,.95) 100%)}
+.hero-content{position:absolute;bottom:0;left:0;right:0;padding:20px}
+.badge{display:inline-flex;align-items:center;gap:4px;background:rgba(76,175,125,.15);color:#4caf7d;border:1px solid rgba(76,175,125,.3);border-radius:20px;padding:3px 10px;font-size:11px;font-weight:600;margin-bottom:8px}
+.vendor-name{font-family:'Syne',sans-serif;font-size:26px;font-weight:800;line-height:1.1;margin-bottom:4px}
+.vendor-sub{font-size:13px;color:rgba(240,237,232,.7)}
+.logo-wrap{position:absolute;top:16px;left:16px;width:52px;height:52px;border-radius:12px;overflow:hidden;border:2px solid rgba(255,255,255,.2);background:#1a1916}
+.logo-wrap img{width:100%;height:100%;object-fit:cover}
+.abinci-badge{position:absolute;top:16px;right:16px;background:rgba(15,14,12,.8);backdrop-filter:blur(8px);border:1px solid rgba(245,166,35,.3);border-radius:20px;padding:5px 12px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700}
+.abinci-badge span{color:#f5a623}
+.section{padding:20px}
+.section + .section{padding-top:0}
+/* Announcement card */
+.ann-card{background:linear-gradient(135deg,rgba(245,166,35,.12),rgba(232,96,60,.08));border:1.5px solid rgba(245,166,35,.3);border-radius:20px;overflow:hidden;margin-bottom:20px}
+.ann-img{width:100%;height:200px;object-fit:cover;display:block}
+.ann-body{padding:16px}
+.ann-tag{font-size:11px;font-weight:700;color:#f5a623;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+.ann-dish{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;margin-bottom:4px}
+.ann-desc{font-size:14px;color:rgba(240,237,232,.7);margin-bottom:14px;line-height:1.5}
+.ann-info{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+.ann-info-item{background:rgba(15,14,12,.4);border-radius:10px;padding:10px 12px}
+.ann-info-label{font-size:10px;color:#8a8680;text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px}
+.ann-info-val{font-size:13px;font-weight:600}
+.portions-bar{background:rgba(15,14,12,.4);border-radius:10px;padding:10px 12px;margin-bottom:16px}
+.portions-track{height:6px;background:rgba(255,255,255,.1);border-radius:3px;margin-top:6px;overflow:hidden}
+.portions-fill{height:100%;background:linear-gradient(90deg,#f5a623,#e8603c);border-radius:3px;transition:width .5s}
+/* CTA */
+.cta-btn{display:block;width:100%;padding:18px;border-radius:16px;background:linear-gradient(135deg,#f5a623,#e8603c);color:#000;font-family:'Syne',sans-serif;font-size:17px;font-weight:800;text-align:center;text-decoration:none;border:none;cursor:pointer;transition:opacity .2s}
+.cta-btn:hover{opacity:.9}
+.cta-btn.menu{background:linear-gradient(135deg,#1a1916,#242220);color:#f0ede8;border:1.5px solid #2e2c29;margin-top:10px}
+/* Menu section */
+.menu-label{font-family:'Syne',sans-serif;font-size:18px;font-weight:800;margin-bottom:14px}
+.menu-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px}
+.menu-item{background:#1a1916;border:1px solid #2e2c29;border-radius:14px;overflow:hidden}
+.menu-item-img{height:90px;background:#242220;display:flex;align-items:center;justify-content:center;font-size:36px}
+.menu-item-img img{width:100%;height:100%;object-fit:cover}
+.menu-item-body{padding:10px}
+.menu-item-name{font-size:13px;font-weight:600;margin-bottom:2px}
+.menu-item-price{font-size:14px;font-weight:700;color:#f5a623}
+.menu-item-plates{font-size:11px;color:#4caf7d;margin-top:3px}
+.menu-item-soldout{font-size:11px;color:#e05c5c;margin-top:3px}
+/* Stats */
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px}
+.stat{background:#1a1916;border:1px solid #2e2c29;border-radius:14px;padding:14px;text-align:center}
+.stat-val{font-size:22px;font-weight:800;font-family:'Syne',sans-serif;color:#f5a623}
+.stat-lbl{font-size:11px;color:#8a8680;margin-top:3px}
+/* Footer */
+.footer{text-align:center;padding:24px 20px 40px;border-top:1px solid #1a1916}
+.footer-logo{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;margin-bottom:6px}
+.footer-logo span{color:#f5a623}
+.footer-sub{font-size:12px;color:#8a8680}
+/* Loading */
+.loading{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;gap:16px}
+.spinner{width:40px;height:40px;border:3px solid #2e2c29;border-top-color:#f5a623;border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.error{text-align:center;padding:60px 24px}
+.error-emoji{font-size:48px;margin-bottom:16px}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="loading">
+    <div class="spinner"></div>
+    <div style="font-size:13px;color:#8a8680">Loading…</div>
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL  = 'https://kikeyhwbziumyhcnsvhi.supabase.co';
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtpa2V5aHdieml1bXloY25zdmhpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI4OTk5OTMsImV4cCI6MjA4ODQ3NTk5M30.4R9XP1DOx358SJE0VPm3y8NimoCoVKVcJqPDSvLiHJc';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+
+// Parse URL params
+const params = new URLSearchParams(window.location.search);
+const vendorId = params.get('v');
+const annId = params.get('a');
+const APP_URL = 'https://app.abinci.food'; // update to live URL on deploy
+
+function fmt(n) { return '₦' + Number(n||0).toLocaleString(); }
+function timeAgo(d) {
+  const s = Math.floor((Date.now() - new Date(d)) / 1000);
+  if (s < 3600) return Math.floor(s/60) + 'm ago';
+  if (s < 86400) return Math.floor(s/3600) + 'h ago';
+  return Math.floor(s/86400) + 'd ago';
+}
+
+async function load() {
+  if (!vendorId) { showError('No vendor specified'); return; }
+  try {
+    // Fetch vendor + menu + active announcement
+    const [vr, mr, ar] = await Promise.all([
+      sb.from('vendors').select('*').eq('id', vendorId).single(),
+      sb.from('menu_items').select('*').eq('vendor_id', vendorId).eq('is_available', true).order('created_at'),
+      sb.from('availability_posts').select('*').eq('vendor_id', vendorId).eq('is_active', true)
+        .gte('dispatch_date', new Date().toISOString().split('T')[0]).order('dispatch_date').limit(1)
+    ]);
+
+    if (vr.error || !vr.data) { showError('Vendor not found'); return; }
+    const vendor = vr.data;
+    const menu = mr.data || [];
+    const ann = ar.data && ar.data[0] ? ar.data[0] : null;
+    // If specific announcement requested
+    const targetAnn = annId ? (ar.data || []).find(a => a.id === annId) || ann : ann;
+
+    render(vendor, menu, targetAnn);
+  } catch(e) { showError(e.message); }
+}
+
+function render(v, menu, ann) {
+  // Update page title
+  document.getElementById('page-title').textContent = v.business_name + ' — abinci.food';
+
+  const heroImg = v.logo_url
+    ? '<img src="' + v.logo_url + '" style="width:100%;height:100%;object-fit:cover">'
+    : '<div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:80px">' + (v.emoji||'🍲') + '</div>';
+
+  const logoHtml = v.logo_url
+    ? '<div class="logo-wrap"><img src="' + v.logo_url + '"></div>'
+    : '';
+
+  const starsHtml = v.rating
+    ? '★'.repeat(Math.round(v.rating)) + ' ' + Number(v.rating).toFixed(1)
+    : '—';
+
+  // Announcement section
+  let annHtml = '';
+  if (ann) {
+    const dispatchDt = new Date(ann.dispatch_date + 'T' + ann.dispatch_time);
+    const cutoffDt = new Date(ann.dispatch_date + 'T' + ann.cutoff_time);
+    const now = new Date();
+    const dateStr = dispatchDt.toLocaleDateString('en-NG', { weekday: 'long', day: 'numeric', month: 'short' });
+    const left = ann.max_portions ? (ann.max_portions - (ann.portions_taken||0)) : null;
+    const pct = ann.max_portions ? Math.round(((ann.portions_taken||0) / ann.max_portions) * 100) : 0;
+    const isClosed = now > cutoffDt;
+
+    annHtml = '<div class="section">'
+      + '<div class="ann-card">'
+      + (ann.image_url ? '<img class="ann-img" src="' + ann.image_url + '" alt="' + ann.dish_name + '">' : '')
+      + '<div class="ann-body">'
+      + '<div class="ann-tag">📢 Pre-order Available</div>'
+      + '<div class="ann-dish">' + ann.dish_name + '</div>'
+      + (ann.description ? '<div class="ann-desc">' + ann.description + '</div>' : '')
+      + '<div class="ann-info">'
+      + '<div class="ann-info-item"><div class="ann-info-label">🕐 Dispatch</div><div class="ann-info-val">' + dateStr + '</div></div>'
+      + '<div class="ann-info-item"><div class="ann-info-label">⏰ Order by</div><div class="ann-info-val">' + ann.cutoff_time + ' · ' + new Date(ann.dispatch_date).toLocaleDateString('en-NG',{weekday:'short',day:'numeric',month:'short'}) + '</div></div>'
+      + '</div>'
+      + (left != null ? '<div class="portions-bar"><div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:12px;font-weight:600">' + (left > 0 ? left + ' portions remaining' : '🔴 Fully booked') + '</span><span style="font-size:12px;color:#8a8680">' + (ann.portions_taken||0) + '/' + ann.max_portions + ' taken</span></div><div class="portions-track"><div class="portions-fill" style="width:' + pct + '%"></div></div></div>' : '')
+      + (!isClosed && (left == null || left > 0)
+        ? '<a href="' + APP_URL + '?v=' + v.id + '" class="cta-btn">🍽️ Pre-order Now →</a>'
+        : '<div style="background:rgba(224,92,92,.1);border:1px solid rgba(224,92,92,.2);border-radius:12px;padding:12px;text-align:center;font-size:13px;color:#e05c5c">' + (isClosed ? '⏰ Pre-order closed' : '🔴 Fully booked') + '</div>')
+      + '</div></div></div>';
+  }
+
+  // Menu section
+  const menuHtml = menu.length ? '<div class="section">'
+    + '<div class="menu-label">🍽️ Full Menu</div>'
+    + '<div class="menu-grid">'
+    + menu.map(m => '<div class="menu-item">'
+      + '<div class="menu-item-img">'
+      + (m.image_url ? '<img src="' + m.image_url + '" alt="' + m.name + '">' : m.emoji || '🍽️')
+      + '</div>'
+      + '<div class="menu-item-body">'
+      + '<div class="menu-item-name">' + m.name + '</div>'
+      + '<div class="menu-item-price">' + fmt(m.price) + '</div>'
+      + (m.plates_available != null
+        ? (m.plates_available > 0
+          ? '<div class="menu-item-plates">🍲 ' + m.plates_available + ' left</div>'
+          : '<div class="menu-item-soldout">✕ Sold out</div>')
+        : '')
+      + '</div></div>'
+    ).join('')
+    + '</div>'
+    + '<a href="' + APP_URL + '?v=' + v.id + '" class="cta-btn">Order from ' + v.business_name + ' →</a>'
+    + '</div>' : '';
+
+  const deliveryBadge = {
+    delivery: '🚚 Delivery',
+    pickup: '🏠 Pickup Only',
+    both: '🚚 Delivery & 🏠 Pickup'
+  }[v.delivery_option] || '';
+
+  document.getElementById('app').innerHTML =
+    // Hero
+    '<div class="hero">' + heroImg
+    + '<div class="hero-overlay"></div>'
+    + logoHtml
+    + '<div class="abinci-badge">abinci<span>.food</span></div>'
+    + '<div class="hero-content">'
+    + (v.is_approved ? '<div class="badge">✓ Verified Kitchen</div>' : '')
+    + '<div class="vendor-name">' + v.business_name + '</div>'
+    + '<div class="vendor-sub">📍 ' + (v.area||'') + ', ' + (v.city||'') + (deliveryBadge ? '  ·  ' + deliveryBadge : '') + '</div>'
+    + '</div></div>'
+    // Stats
+    + '<div class="section">'
+    + '<div class="stats">'
+    + '<div class="stat"><div class="stat-val">' + (v.rating ? Number(v.rating).toFixed(1) : '—') + '</div><div class="stat-lbl">Rating</div></div>'
+    + '<div class="stat"><div class="stat-val">' + (v.review_count||0) + '</div><div class="stat-lbl">Reviews</div></div>'
+    + '<div class="stat"><div class="stat-val">' + menu.length + '</div><div class="stat-lbl">Dishes</div></div>'
+    + '</div>'
+    + (v.bio ? '<div style="font-size:14px;color:#8a8680;line-height:1.6;margin-bottom:4px">' + v.bio + '</div>' : '')
+    + '</div>'
+    // Announcement
+    + annHtml
+    // Menu
+    + menuHtml
+    // Footer
+    + '<div class="footer">'
+    + '<div class="footer-logo">abinci<span>.food</span></div>'
+    + '<div class="footer-sub">Homemade food, made with love 🧡</div>'
+    + '<div style="margin-top:16px">'
+    + '<a href="' + APP_URL + '" style="display:inline-block;background:#f5a623;color:#000;border-radius:12px;padding:10px 24px;font-family:\'Syne\',sans-serif;font-weight:700;font-size:14px;text-decoration:none">Open abinci.food App →</a>'
+    + '</div></div>';
+}
+
+function showError(msg) {
+  document.getElementById('app').innerHTML =
+    '<div class="error">'
+    + '<div class="error-emoji">😕</div>'
+    + '<div style="font-size:18px;font-weight:700;margin-bottom:8px">Oops!</div>'
+    + '<div style="font-size:14px;color:#8a8680">' + msg + '</div>'
+    + '<a href="' + APP_URL + '" style="display:inline-block;margin-top:24px;background:#f5a623;color:#000;border-radius:12px;padding:12px 24px;font-family:\'Syne\',sans-serif;font-weight:700;font-size:14px;text-decoration:none">Go to abinci.food →</a>'
+    + '</div>';
+}
+
+load();
+</script>
+</body>
+</html>

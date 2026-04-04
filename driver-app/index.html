@@ -1,0 +1,1837 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#f5a623">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="abinci Driver">
+  <link rel="apple-touch-icon" href="/icon-192.png">
+  <meta name="mobile-web-app-capable" content="yes">
+<title>abinci.food — Driver</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="tokens.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+/* ── Driver-specific styles ── */
+.kyc-progress { display:flex; gap:0; margin-bottom:28px; }
+.kyc-step {
+  flex:1; text-align:center; font-size:11px; padding:10px 4px;
+  color:var(--muted); position:relative;
+}
+.kyc-step::before {
+  content:''; position:absolute; top:0; left:0; right:0;
+  height:3px; background:var(--border); border-radius:2px;
+}
+.kyc-step.done { color:var(--green); }
+.kyc-step.done::before { background:var(--green); }
+.kyc-step.active { color:var(--accent); font-weight:700; }
+.kyc-step.active::before { background:var(--accent); }
+
+.kyc-doc-upload {
+  background:var(--surface); border:1.5px dashed var(--border);
+  border-radius:var(--radius-lg); padding:20px; margin-bottom:14px;
+  cursor:pointer; text-align:center; transition:all .2s; position:relative;
+}
+.kyc-doc-upload:hover { border-color:var(--accent); }
+.kyc-doc-upload.uploaded { border-color:var(--green); border-style:solid; }
+.kyc-doc-upload input[type=file] { position:absolute; inset:0; opacity:0; cursor:pointer; width:100%; height:100%; }
+
+.order-card {
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:var(--radius-lg); padding:16px; margin-bottom:12px;
+}
+.order-card.available { border-color:var(--accent); }
+.order-card.active { border-color:var(--green); }
+
+.status-track { display:flex; gap:0; margin:14px 0; }
+.status-node { flex:1; text-align:center; font-size:10px; color:var(--muted); position:relative; padding-top:14px; }
+.status-node::before { content:''; position:absolute; top:4px; left:0; right:0; height:2px; background:var(--border); }
+.status-node::after { content:''; position:absolute; top:0; left:50%; transform:translateX(-50%); width:10px; height:10px; border-radius:50%; background:var(--border); border:2px solid var(--bg); }
+.status-node.done::before { background:var(--green); }
+.status-node.done::after { background:var(--green); }
+.status-node.current::after { background:var(--accent); }
+
+.map-placeholder {
+  background:var(--surface2); border-radius:var(--radius-lg);
+  height:180px; display:flex; align-items:center; justify-content:center;
+  margin-bottom:14px; border:1px solid var(--border); position:relative; overflow:hidden;
+}
+.map-pin { font-size:32px; }
+
+.earnings-stat { text-align:center; }
+.earnings-stat-num { font-size:24px; font-weight:800; font-family:var(--font-head); color:var(--accent); }
+.earnings-stat-label { font-size:11px; color:var(--muted); margin-top:2px; }
+
+.trip-row { display:flex; justify-content:space-between; align-items:center; padding:12px 0; border-bottom:1px solid var(--border); }
+.trip-row:last-child { border-bottom:none; }
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;align-items:flex-end;justify-content:center;padding:0}
+.modal-overlay.open{display:flex}
+.modal{background:var(--surface);border-radius:24px 24px 0 0;padding:28px 24px 40px;width:100%;max-width:430px;max-height:90vh;overflow-y:auto}
+.modal-close{position:absolute;top:16px;right:16px;width:32px;height:32px;border-radius:50%;background:var(--surface2);border:none;color:var(--text);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1}
+.modal-title{font-family:var(--font-head);font-size:20px;font-weight:800;margin-bottom:20px}
+.form-group{margin-bottom:16px}
+.form-label{font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;display:block}
+
+/* ── KYC scroll fix ── */
+#screen-kyc-step1,
+#screen-kyc-step2,
+#screen-kyc-step3 {
+  overflow-y: auto !important;
+  height: 100% !important;
+  display: block !important;
+}
+#screen-kyc-step1 > div,
+#screen-kyc-step2 > div,
+#screen-kyc-step3 > div {
+  overflow-y: auto;
+  max-height: 100vh;
+  padding-bottom: 40px;
+}
+
+/* ── Global responsiveness ── */
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; overflow-x: hidden; }
+input, select, button, textarea {
+  max-width: 100%;
+  font-size: 16px; /* Prevents iOS zoom on focus */
+}
+img { max-width: 100%; height: auto; }
+
+/* Safe area insets for notched phones */
+.bottom-nav {
+  padding-bottom: calc(10px + env(safe-area-inset-bottom)) !important;
+}
+.screen {
+  padding-bottom: calc(80px + env(safe-area-inset-bottom));
+  min-height: 100%;
+  overflow-y: auto;
+}
+#screen-kyc-step1, #screen-kyc-step2, #screen-kyc-step3 {
+  padding-bottom: 40px;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ═══════════════════════════════════════════════════
+   RESPONSIVE — Mobile-first, fits all screen sizes
+═══════════════════════════════════════════════════ */
+
+/* App container */
+html, body {
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+/* All screens fill viewport */
+.screen {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: calc(80px + env(safe-area-inset-bottom));
+  box-sizing: border-box;
+}
+
+.screen:not(.active) { display: none !important; }
+.screen.active { display: block !important; }
+
+/* Bottom nav safe area */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding-bottom: env(safe-area-inset-bottom);
+  z-index: 100;
+}
+
+/* Prevent input zoom on iOS */
+input, select, textarea {
+  font-size: 16px !important;
+  max-width: 100%;
+}
+
+/* Images never overflow */
+img { max-width: 100%; height: auto; }
+
+/* Topbar always at top */
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+/* Forms fill width */
+.form-input, .form-select, .big-btn {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Cards never overflow */
+.order-card, .menu-card, .vendor-card {
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* Modal full width on mobile */
+.modal-overlay {
+  padding: 0 !important;
+}
+
+/* Safe scrolling for KYC */
+#screen-kyc-step1,
+#screen-kyc-step2,
+#screen-kyc-step3 {
+  padding-bottom: 60px !important;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+</style>
+</head>
+<body>
+
+<!-- App Loading Overlay -->
+<div id="app-loading" style="display:flex;position:fixed;inset:0;background:#0f0e0c;z-index:9999;align-items:center;justify-content:center;flex-direction:column;gap:16px">
+  <div style="font-family:var(--font-head);font-size:26px;font-weight:900;color:#fdf6e9">abinci<span style="color:#f5a623">.food</span></div>
+  <div style="font-size:13px;color:rgba(253,246,233,.4)">Driver Portal</div>
+  <div style="width:36px;height:36px;border:3px solid rgba(245,166,35,.2);border-top-color:#f5a623;border-radius:50%;animation:spin .8s linear infinite;margin-top:8px"></div>
+</div>
+
+<!-- ===== SCREEN 1: ROLE / SPLASH ===== -->
+<div class="screen active" id="screen-splash">
+  <div style="padding:60px 24px 0; text-align:center;">
+    <div style="font-size:64px; margin-bottom:16px">🛵</div>
+    <div style="font-family:var(--font-head);font-size:32px;font-weight:800;margin-bottom:8px">abinci<span style="color:var(--accent)">.food</span></div>
+    <div style="color:var(--muted);font-size:15px;margin-bottom:48px">Deliver food. Earn daily.</div>
+    <button class="big-btn" style="margin-top:0" onclick="switchTab('signup');showScreen('screen-auth')">Register as Driver →</button>
+    <div style="margin-top:16px;text-align:center">
+      <span onclick="switchTab('signin');showScreen('screen-auth')" style="font-size:13px;color:var(--muted);cursor:pointer">Already a driver? Sign in</span>
+    </div>
+  </div>
+</div>
+
+<!-- ===== SCREEN 2: AUTH ===== -->
+<div class="screen" id="screen-auth">
+  <div style="background:linear-gradient(135deg,#1c1400,var(--bg));padding:56px 28px 32px">
+    <div style="font-size:40px;margin-bottom:12px">🛵</div>
+    <div style="font-family:var(--font-head);font-size:26px;font-weight:800">Driver Portal</div>
+    <div style="color:var(--muted);font-size:13px;margin-top:6px">abinci.food</div>
+  </div>
+  <div style="padding:0 24px 24px">
+    <div style="display:flex;background:var(--surface2);border-radius:14px;padding:4px;margin-bottom:24px">
+      <button id="dtab-signin" onclick="switchTab('signin')" style="flex:1;padding:10px;border:none;border-radius:10px;font-family:var(--font-head);font-weight:700;font-size:14px;cursor:pointer;background:var(--accent);color:#000;transition:all .2s">Sign In</button>
+      <button id="dtab-signup" onclick="switchTab('signup')" style="flex:1;padding:10px;border:none;border-radius:10px;font-family:var(--font-head);font-weight:700;font-size:14px;cursor:pointer;background:transparent;color:var(--muted);transition:all .2s">Register</button>
+    </div>
+    <div id="auth-name-wrap" style="margin-bottom:16px">
+      <div class="form-label">Full Name *</div>
+      <input id="auth-name" class="form-input" placeholder="e.g. Musa Ibrahim">
+    </div>
+    <div class="form-label">Phone Number *</div>
+    <div style="display:flex;gap:8px;margin-bottom:24px">
+      <div style="background:var(--surface2);border:1.5px solid var(--border);border-radius:12px;padding:13px 14px;color:var(--muted);font-size:15px;white-space:nowrap">🇳🇬 +234</div>
+      <input id="auth-phone" class="form-input" type="tel" placeholder="801 234 5678" style="flex:1" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+    </div>
+    <button id="send-otp-btn" onclick="sendDriverOTP()" style="width:100%;padding:16px;background:var(--accent);border:none;border-radius:14px;font-family:var(--font-head);font-weight:700;font-size:15px;cursor:pointer;color:#000">Sign In →</button>
+    <div style="margin-top:14px;text-align:center">
+      <span onclick="showScreen('screen-splash')" style="font-size:13px;color:var(--muted);cursor:pointer">← Back</span>
+    </div>
+  </div>
+</div>
+
+<!-- ===== SCREEN 3: OTP ===== -->
+<div class="screen" id="screen-otp">
+  <div style="padding:60px 28px 0">
+    <div onclick="showScreen('screen-auth')" style="width:36px;height:36px;border-radius:50%;background:var(--surface);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;margin-bottom:24px">←</div>
+    <div style="font-size:48px;margin-bottom:16px">📱</div>
+    <div style="font-family:var(--font-head);font-size:28px;font-weight:800;margin-bottom:8px">Enter OTP</div>
+    <div style="color:var(--muted);font-size:14px;margin-bottom:24px">Code sent to <span id="otp-phone-display" style="color:var(--text);font-weight:600"></span></div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:24px;margin-bottom:20px;text-align:center">
+      <div style="font-size:13px;color:var(--muted);margin-bottom:12px">Your verification code</div>
+      <div style="font-size:52px;font-weight:800;font-family:var(--font-head);color:var(--accent);letter-spacing:10px" id="otp-code-display">—</div>
+      <div style="font-size:12px;color:var(--muted);margin-top:10px">Enter this code below to verify your number</div>
+    </div>
+    <input id="otp-input" maxlength="4" type="number" placeholder="Enter code"
+      style="width:100%;background:var(--surface2);border:1.5px solid var(--border);border-radius:14px;padding:20px;font-size:32px;font-family:var(--font-head);font-weight:800;color:var(--text);text-align:center;letter-spacing:12px;outline:none;margin-bottom:12px"
+      oninput="if(this.value.length===4)verifyDriverOTP()">
+    <input type="hidden" id="otp-name-hidden">
+    <div style="text-align:center;margin-bottom:20px">
+      <span id="otp-timer" style="font-size:13px;color:var(--muted)">Code expires in 10 minutes</span>
+      <span id="otp-resend" style="display:none"><span onclick="resendDriverOTP()" style="font-size:13px;color:var(--accent);cursor:pointer;font-weight:600">Get new code</span></span>
+    </div>
+    <button id="otp-verify-btn" onclick="verifyDriverOTP()" style="width:100%;padding:16px;background:var(--accent);border:none;border-radius:14px;font-family:var(--font-head);font-weight:700;font-size:15px;cursor:pointer;color:#000">Verify &amp; Continue →</button>
+  </div>
+</div>
+
+<!-- ===== SCREEN 4: KYC STEP 1 — Personal Info ===== -->
+<div class="screen" id="screen-kyc-step1">
+  <div style="padding:24px 20px 0">
+    <div class="kyc-progress">
+      <div class="kyc-step active" id="kyc-s1">Personal Info</div>
+      <div class="kyc-step" id="kyc-s2">Documents</div>
+      <div class="kyc-step" id="kyc-s3">Vehicle</div>
+    </div>
+    <div style="font-size:40px;margin-bottom:12px">👤</div>
+    <div style="font-family:var(--font-head);font-size:24px;font-weight:800;margin-bottom:6px">Tell us about you</div>
+    <div style="color:var(--muted);font-size:14px;margin-bottom:28px">Basic info for your driver profile</div>
+    <div class="form-group">
+      <label class="form-label">Full Legal Name *</label>
+      <input class="form-input" id="kyc-fullname" placeholder="As on your ID card" oninput="validateKYC1()">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Date of Birth *</label>
+      <input class="form-input" id="kyc-dob" type="date" oninput="validateKYC1()">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Email Address</label>
+      <input class="form-input" id="kyc-email" type="email" placeholder="e.g. musa@email.com">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Home Address *</label>
+      <input class="form-input" id="kyc-address" placeholder="e.g. 12 Zaria Road, Kano" oninput="validateKYC1()">
+    </div>
+    <div class="form-group">
+      <label class="form-label">City *</label>
+      <input class="form-input" id="kyc-city" placeholder="e.g. Kano" oninput="validateKYC1()">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Emergency Contact Name *</label>
+      <input class="form-input" id="kyc-emergency-name" placeholder="e.g. Fatima Ibrahim" oninput="validateKYC1()">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Emergency Contact Phone *</label>
+      <input class="form-input" id="kyc-emergency-phone" type="tel" placeholder="08012345678" oninput="validateKYC1()">
+    </div>
+    <button class="big-btn" id="kyc1-btn" disabled onclick="goKYC2()">Continue →</button>
+    <div style="height:20px"></div>
+  </div>
+</div>
+
+<!-- ===== SCREEN 5: KYC STEP 2 — Documents ===== -->
+<div class="screen" id="screen-kyc-step2">
+  <div style="padding:24px 20px 0">
+    <div class="kyc-progress">
+      <div class="kyc-step done" id="kyc-s1b">Personal Info</div>
+      <div class="kyc-step active" id="kyc-s2b">Documents</div>
+      <div class="kyc-step" id="kyc-s3b">Vehicle</div>
+    </div>
+    <div onclick="showScreen('screen-kyc-step1')" style="width:36px;height:36px;border-radius:50%;background:var(--surface);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;margin-bottom:20px">←</div>
+    <div style="font-size:40px;margin-bottom:12px">📄</div>
+    <div style="font-family:var(--font-head);font-size:24px;font-weight:800;margin-bottom:6px">Upload documents</div>
+    <div style="color:var(--muted);font-size:14px;margin-bottom:28px">Required for identity verification. All data is encrypted.</div>
+
+    <!-- NIN / Voter ID -->
+    <div class="form-group">
+      <label class="form-label">Government ID (NIN/Voter Card) *</label>
+      <div class="kyc-doc-upload" id="zone-gov-id" onclick="document.getElementById('file-gov-id').click()">
+        <div style="font-size:28px;margin-bottom:6px">🪪</div>
+        <div style="font-size:13px;font-weight:600;color:var(--muted)" id="label-gov-id">Tap to upload front of ID</div>
+        <div style="font-size:11px;color:var(--muted);opacity:.7">JPG or PNG · Max 5MB</div>
+        <input type="file" id="file-gov-id" accept="image/*" style="display:none" onchange="markDocUploaded('gov-id',this)">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">NIN Number *</label>
+      <input class="form-input" id="kyc-nin" placeholder="11-digit NIN" maxlength="11" oninput="this.value=this.value.replace(/\D/g,'');validateKYC2()">
+    </div>
+
+    <!-- Selfie -->
+    <div class="form-group">
+      <label class="form-label">Selfie Photo *</label>
+      <div class="kyc-doc-upload" id="zone-selfie" onclick="document.getElementById('file-selfie').click()">
+        <div style="font-size:28px;margin-bottom:6px">🤳</div>
+        <div style="font-size:13px;font-weight:600;color:var(--muted)" id="label-selfie">Take a clear selfie</div>
+        <div style="font-size:11px;color:var(--muted);opacity:.7">Face must be clearly visible</div>
+        <input type="file" id="file-selfie" accept="image/*" capture="user" style="display:none" onchange="markDocUploaded('selfie',this)">
+      </div>
+    </div>
+
+    <!-- Bank details -->
+    <div class="form-group">
+      <label class="form-label">Bank Name *</label>
+      <select class="form-select" id="kyc-bank" onchange="validateKYC2()">
+        <option value="">Select bank…</option>
+        <option>Access Bank</option><option>GTBank</option><option>UBA</option>
+        <option>First Bank</option><option>Zenith Bank</option><option>Kuda Bank</option>
+        <option>Opay</option><option>Palmpay</option><option>Moniepoint</option>
+        <option>FCMB</option><option>Fidelity Bank</option><option>Union Bank</option>
+        <option>Wema Bank</option><option>Sterling Bank</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Account Number *</label>
+      <input class="form-input" id="kyc-account" type="tel" placeholder="10-digit account number" maxlength="10" oninput="this.value=this.value.replace(/\D/g,'');validateKYC2()">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Account Name *</label>
+      <input class="form-input" id="kyc-account-name" placeholder="Must match your ID" oninput="validateKYC2()">
+    </div>
+
+    <button class="big-btn" id="kyc2-btn" disabled onclick="goKYC3()">Continue →</button>
+    <div style="height:20px"></div>
+  </div>
+</div>
+
+<!-- ===== SCREEN 6: KYC STEP 3 — Vehicle ===== -->
+<div class="screen" id="screen-kyc-step3">
+  <div style="padding:24px 20px 0">
+    <div class="kyc-progress">
+      <div class="kyc-step done">Personal Info</div>
+      <div class="kyc-step done">Documents</div>
+      <div class="kyc-step active">Vehicle</div>
+    </div>
+    <div onclick="showScreen('screen-kyc-step2')" style="width:36px;height:36px;border-radius:50%;background:var(--surface);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;margin-bottom:20px">←</div>
+    <div style="font-size:40px;margin-bottom:12px">🛵</div>
+    <div style="font-family:var(--font-head);font-size:24px;font-weight:800;margin-bottom:6px">Your vehicle</div>
+    <div style="color:var(--muted);font-size:14px;margin-bottom:28px">Tell us about your delivery vehicle</div>
+
+    <div class="form-group">
+      <label class="form-label">Vehicle Type *</label>
+      <select class="form-select" id="kyc-vehicle-type" onchange="validateKYC3()">
+        <option value="">Select type…</option>
+        <option value="motorcycle">Motorcycle (Okada)</option>
+        <option value="bicycle">Bicycle</option>
+        <option value="tricycle">Tricycle (Keke)</option>
+        <option value="car">Car</option>
+        <option value="foot">On foot (nearby only)</option>
+      </select>
+    </div>
+    <div id="vehicle-plate-wrap">
+      <div class="form-group">
+        <label class="form-label">Plate Number</label>
+        <input class="form-input" id="kyc-plate" placeholder="e.g. KAN 123 AB" style="text-transform:uppercase" oninput="this.value=this.value.toUpperCase()">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Vehicle Photo</label>
+        <div class="kyc-doc-upload" id="zone-vehicle" onclick="document.getElementById('file-vehicle').click()">
+          <div style="font-size:28px;margin-bottom:6px">🛵</div>
+          <div style="font-size:13px;font-weight:600;color:var(--muted)" id="label-vehicle">Photo of your vehicle</div>
+          <div style="font-size:11px;color:var(--muted);opacity:.7">Show plate number clearly</div>
+          <input type="file" id="file-vehicle" accept="image/*" style="display:none" onchange="markDocUploaded('vehicle',this)">
+        </div>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Service Area *</label>
+      <select class="form-select" id="kyc-service-area" onchange="validateKYC3()">
+        <option value="">Select area…</option>
+        <option>Kano Municipal</option><option>Fagge</option><option>Nassarawa</option>
+        <option>Dala</option><option>Gwale</option><option>Tarauni</option>
+        <option>Ungogo</option><option>Kumbotso</option><option>Doguwa</option>
+        <option>Sabon Gari</option>
+      </select>
+    </div>
+
+    <div class="info-badge">
+      <span style="font-size:16px;flex-shrink:0">ℹ️</span>
+      <span>Your application will be reviewed within 24 hours. You'll receive an SMS once approved.</span>
+    </div>
+
+    <button class="big-btn" id="kyc3-btn" disabled onclick="submitKYC()">Submit Application 🎉</button>
+    <div style="height:20px"></div>
+  </div>
+</div>
+
+<!-- ===== SCREEN 7: KYC PENDING ===== -->
+<div class="screen" id="screen-kyc-pending">
+  <div style="padding:80px 24px;text-align:center">
+    <div style="font-size:72px;margin-bottom:20px">⏳</div>
+    <div style="font-family:var(--font-head);font-size:28px;font-weight:800;margin-bottom:10px">Application Submitted!</div>
+    <div style="color:var(--muted);font-size:15px;line-height:1.7;margin-bottom:32px">Your KYC is under review. Our team will verify your documents within <strong style="color:var(--text)">24 hours</strong>. You'll get an SMS notification once approved.</div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:20px;margin-bottom:24px;text-align:left">
+      <div style="font-size:13px;font-weight:600;margin-bottom:12px">What happens next?</div>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:8px">1. Admin reviews your documents</div>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:8px">2. You receive SMS approval</div>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:8px">3. Sign in to start delivering</div>
+      <div style="font-size:13px;color:var(--muted)">4. Earn ₦500+ per delivery</div>
+    </div>
+    <button onclick="checkApprovalStatus()" id="check-status-btn" style="width:100%;padding:16px;border-radius:14px;border:none;background:var(--accent);color:#000;font-size:15px;font-weight:700;font-family:var(--font-head);cursor:pointer;margin-bottom:12px">Check Approval Status</button>
+    <button onclick="signOutDriver()" style="width:100%;padding:14px;border-radius:14px;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:14px;cursor:pointer">Sign Out</button>
+  </div>
+</div>
+
+<!-- ===== SCREEN 8: DRIVER DASHBOARD ===== -->
+<div class="screen" id="screen-dashboard">
+  <div class="topbar">
+    <div class="topbar-logo">abinci<span>.food</span></div>
+    <div style="display:flex;align-items:center;gap:12px">
+      <div style="display:flex;align-items:center;gap:6px;font-size:12px" id="online-status-label">
+        <span class="realtime-dot" id="online-dot" style="background:var(--muted)"></span>
+        <span id="online-label-text">Offline</span>
+      </div>
+      <div class="toggle" id="online-toggle" onclick="toggleOnline()"></div>
+      <div class="avatar" id="driver-avatar" onclick="showScreen('screen-profile');loadProfileScreen()">D</div>
+    </div>
+  </div>
+  <div style="padding:0 20px 16px">
+    <div style="font-size:13px;color:var(--muted)" id="driver-greeting">Good morning 👋</div>
+    <div style="font-size:22px;font-weight:800;font-family:var(--font-head)">Driver Dashboard</div>
+  </div>
+
+  <!-- Today's stats -->
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;padding:0 20px 20px">
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:12px;text-align:center">
+      <div class="earnings-stat-num" id="stat-today-earn">₦0</div>
+      <div class="earnings-stat-label">Today</div>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:12px;text-align:center">
+      <div class="earnings-stat-num" id="stat-today-trips">0</div>
+      <div class="earnings-stat-label">Trips</div>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:12px;text-align:center">
+      <div class="earnings-stat-num" id="stat-rating">—</div>
+      <div class="earnings-stat-label">Rating</div>
+    </div>
+  </div>
+
+  <!-- Active delivery -->
+  <div id="active-delivery-section" style="display:none;padding:0 20px 16px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+      <div class="section-label" style="margin:0">🛵 Active Delivery</div>
+      <span style="font-size:12px;color:var(--green)"><span class="realtime-dot"></span>Live</span>
+    </div>
+    <div class="order-card active" id="active-delivery-card"></div>
+  </div>
+
+  <!-- Available orders -->
+  <div style="padding:0 20px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <div class="section-label" style="margin:0">Available Orders</div>
+      <div style="font-size:12px;color:var(--muted)" id="nearby-count"></div>
+    </div>
+    <div id="available-orders-list">
+      <div style="padding:40px 0;text-align:center;color:var(--muted)">
+        <div style="font-size:40px;margin-bottom:10px">🛵</div>
+        <div style="font-size:15px;font-weight:600">Go online to see orders</div>
+        <div style="font-size:13px;margin-top:4px">Toggle the switch above to start receiving deliveries</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== SCREEN 9: ORDER DETAIL ===== -->
+<div class="screen" id="screen-order-detail">
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:10px">
+      <div class="back-btn" onclick="showScreen('screen-dashboard')">←</div>
+      <div style="font-size:18px;font-weight:700;font-family:var(--font-head)">Delivery</div>
+    </div>
+    <div style="font-size:12px;color:var(--muted)"><span class="realtime-dot"></span>Live</div>
+  </div>
+  <div style="padding:0 20px" id="order-detail-content"></div>
+</div>
+
+<!-- ===== SCREEN 10: EARNINGS ===== -->
+<div class="screen" id="screen-earnings">
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:10px">
+      <div class="back-btn" onclick="showScreen('screen-dashboard')">←</div>
+      <div style="font-size:18px;font-weight:700;font-family:var(--font-head)">My Earnings</div>
+    </div>
+  </div>
+  <div class="earnings-card" style="margin-top:8px">
+    <div style="font-size:13px;color:var(--muted);margin-bottom:6px">Total Earned</div>
+    <div class="earnings-amount" id="total-earned">₦0</div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:0;margin-top:16px;border-top:1px solid rgba(255,255,255,.1);padding-top:16px">
+      <div style="text-align:center;border-right:1px solid rgba(255,255,255,.1)">
+        <div style="font-size:16px;font-weight:800;color:var(--text)" id="today-earned">₦0</div>
+        <div style="font-size:10px;color:var(--muted);margin-top:2px">Today</div>
+      </div>
+      <div style="text-align:center;border-right:1px solid rgba(255,255,255,.1)">
+        <div style="font-size:16px;font-weight:800;color:var(--text)" id="week-earned">₦0</div>
+        <div style="font-size:10px;color:var(--muted);margin-top:2px">This week</div>
+      </div>
+      <div style="text-align:center;border-right:1px solid rgba(255,255,255,.1)">
+        <div style="font-size:16px;font-weight:800;color:var(--text)" id="month-earned">₦0</div>
+        <div style="font-size:10px;color:var(--muted);margin-top:2px">This month</div>
+      </div>
+      <div style="text-align:center">
+        <div style="font-size:16px;font-weight:800;color:var(--text)" id="total-trips">0</div>
+        <div style="font-size:10px;color:var(--muted);margin-top:2px">Total trips</div>
+      </div>
+    </div>
+  </div>
+  <div style="padding:0 20px">
+    <div style="background:rgba(76,175,125,.08);border:1px solid rgba(76,175,125,.25);border-radius:14px;padding:14px 16px;margin-bottom:20px">
+      <div style="font-size:13px;font-weight:600;color:var(--green);margin-bottom:4px">💳 Your Rate</div>
+      <div style="font-size:12px;color:var(--muted);line-height:1.6">
+        <strong style="color:var(--text)">₦500</strong> per delivery · Cash collected on delivery · Settled with abinci at end of every working day
+      </div>
+    </div>
+    <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px">Trip History</div>
+    <div id="trips-list">
+      <div style="padding:20px 0;text-align:center;color:var(--muted);font-size:13px">No completed trips yet</div>
+    </div>
+  </div>
+</div>
+  </div>
+</div>
+
+<!-- ===== SCREEN 11: PROFILE ===== -->
+<div class="screen" id="screen-profile">
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:10px">
+      <div class="back-btn" onclick="showScreen('screen-dashboard')">←</div>
+      <div style="font-size:18px;font-weight:700;font-family:var(--font-head)">My Profile</div>
+    </div>
+    <button onclick="showEditProfile()" style="background:transparent;border:1px solid var(--border);color:var(--text);border-radius:10px;padding:6px 14px;font-size:12px;font-weight:600;cursor:pointer">Edit</button>
+  </div>
+
+  <!-- Hero -->
+  <div style="background:linear-gradient(135deg,#1a1200,#2a1c00);padding:32px 20px 24px;text-align:center;border-bottom:1px solid var(--border)">
+    <div style="width:84px;height:84px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:34px;margin:0 auto 12px;font-weight:800;border:3px solid rgba(245,166,35,.3)" id="profile-avatar-lg">D</div>
+    <div style="font-size:22px;font-weight:800;margin-bottom:2px" id="profile-name">Driver</div>
+    <div style="font-size:13px;color:var(--muted)" id="profile-phone-display"></div>
+    <div id="profile-verify-badge" style="margin-top:8px"></div>
+  </div>
+
+  <!-- Stats row -->
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);border-bottom:1px solid var(--border)">
+    <div style="background:var(--bg);padding:14px;text-align:center">
+      <div style="font-size:20px;font-weight:800;color:var(--accent);font-family:var(--font-head)" id="prof-stat-trips">0</div>
+      <div style="font-size:11px;color:var(--muted)">Total Trips</div>
+    </div>
+    <div style="background:var(--bg);padding:14px;text-align:center">
+      <div style="font-size:20px;font-weight:800;color:var(--accent);font-family:var(--font-head)" id="prof-stat-earn">₦0</div>
+      <div style="font-size:11px;color:var(--muted)">Total Earned</div>
+    </div>
+    <div style="background:var(--bg);padding:14px;text-align:center">
+      <div style="font-size:20px;font-weight:800;color:var(--accent);font-family:var(--font-head)" id="prof-stat-rating">—</div>
+      <div style="font-size:11px;color:var(--muted)">Rating</div>
+    </div>
+  </div>
+
+  <div style="padding:16px 20px;display:flex;flex-direction:column;gap:8px;overflow-y:auto">
+
+    <!-- Personal info card -->
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:16px;margin-bottom:4px">
+      <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px">Personal Info</div>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <span style="font-size:13px;color:var(--muted)">📱 Phone</span>
+          <span style="font-size:13px;font-weight:600" id="prof-phone">—</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <span style="font-size:13px;color:var(--muted)">📍 City</span>
+          <span style="font-size:13px;font-weight:600" id="prof-city">—</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <span style="font-size:13px;color:var(--muted)">🏍️ Vehicle</span>
+          <span style="font-size:13px;font-weight:600" id="prof-vehicle">—</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <span style="font-size:13px;color:var(--muted)">🔢 Plate</span>
+          <span style="font-size:13px;font-weight:600" id="prof-plate">—</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <span style="font-size:13px;color:var(--muted)">📍 Service Area</span>
+          <span style="font-size:13px;font-weight:600" id="prof-area">—</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bank details card -->
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:16px;margin-bottom:4px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px">Bank Account</div>
+        <button onclick="showEditBank()" style="background:transparent;border:none;color:var(--accent);font-size:12px;font-weight:600;cursor:pointer">Edit</button>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <span style="font-size:13px;color:var(--muted)">🏦 Bank</span>
+          <span style="font-size:13px;font-weight:600" id="prof-bank-name">—</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <span style="font-size:13px;color:var(--muted)">💳 Account</span>
+          <span style="font-size:13px;font-weight:600" id="prof-bank-acc">—</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <span style="font-size:13px;color:var(--muted)">👤 Name</span>
+          <span style="font-size:13px;font-weight:600" id="prof-bank-accname">—</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent trips -->
+    <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin:8px 0 10px">Recent Trips</div>
+    <div id="prof-trips-list">
+      <div style="padding:20px 0;text-align:center;color:var(--muted);font-size:13px">Loading trips…</div>
+    </div>
+
+    <!-- Actions -->
+    <div class="menu-row" onclick="showScreen('screen-earnings')" style="margin-top:8px">
+      <div class="menu-row-left"><span style="font-size:20px">💰</span>My Earnings</div>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+    </div>
+    <div class="menu-row" onclick="signOutDriver()">
+      <div class="menu-row-left" style="color:var(--red)"><span style="font-size:20px">🚪</span>Sign Out</div>
+    </div>
+  </div>
+</div>
+
+<!-- EDIT PROFILE MODAL -->
+<div class="modal-overlay" id="edit-profile-modal">
+  <div class="modal" style="position:relative">
+    <div class="modal-close" onclick="closeModal('edit-profile-modal')">✕</div>
+    <div class="modal-title">Edit Profile</div>
+    <div class="form-group">
+      <label class="form-label">Full Name</label>
+      <input class="form-input" id="edit-fullname" placeholder="Your full name">
+    </div>
+    <div class="form-group">
+      <label class="form-label">City</label>
+      <input class="form-input" id="edit-city" placeholder="e.g. Katsina">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Service Area</label>
+      <input class="form-input" id="edit-service-area" placeholder="e.g. Katsina Central">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Vehicle Plate</label>
+      <input class="form-input" id="edit-plate" placeholder="e.g. KTN-123-AA">
+    </div>
+    <button class="big-btn" style="margin-top:8px" onclick="saveProfileEdit()">Save Changes ✓</button>
+  </div>
+</div>
+
+<!-- EDIT BANK MODAL -->
+<div class="modal-overlay" id="edit-bank-modal">
+  <div class="modal" style="position:relative">
+    <div class="modal-close" onclick="closeModal('edit-bank-modal')">✕</div>
+    <div class="modal-title">Bank Details</div>
+    <div class="form-group">
+      <label class="form-label">Bank Name</label>
+      <input class="form-input" id="edit-bank-name" placeholder="e.g. First Bank">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Account Number</label>
+      <input class="form-input" id="edit-bank-acc" type="tel" placeholder="10-digit account number">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Account Name</label>
+      <input class="form-input" id="edit-bank-accname" placeholder="Name on account">
+    </div>
+    <button class="big-btn" style="margin-top:8px" onclick="saveBankEdit()">Save Bank Details ✓</button>
+  </div>
+</div>
+
+<!-- ===== BOTTOM NAV ===== -->
+<nav class="bottom-nav" id="bottom-nav" style="display:none">
+  <div class="nav-item active" id="nav-home" onclick="navTo('home')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Home
+  </div>
+  <div class="nav-item" id="nav-earnings" onclick="navTo('earnings')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>Earnings
+  </div>
+  <div class="nav-item" id="nav-profile" onclick="navTo('profile')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Profile
+  </div>
+</nav>
+
+<div id="app-toast"></div>
+
+<script>
+// ── NOTIFICATION HELPER — defined first ──
+function showBrowserNotif(title, body) {
+  try {
+    if (!('Notification' in window) || Notification.permission !== 'granted') return;
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.ready.then(reg => {
+        reg.showNotification(title, {
+          body: body || '',
+          icon: '/icon-192.png',
+          badge: '/icon-192.png',
+          tag: 'abinci-' + Date.now(),
+          vibrate: [200, 100, 200],
+        });
+      }).catch(() => new Notification(title, { body, icon: '/icon-192.png' }));
+    } else {
+      new Notification(title, { body, icon: '/icon-192.png' });
+    }
+  } catch(e) { console.warn('Notification error:', e.message); }
+}
+
+// Self-contained utils
+function showToast(msg, type='ok') {
+  let t = document.getElementById('app-toast');
+  if (!t) { t = document.createElement('div'); t.id = 'app-toast';
+    t.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#1a1916;border:1px solid #2e2c29;color:#f0ede8;padding:10px 20px;border-radius:12px;font-size:13px;z-index:9999;max-width:320px;text-align:center;transition:opacity .3s;pointer-events:none;font-family:DM Sans,sans-serif';
+    document.body.appendChild(t); }
+  t.textContent = msg;
+  t.style.borderColor = type==='err'?'#e05c5c':type==='info'?'#2e2c29':'#4caf7d';
+  t.style.opacity = '1';
+  clearTimeout(t._t);
+  t._t = setTimeout(()=>t.style.opacity='0', 3000);
+}
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id)?.classList.add('active');
+  const noNav=['screen-auth','screen-otp','screen-splash','screen-kyc-step1','screen-kyc-step2','screen-kyc-step3','screen-kyc-pending'];
+  const bn=document.getElementById('bottom-nav');
+  if(bn) bn.style.display=noNav.includes(id)?'none':'flex';
+  window.scrollTo(0,0);
+}
+function fieldVal(id) { return document.getElementById(id)?.value.trim() || ''; }
+function fieldHasVal(id) { return !!fieldVal(id); }
+function formatCurrency(n) { return '₦' + Number(n||0).toLocaleString('en-NG'); }
+function formatDate(d) { return new Date(d).toLocaleDateString('en-NG',{day:'numeric',month:'short',year:'numeric'}); }
+function countChars(el,cid,max) { const e=document.getElementById(cid); if(e) e.textContent=el.value.length+' / '+max; }
+const Session = {
+  get: () => { try { const v=localStorage.getItem('abinci_session'); return v?JSON.parse(v):null; } catch{return null;} },
+  set: (d) => { try { localStorage.setItem('abinci_session',JSON.stringify(d)); } catch{} },
+  clear: () => { try { localStorage.removeItem('abinci_session'); } catch{} },
+  getUser: () => { try { const v=localStorage.getItem('abinci_session'); return v?JSON.parse(v)?.user:null; } catch{return null;} },
+};
+const Geo = {
+  current: null, watch: null,
+  start(cb) {
+    if(!navigator.geolocation) return;
+    this.watch = navigator.geolocation.watchPosition(
+      p => { this.current={lat:p.coords.latitude,lng:p.coords.longitude}; cb?.(this.current); },
+      e => console.warn('Geo:',e), {enableHighAccuracy:true,maximumAge:10000}
+    );
+  },
+  stop() { if(this.watch) navigator.geolocation.clearWatch(this.watch); },
+  distance(lat1,lng1,lat2,lng2) {
+    const R=6371, dLat=(lat2-lat1)*Math.PI/180, dLng=(lng2-lng1)*Math.PI/180;
+    const a=Math.sin(dLat/2)**2+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)**2;
+    return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+  },
+  formatDistance(km) { return km<1?Math.round(km*1000)+'m away':km.toFixed(1)+'km away'; },
+};
+const ABINCI_CONFIG = {
+  SUPABASE_URL: 'https://kikeyhwbziumyhcnsvhi.supabase.co',
+  SUPABASE_ANON: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtpa2V5aHdieml1bXloY25zdmhpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI4OTk5OTMsImV4cCI6MjA4ODQ3NTk5M30.4R9XP1DOx358SJE0VPm3y8NimoCoVKVcJqPDSvLiHJc',
+};
+</script>
+<script>
+/* ============================================================
+  DRIVER APP — Main Script
+  Modules: Auth · KYC · Dashboard · Orders · Earnings · Location
+============================================================ */
+
+// ── State ────────────────────────────────────────────────────
+const { createClient } = supabase;
+const sb = createClient(ABINCI_CONFIG.SUPABASE_URL, ABINCI_CONFIG.SUPABASE_ANON);
+
+let driverProfile = null;
+let userProfile = null;
+let isOnline = false;
+let activeDelivery = null;
+let _otpPhone = '';
+let _authMode = 'signin';
+let _otpTimer = null;
+let _realtimeChannel = null;
+const DELIVERY_FEE = 500;
+
+// KYC data collected across steps
+const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:3000' : 'https://api.abinci.food';
+const kycData = {};
+const docFiles = {};
+
+// ── Init ─────────────────────────────────────────────────────
+(async function init() {
+  const session = Session.get();
+  if (session?.user) {
+    const user = session.user;
+    // If local fallback ID, resolve real user from DB
+    if (user.id && user.id.startsWith('local-') && user.phone) {
+      let realUser = null;
+      try { const r = await sb.from('users').select('*').eq('phone', user.phone).maybeSingle(); realUser = r.data; } catch(_) {}
+      if (realUser) { Session.set({ user: realUser, token: 'token-' + realUser.id }); await loadDriverProfile(realUser); return; }
+    }
+    // ── INSTANT RESTORE: load from session immediately, no flash ──
+    await loadDriverProfile(user);
+    return;
+  }
+  // No session — show splash
+  showScreen('screen-splash');
+})();
+
+// ── Auth ─────────────────────────────────────────────────────
+function switchTab(tab) {
+  _authMode = tab;
+  const si = document.getElementById('dtab-signin');
+  const su = document.getElementById('dtab-signup');
+  const nw = document.getElementById('auth-name-wrap');
+  const btn = document.getElementById('send-otp-btn');
+  if (tab === 'signin') {
+    si.style.background = 'var(--accent)'; si.style.color = '#000';
+    su.style.background = 'transparent'; su.style.color = 'var(--muted)';
+    if (nw) nw.style.display = 'none';
+    if (btn) btn.textContent = 'Sign In →';
+  } else {
+    su.style.background = 'var(--accent)'; su.style.color = '#000';
+    si.style.background = 'transparent'; si.style.color = 'var(--muted)';
+    if (nw) nw.style.display = 'block';
+    if (btn) btn.textContent = 'Send OTP →';
+  }
+}
+
+async function sendDriverOTP() {
+  const raw = fieldVal('auth-phone');
+  if (!raw || raw.length < 7) { showToast('Enter a valid phone number', 'info'); return; }
+  _otpPhone = '+234' + raw;
+  const btn = document.getElementById('send-otp-btn');
+
+  if (_authMode === 'signin') {
+    // SIGN IN: look up phone → log in directly, no OTP needed
+    if (btn) { btn.textContent = 'Signing in…'; btn.disabled = true; }
+    try {
+      const { data: user } = await sb.from('users').select('*').eq('phone', _otpPhone).maybeSingle();
+      if (!user) {
+        showToast('No account found. Please register.', 'err');
+        switchTab('signup');
+        if (btn) { btn.textContent = 'Sign In →'; btn.disabled = false; }
+        return;
+      }
+      // Found — save session and go straight to dashboard
+      Session.set({ user, token: 'token-' + user.id });
+      if (btn) { btn.textContent = 'Sign In →'; btn.disabled = false; }
+      await loadDriverProfile(user);
+    } catch(e) {
+      showToast('Connection error. Try again.', 'err');
+      if (btn) { btn.textContent = 'Sign In →'; btn.disabled = false; }
+    }
+    return;
+  }
+
+  // REGISTER: send OTP before creating account
+  const name = fieldVal('auth-name');
+  if (!name) { showToast('Enter your full name', 'info'); return; }
+  document.getElementById('otp-phone-display').textContent = _otpPhone;
+  document.getElementById('otp-name-hidden').value = name;
+  document.getElementById('otp-input').value = '';
+  // Generate OTP and save to DB before showing screen
+  const _dcode = String(Math.floor(1000 + Math.random() * 9000));
+  window._currentOTP = _dcode;
+  try {
+    await sb.from('otp_store').delete().eq('phone', _otpPhone);
+    const expiry2 = new Date(Date.now() + 10*60*1000).toISOString();
+    await sb.from('otp_store').insert({ phone: _otpPhone, otp: _dcode, expires_at: expiry2 });
+  } catch(e) { console.warn('OTP store:', e.message); }
+  document.getElementById('otp-code-display').textContent = _dcode;
+  startTimer();
+  showScreen('screen-otp');
+}
+
+async function resendDriverOTP() {
+  const _dcode = String(Math.floor(1000 + Math.random() * 9000));
+  window._currentOTP = _dcode;
+  try {
+    await sb.from('otp_store').delete().eq('phone', _otpPhone);
+    const expiry = new Date(Date.now() + 10*60*1000).toISOString();
+    await sb.from('otp_store').insert({ phone: _otpPhone, otp: _dcode, expires_at: expiry });
+  } catch(e) { console.warn('Resend error:', e.message); }
+  document.getElementById('otp-code-display').textContent = _dcode;
+  startTimer();
+  showToast('New code generated ✓');
+}
+
+function startTimer() {
+  let s = 30; clearInterval(_otpTimer);
+  const timer = document.getElementById('otp-timer');
+  const resend = document.getElementById('otp-resend');
+  timer.textContent = 'Resend in 30s'; timer.style.display = 'inline';
+  resend.style.display = 'none';
+  _otpTimer = setInterval(() => {
+    s--; timer.textContent = `Resend in ${s}s`;
+    if (s <= 0) { clearInterval(_otpTimer); timer.style.display = 'none'; resend.style.display = 'inline'; }
+  }, 1000);
+}
+
+async function verifyDriverOTP() {
+  const code = document.getElementById('otp-input')?.value.trim();
+  if (code.length < 4) { showToast('Enter the 4-digit code', 'info'); return; }
+  const btn = document.getElementById('otp-verify-btn');
+  btn.textContent = 'Verifying…'; btn.disabled = true;
+  try {
+    const name = document.getElementById('otp-name-hidden').value.trim() || 'Driver';
+    // Verify OTP against Supabase
+    const now = new Date().toISOString();
+    const { data: otpRow } = await sb.from('otp_store')
+      .select('*').eq('phone', _otpPhone).eq('otp', code)
+      .gt('expires_at', now).order('created_at', {ascending:false}).limit(1).maybeSingle();
+    if (!otpRow) { showToast('Wrong or expired code. Try again.', 'err'); btn.textContent = 'Verify & Continue →'; btn.disabled = false; return; }
+    await sb.from('otp_store').delete().eq('id', otpRow.id);
+    // Get or create user
+    let { data: existingUser } = await sb.from('users').select('*').eq('phone', _otpPhone).maybeSingle();
+    const isNewUser = !existingUser;
+    if (!existingUser) {
+      const { data: nu } = await sb.from('users').insert({ phone: _otpPhone, full_name: name, role: 'rider' }).select().single();
+      existingUser = nu;
+    }
+    const user = existingUser || { id: 'local-' + Date.now(), phone: _otpPhone, full_name: name, role: 'rider' };
+    Session.set({ user, token: 'token-' + user.id });
+    if (!isNewUser) {
+      // Existing driver — go straight to dashboard
+      await loadDriverProfile(user);
+    } else {
+      kycData.fullName = name;
+      kycData.phone = _otpPhone;
+      const fnField = document.getElementById('kyc-fullname');
+      if (fnField) fnField.value = name;
+      showScreen('screen-kyc-step1');
+    }
+  } catch(e) {
+    console.error('OTP verify error:', e);
+    // Even on outer error, try to proceed to KYC
+    const user = { id: 'local-' + Date.now(), phone: _otpPhone, full_name: 'Driver', role: 'rider' };
+    Session.set({ user, token: 'token-' + user.id });
+    showScreen('screen-kyc-step1');
+  }
+  btn.textContent = 'Verify & Continue →'; btn.disabled = false;
+}
+
+async function loadDriverProfile(user) {
+  userProfile = user; // save globally
+  // Try to get driver profile
+  let driver = null; try { const r = await sb.from('riders').select('*').eq('user_id', user.id).maybeSingle(); driver = r.data; } catch(_) {}
+  driverProfile = driver;
+  const name = user.full_name || 'Driver';
+  const init = name.charAt(0).toUpperCase();
+  ['driver-avatar','profile-avatar-lg'].forEach(id => { const el = document.getElementById(id); if (el) el.textContent = init; });
+  const dn = document.getElementById('profile-name'); if (dn) dn.textContent = name;
+  const dg = document.getElementById('driver-greeting'); if (dg) dg.textContent = `Good ${getTimeOfDay()}, ${name.split(' ')[0]} 👋`;
+
+  if (!driver) {
+    // No driver profile — needs KYC
+    kycData.fullName = name;
+    kycData.phone = _otpPhone;
+    showScreen('screen-kyc-step1');
+    return;
+  }
+
+  if (!driver.is_approved) {
+    showScreen('screen-kyc-pending');
+    const vb = document.getElementById('profile-verify-badge');
+    if (vb) vb.innerHTML = '<span class="badge-pending">⏳ Pending Approval</span>';
+    return;
+  }
+
+  // Approved driver — go to dashboard
+  isOnline = driver.is_online || false;
+  updateOnlineUI();
+  const _lo = document.getElementById('app-loading');
+  if (_lo) _lo.style.display = 'none';
+  showScreen('screen-dashboard');
+  document.getElementById('bottom-nav').style.display = 'flex';
+  const vb = document.getElementById('profile-verify-badge');
+  if (vb) vb.innerHTML = '<span class="badge-verified">✓ Verified Driver</span>';
+  const pb = document.getElementById('profile-bank');
+  if (pb) pb.textContent = driver.bank_name ? `${driver.bank_name} ···${String(driver.account_number || '').slice(-4)}` : '—';
+  const pr = document.getElementById('profile-rating');
+  if (pr) pr.textContent = driver.rating ? `★ ${driver.rating}` : '—';
+  await loadDashboardStats();
+  await loadAvailableOrders();
+  subscribeToAvailableOrders();
+  checkResumeCountdown(); // Resume pickup timer if driver has an accepted order
+  // Ask for notification permission
+  setTimeout(() => { if (window.requestPushPermission) window.requestPushPermission(); }, 2000);
+  Geo.start(async (pos) => {
+    // Update location every 30s when online
+    if (isOnline && driverProfile?.id) {
+      try { await sb.from('riders').update({ current_lat: pos.lat, current_lng: pos.lng }).eq('id', driverProfile.id); } catch(_) {}
+    }
+  });
+}
+
+async function checkApprovalStatus() {
+  const btn = document.getElementById('check-status-btn');
+  if (btn) { btn.textContent = 'Checking…'; btn.disabled = true; }
+  const user = Session.getUser();
+  if (!user) { showScreen('screen-auth'); return; }
+  try {
+    const { data: driver } = await sb.from('riders').select('*').eq('user_id', user.id).maybeSingle();
+    if (btn) { btn.textContent = 'Check Approval Status'; btn.disabled = false; }
+    if (!driver) {
+      showToast('Profile not found. Please register.', 'err');
+      return;
+    }
+    if (driver.is_approved) {
+      showToast('You\'re approved! Welcome 🎉');
+      await loadDriverProfile(user);
+    } else {
+      showToast('Still under review. Check back soon.', 'info');
+    }
+  } catch(e) {
+    if (btn) { btn.textContent = 'Check Approval Status'; btn.disabled = false; }
+    showToast('Connection error. Try again.', 'err');
+  }
+}
+
+function getTimeOfDay() {
+  const h = new Date().getHours();
+  if (h < 12) return 'morning';
+  if (h < 17) return 'afternoon';
+  return 'evening';
+}
+
+function closeModal(id) {
+  const el = document.getElementById(id);
+  if (el) el.classList.remove('open');
+}
+
+// ── Profile ───────────────────────────────────────────────────
+async function loadProfileScreen() {
+  if (!driverProfile) return;
+  const s = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+
+  const name = (userProfile && userProfile.full_name) || 'Driver';
+  const phone = (userProfile && userProfile.phone) || '';
+  const init = name.charAt(0).toUpperCase();
+  s('profile-avatar-lg', init);
+  s('profile-name', name);
+  s('profile-phone-display', phone);
+  s('prof-phone', phone || '—');
+  const av = document.getElementById('driver-avatar');
+  if (av) av.textContent = init;
+
+  const vb = document.getElementById('profile-verify-badge');
+  if (vb) vb.innerHTML = driverProfile.is_approved
+    ? '<span style="background:rgba(76,175,125,.15);color:var(--green);border:1px solid rgba(76,175,125,.3);border-radius:20px;padding:4px 12px;font-size:11px;font-weight:700">✓ Verified Driver</span>'
+    : '<span style="background:rgba(245,166,35,.1);color:var(--accent);border:1px solid rgba(245,166,35,.3);border-radius:20px;padding:4px 12px;font-size:11px;font-weight:700">⏳ Pending Approval</span>';
+
+  s('prof-city', driverProfile.service_area || '—');
+  s('prof-vehicle', driverProfile.vehicle_type || '—');
+  s('prof-plate', driverProfile.vehicle_plate || '—');
+  s('prof-area', driverProfile.service_area || '—');
+  s('prof-bank-name', driverProfile.bank_name || '—');
+  s('prof-bank-acc', driverProfile.account_number ? '****' + String(driverProfile.account_number).slice(-4) : '—');
+  s('prof-bank-accname', driverProfile.account_name || '—');
+  s('prof-stat-rating', driverProfile.rating ? '★ ' + Number(driverProfile.rating).toFixed(1) : '—');
+
+  try {
+    const { data: trips } = await sb.from('orders')
+      .select('id, total_amount, created_at, customer_name')
+      .eq('rider_id', driverProfile.id).eq('status', 'delivered')
+      .order('created_at', { ascending: false }).limit(20);
+    const all = trips || [];
+    s('prof-stat-trips', all.length);
+    s('prof-stat-earn', formatCurrency(all.length * DELIVERY_FEE));
+    const listEl = document.getElementById('prof-trips-list');
+    if (listEl) {
+      if (!all.length) {
+        listEl.innerHTML = '<div style="padding:20px 0;text-align:center;color:var(--muted);font-size:13px">No completed trips yet</div>';
+      } else {
+        listEl.innerHTML = all.slice(0,10).map(t => {
+          const date = new Date(t.created_at).toLocaleDateString('en-NG',{weekday:'short',day:'numeric',month:'short'});
+          return '<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border)">'
+            + '<div><div style="font-size:13px;font-weight:600">' + (t.customer_name||'Customer') + '</div>'
+            + '<div style="font-size:11px;color:var(--muted)">' + date + '</div></div>'
+            + '<div style="text-align:right"><div style="font-size:13px;font-weight:700;color:var(--green)">+' + formatCurrency(DELIVERY_FEE) + '</div>'
+            + '<div style="font-size:11px;color:var(--muted)">₦' + Number(t.total_amount).toLocaleString() + ' order</div></div></div>';
+        }).join('');
+      }
+    }
+  } catch(e) { console.warn('Profile trips:', e.message); }
+}
+
+function showEditProfile() {
+  if (!driverProfile) return;
+  document.getElementById('edit-fullname').value = (userProfile && userProfile.full_name) || '';
+  document.getElementById('edit-city').value = driverProfile.service_area || '';
+  document.getElementById('edit-service-area').value = driverProfile.service_area || '';
+  document.getElementById('edit-plate').value = driverProfile.vehicle_plate || '';
+  document.getElementById('edit-profile-modal').classList.add('open');
+}
+
+async function saveProfileEdit() {
+  const name = document.getElementById('edit-fullname').value.trim();
+  const city = document.getElementById('edit-city').value.trim();
+  const area = document.getElementById('edit-service-area').value.trim();
+  const plate = document.getElementById('edit-plate').value.trim();
+  if (!name) { showToast('Name is required', 'err'); return; }
+  try {
+    if (userProfile && userProfile.id) {
+      await sb.from('users').update({ full_name: name }).eq('id', userProfile.id);
+      userProfile.full_name = name;
+    }
+    await sb.from('riders').update({ service_area: area || city, vehicle_plate: plate }).eq('id', driverProfile.id);
+    driverProfile.service_area = area || city;
+    driverProfile.vehicle_plate = plate;
+    closeModal('edit-profile-modal');
+    showToast('Profile updated ✓');
+    loadProfileScreen();
+  } catch(e) { showToast('Error: ' + e.message, 'err'); }
+}
+
+function showEditBank() {
+  if (!driverProfile) return;
+  document.getElementById('edit-bank-name').value = driverProfile.bank_name || '';
+  document.getElementById('edit-bank-acc').value = driverProfile.account_number || '';
+  document.getElementById('edit-bank-accname').value = driverProfile.account_name || '';
+  document.getElementById('edit-bank-modal').classList.add('open');
+}
+
+async function saveBankEdit() {
+  const bank = document.getElementById('edit-bank-name').value.trim();
+  const acc = document.getElementById('edit-bank-acc').value.trim();
+  const accName = document.getElementById('edit-bank-accname').value.trim();
+  if (!bank || !acc) { showToast('Bank name and account number required', 'err'); return; }
+  try {
+    await sb.from('riders').update({ bank_name: bank, account_number: acc, account_name: accName }).eq('id', driverProfile.id);
+    driverProfile.bank_name = bank;
+    driverProfile.account_number = acc;
+    driverProfile.account_name = accName;
+    closeModal('edit-bank-modal');
+    showToast('Bank details updated ✓');
+    loadProfileScreen();
+  } catch(e) { showToast('Error: ' + e.message, 'err'); }
+}
+
+function signOutDriver() {
+  Session.clear();
+  if (_realtimeChannel) { try { sb.removeChannel(_realtimeChannel); } catch(e){} }
+  Geo.stop();
+  driverProfile = null; userProfile = null; isOnline = false; activeDelivery = null;
+  _otpPhone = ''; _authMode = 'signin';
+  document.getElementById('bottom-nav').style.display = 'none';
+  const ph = document.getElementById('auth-phone'); if (ph) ph.value = '';
+  const nm = document.getElementById('auth-name'); if (nm) nm.value = '';
+  switchTab('signin');
+  showScreen('screen-splash');
+}
+
+// ── KYC Flow ─────────────────────────────────────────────────
+function validateKYC1() {
+  const ok = fieldHasVal('kyc-fullname') && fieldHasVal('kyc-dob') &&
+    fieldHasVal('kyc-address') && fieldHasVal('kyc-city') &&
+    fieldHasVal('kyc-emergency-name') && fieldHasVal('kyc-emergency-phone');
+  document.getElementById('kyc1-btn').disabled = !ok;
+}
+
+function validateKYC2() {
+  const ok = docFiles['gov-id'] && docFiles['selfie'] &&
+    fieldHasVal('kyc-nin') && fieldVal('kyc-nin').length === 11 &&
+    fieldVal('kyc-bank') && fieldHasVal('kyc-account') &&
+    fieldVal('kyc-account').length === 10 && fieldHasVal('kyc-account-name');
+  document.getElementById('kyc2-btn').disabled = !ok;
+}
+
+function validateKYC3() {
+  const ok = fieldVal('kyc-vehicle-type') && fieldVal('kyc-service-area');
+  document.getElementById('kyc3-btn').disabled = !ok;
+}
+
+function markDocUploaded(key, input) {
+  if (!input.files?.[0]) return;
+  const r = new FileReader();
+  r.onload = e => {
+    docFiles[key] = e.target.result;
+    kycData['doc_' + key] = e.target.result; // store for submission
+    const zone = document.getElementById(`zone-${key}`);
+    const label = document.getElementById(`label-${key}`);
+    if (zone) {
+      zone.classList.add('uploaded');
+      // Show thumbnail
+      zone.innerHTML = '<img src="'+e.target.result+'" style="width:100%;height:120px;object-fit:cover;border-radius:12px;display:block">'
+        + '<div style="padding:8px;font-size:12px;color:#4caf7d;text-align:center;font-weight:600">✓ Uploaded</div>'
+        + '<input type="file" accept="image/*" style="position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%" onchange="markDocUploaded(\''+key+'\',this)">';
+    }
+    validateKYC2();
+  };
+  r.readAsDataURL(input.files[0]);
+}
+
+function goKYC2() {
+  kycData.fullName = fieldVal('kyc-fullname');
+  kycData.dob = fieldVal('kyc-dob');
+  kycData.email = fieldVal('kyc-email');
+  kycData.address = fieldVal('kyc-address');
+  kycData.city = fieldVal('kyc-city');
+  kycData.emergencyName = fieldVal('kyc-emergency-name');
+  kycData.emergencyPhone = fieldVal('kyc-emergency-phone');
+  showScreen('screen-kyc-step2');
+}
+
+function goKYC3() {
+  kycData.nin = fieldVal('kyc-nin');
+  kycData.bankName = fieldVal('kyc-bank');
+  kycData.accountNumber = fieldVal('kyc-account');
+  kycData.accountName = fieldVal('kyc-account-name');
+  showScreen('screen-kyc-step3');
+}
+
+async function submitKYC() {
+  const btn = document.getElementById('kyc3-btn');
+  btn.textContent = 'Submitting…'; btn.disabled = true;
+  kycData.vehicleType = fieldVal('kyc-vehicle-type');
+  kycData.plate = fieldVal('kyc-plate');
+  kycData.serviceArea = fieldVal('kyc-service-area');
+
+  let user = Session.getUser();
+  if (!user) { showToast('Session expired. Please sign in again.', 'err'); btn.textContent = 'Submit Application 🎉'; btn.disabled = false; return; }
+
+  try {
+    // If user was created locally (DB was unavailable during OTP), create them in DB now
+    if (!user.id || user.id.startsWith('local-')) {
+      const { data: newUser, error: userErr } = await sb.from('users')
+        .insert({ phone: kycData.phone || user.phone, full_name: kycData.fullName, role: 'rider' })
+        .select().single();
+      if (userErr) {
+        // User might already exist — try to fetch them
+        const { data: existing } = await sb.from('users').select('*').eq('phone', kycData.phone || user.phone).maybeSingle();
+        if (existing) {
+          user = existing;
+          Session.set({ user, token: 'token-' + user.id });
+        } else {
+          console.error('Could not create user:', userErr);
+          showToast('Account error. Please sign out and try again.', 'err');
+          btn.textContent = 'Submit Application 🎉'; btn.disabled = false;
+          return;
+        }
+      } else {
+        user = newUser;
+        Session.set({ user, token: 'token-' + user.id });
+      }
+    } else {
+      // Update full name on existing user
+      try { await sb.from('users').update({ full_name: kycData.fullName }).eq('id', user.id); } catch(_) {}
+    }
+
+    // Insert rider profile
+    const { error: riderErr } = await sb.from('riders').insert({
+      user_id: user.id,
+      is_approved: false,
+      is_online: false,
+      vehicle_type: kycData.vehicleType,
+      vehicle_plate: kycData.plate || null,
+      service_area: kycData.serviceArea,
+      bank_name: kycData.bankName || null,
+      account_number: kycData.accountNumber || null,
+      account_name: kycData.accountName || null,
+      nin: kycData.nin || null,
+      emergency_contact_name: kycData.emergencyName || null,
+      emergency_contact_phone: kycData.emergencyPhone || null,
+      doc_gov_id: kycData.doc_gov_id || null,
+      doc_selfie: kycData.doc_selfie || null,
+      doc_vehicle: kycData.doc_vehicle || null,
+      kyc_submitted_at: new Date().toISOString(),
+    });
+
+    if (riderErr) {
+      console.error('Rider insert error:', riderErr);
+      showToast('Error: ' + riderErr.message, 'err');
+      btn.textContent = 'Submit Application 🎉'; btn.disabled = false;
+      return;
+    }
+
+    showToast('Application submitted! ✓');
+    showScreen('screen-kyc-pending');
+  } catch(e) {
+    console.error('submitKYC error:', e);
+    showToast('Error: ' + e.message, 'err');
+  }
+  btn.textContent = 'Submit Application 🎉'; btn.disabled = false;
+}
+
+// ── Online Toggle ─────────────────────────────────────────────
+async function toggleOnline() {
+  isOnline = !isOnline;
+  updateOnlineUI();
+  showToast(isOnline ? 'You are now online 🟢' : 'You went offline 🔴');
+  if (driverProfile?.id) {
+    try { await sb.from('riders').update({ is_online: isOnline }).eq('id', driverProfile.id); } catch(_) {}
+  }
+  await loadAvailableOrders(); // Always reload so driver can see what's available
+}
+
+function updateOnlineUI() {
+  const tog = document.getElementById('online-toggle');
+  const dot = document.getElementById('online-dot');
+  const lbl = document.getElementById('online-label-text');
+  if (tog) tog.classList.toggle('on', isOnline);
+  if (dot) dot.style.background = isOnline ? 'var(--green)' : 'var(--muted)';
+  if (lbl) lbl.textContent = isOnline ? 'Online' : 'Offline';
+}
+
+// ── Dashboard Stats ───────────────────────────────────────────
+async function loadDashboardStats() {
+  if (!driverProfile?.id) return;
+  const today = new Date(); today.setHours(0,0,0,0);
+  let trips = [];
+  try {
+    const r = await sb.from('orders')
+      .select('id, total_amount, created_at, status')
+      .eq('rider_id', driverProfile.id)
+      .eq('status', 'delivered');
+    trips = r.data || [];
+  } catch(_) {}
+
+  const todayTrips = (trips || []).filter(t => new Date(t.created_at) >= today);
+  const s = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+  s('stat-today-earn', formatCurrency(todayTrips.length * DELIVERY_FEE));
+  s('stat-today-trips', todayTrips.length);
+  s('stat-rating', driverProfile.rating ? `★ ${driverProfile.rating}` : '—');
+
+  // Check for active delivery assigned to this driver
+  try {
+    const { data: active } = await sb.from('orders')
+      .select('id, status, rider_id, vendor_id, customer_name, customer_phone, total_amount, items')
+      .eq('rider_id', driverProfile.id)
+      .in('status', ['accepted', 'out_for_delivery'])
+      .maybeSingle();
+    if (active) {
+      activeDelivery = active.id;
+      const section = document.getElementById('active-delivery-section');
+      const card = document.getElementById('active-delivery-card');
+      if (section) section.style.display = 'block';
+      // Fetch vendor separately
+      let vendorName = 'Vendor';
+      if (active.vendor_id) {
+        try {
+          const { data: v } = await sb.from('vendors').select('business_name').eq('id', active.vendor_id).maybeSingle();
+          if (v) vendorName = v.business_name;
+        } catch(_) {}
+      }
+      if (card) {
+        card.innerHTML = '<div style="font-size:15px;font-weight:700;margin-bottom:4px">📍 Pickup: ' + vendorName + '</div>'
+          + '<div style="font-size:12px;color:var(--muted);margin-bottom:10px">👤 Deliver to: ' + (active.customer_name || 'Customer') + ' · ' + formatCurrency(active.total_amount) + '</div>'
+          + '<button onclick="viewOrder(\'' + active.id + '\')" style="width:100%;padding:10px;border-radius:12px;border:none;background:var(--accent);color:#000;font-size:14px;font-weight:700;font-family:var(--font-head);cursor:pointer">View Active Delivery →</button>';
+      }
+    }
+  } catch(e) { console.warn('Active delivery check:', e.message); }
+}
+
+// ── Available Orders ──────────────────────────────────────────
+async function loadAvailableOrders() {
+  const el = document.getElementById('available-orders-list'); if (!el) return;
+  el.innerHTML = '<div style="padding:20px;text-align:center;color:var(--muted);font-size:13px">Loading…</div>';
+
+  const { data: orders, error: ordersErr } = await sb.from('orders')
+    .select('id, status, rider_id, vendor_id, customer_name, total_amount, items, delivery_type, created_at')
+    .eq('status', 'ready')
+    .is('rider_id', null)
+    .order('created_at', { ascending: false })
+    .limit(10);
+
+  if (ordersErr) {
+    console.error('loadAvailableOrders error:', ordersErr.message);
+    el.innerHTML = '<div style="padding:20px;text-align:center;color:var(--red);font-size:13px">Error: ' + ordersErr.message + '</div>';
+    return;
+  }
+
+  const nc = document.getElementById('nearby-count');
+  if (!orders || !orders.length) {
+    el.innerHTML = '<div style="padding:40px 0;text-align:center;color:var(--muted)"><div style="font-size:40px;margin-bottom:10px">🛵</div><div style="font-size:15px;font-weight:600">No orders available</div><div style="font-size:13px;margin-top:4px">Ready orders appear here instantly</div></div>';
+    if (nc) nc.textContent = '';
+    return;
+  }
+
+  // Sort by proximity if we have location
+  let sorted = [...orders];
+  if (Geo.current) {
+    sorted.sort((a, b) => {
+      return 0; // proximity sort requires vendor lat/lng — skipped
+    });
+  }
+
+  if (nc) nc.textContent = `${sorted.length} order${sorted.length !== 1 ? 's' : ''} nearby`;
+  el.innerHTML = sorted.map(o => {
+    const dist = '';
+    return `
+    <div class="order-card available">
+      <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:10px">
+        <div>
+          <div style="font-size:15px;font-weight:700">Vendor</div>
+          <div style="font-size:12px;color:var(--muted)">📍 Ready for pickup</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:16px;font-weight:800;color:var(--accent)">${formatCurrency(DELIVERY_FEE)}</div>
+          <div style="font-size:11px;color:var(--muted)">your fee</div>
+        </div>
+      </div>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:4px">Order total: ${formatCurrency(o.total_amount)}</div>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:12px">${(o.items||[]).map(i=>i.qty+'x '+i.name).join(', ')}</div>
+      <div style="display:flex;gap:8px">
+        <button onclick="viewOrder('${o.id}')" style="flex:0 0 80px;padding:10px;border-radius:12px;border:1px solid var(--border);background:transparent;color:var(--text);font-size:13px;cursor:pointer">Details</button>
+        <button onclick="${isOnline ? `acceptOrder('${o.id}')` : `showToast('Go online first to accept orders','info')`}" style="flex:1;padding:10px;border-radius:12px;border:none;background:${isOnline ? 'var(--accent)' : 'var(--border)'};color:${isOnline ? '#000' : 'var(--muted)'};font-size:14px;font-weight:700;font-family:var(--font-head);cursor:pointer">${isOnline ? 'Accept →' : 'Go Online to Accept'}</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function subscribeToAvailableOrders() {
+  if (_realtimeChannel) { try { sb.removeChannel(_realtimeChannel); } catch(e){} }
+  _realtimeChannel = sb.channel('driver-available-orders')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, payload => {
+      // Always reload available orders when any order changes
+      loadAvailableOrders();
+      if (payload.new?.status === 'ready' && !payload.new?.rider_id) {
+        showToast('🛵 New delivery available!');
+        showBrowserNotif('🛵 New Delivery Available!', 'A new order is ready for pickup near you');
+      }
+    }).subscribe();
+}
+
+// ── Order Actions ─────────────────────────────────────────────
+async function viewOrder(orderId) {
+  showScreen('screen-order-detail');
+  renderOrderDetail(orderId, false);
+}
+
+async function acceptOrder(orderId) {
+  if (!driverProfile) { showToast('Profile not loaded', 'err'); return; }
+  // Stage 1: Reserve order — set status to 'accepted', not yet out_for_delivery
+  const pickupDeadline = new Date(Date.now() + 15 * 60 * 1000).toISOString();
+  const { error } = await sb.from('orders')
+    .update({ status: 'accepted', rider_id: driverProfile.id, pickup_deadline: pickupDeadline })
+    .eq('id', orderId).eq('status', 'ready').is('rider_id', null);
+  if (error) { showToast('Could not accept — order may have been taken', 'err'); loadAvailableOrders(); return; }
+  activeDelivery = orderId;
+  showToast('Order reserved! Head to vendor — 15 min to confirm pickup 🛵');
+  await loadDashboardStats();
+  loadAvailableOrders();
+  viewOrder(orderId);
+  // Start the countdown timer
+  startPickupCountdown(orderId, pickupDeadline);
+}
+
+// Stage 2: Confirm pickup — driver arrived at vendor
+async function confirmPickup(orderId) {
+  const btn = document.getElementById('confirm-pickup-btn');
+  if (btn) { btn.textContent = 'Confirming…'; btn.disabled = true; }
+  const { error } = await sb.from('orders')
+    .update({ status: 'out_for_delivery' })
+    .eq('id', orderId).eq('rider_id', driverProfile.id).eq('status', 'accepted');
+  if (error) { showToast('Error: ' + error.message, 'err'); if(btn){btn.textContent='✓ Confirm Pickup';btn.disabled=false;} return; }
+  clearPickupCountdown();
+  showToast('Picked up! Head to customer 🛵');
+  renderOrderDetail(orderId, true);
+  await loadDashboardStats();
+}
+
+// Release order back to pool (driver can't make it)
+async function releaseOrder(orderId) {
+  if (!confirm('Release this order back to the pool?')) return;
+  await sb.from('orders')
+    .update({ status: 'ready', rider_id: null, pickup_deadline: null })
+    .eq('id', orderId).eq('rider_id', driverProfile.id).eq('status', 'accepted');
+  clearPickupCountdown();
+  activeDelivery = null;
+  showToast('Order released — another driver will pick it up');
+  showScreen('screen-dashboard');
+  await loadDashboardStats();
+  loadAvailableOrders();
+}
+
+// Auto-release when timer hits zero
+async function autoReleaseOrder(orderId) {
+  const { data: o } = await sb.from('orders').select('status, rider_id').eq('id', orderId).single();
+  if (o && o.status === 'accepted' && o.rider_id === driverProfile.id) {
+    await sb.from('orders')
+      .update({ status: 'ready', rider_id: null, pickup_deadline: null })
+      .eq('id', orderId);
+    activeDelivery = null;
+    showToast('⏰ Time expired — order released back to pool', 'err');
+    showScreen('screen-dashboard');
+    await loadDashboardStats();
+    loadAvailableOrders();
+  }
+}
+
+let _pickupTimer = null;
+let _pickupTimerInterval = null;
+
+function startPickupCountdown(orderId, deadline) {
+  clearPickupCountdown();
+  const endTime = new Date(deadline).getTime();
+  function tick() {
+    const remaining = endTime - Date.now();
+    if (remaining <= 0) {
+      clearPickupCountdown();
+      autoReleaseOrder(orderId);
+      return;
+    }
+    const mins = Math.floor(remaining / 60000);
+    const secs = Math.floor((remaining % 60000) / 1000);
+    const display = mins + ':' + String(secs).padStart(2,'0');
+    // Update countdown in order detail if visible
+    const el = document.getElementById('pickup-countdown');
+    if (el) el.textContent = display;
+    // Update active delivery card
+    const cd = document.getElementById('active-countdown');
+    if (cd) cd.textContent = display;
+  }
+  tick();
+  _pickupTimerInterval = setInterval(tick, 1000);
+}
+
+function clearPickupCountdown() {
+  if (_pickupTimerInterval) { clearInterval(_pickupTimerInterval); _pickupTimerInterval = null; }
+}
+
+// Resume countdown on app reload if order is still accepted
+async function checkResumeCountdown() {
+  if (!driverProfile?.id) return;
+  const { data: o } = await sb.from('orders')
+    .select('id, status, pickup_deadline, rider_id')
+    .eq('rider_id', driverProfile.id)
+    .eq('status', 'accepted')
+    .maybeSingle();
+  if (o && o.pickup_deadline) {
+    activeDelivery = o.id;
+    startPickupCountdown(o.id, o.pickup_deadline);
+  }
+}
+
+async function showActiveDelivery(orderId) {
+  const section = document.getElementById('active-delivery-section');
+  if (section) section.style.display = 'block';
+}
+
+async function renderOrderDetail(orderId, isActive) {
+  const el = document.getElementById('order-detail-content');
+  el.innerHTML = '<div style="padding:40px;text-align:center;color:var(--muted)">Loading...</div>';
+
+  // Fetch order
+  const { data: o, error: oErr } = await sb.from('orders').select('*').eq('id', orderId).single();
+  if (oErr || !o) {
+    el.innerHTML = '<div style="padding:20px;text-align:center;color:var(--muted)">Order not found<br>'
+      + '<small style="color:var(--red)">' + (oErr?.message || '') + '</small></div>';
+    return;
+  }
+
+  // Fetch vendor separately — include user phone
+  let vendor = null;
+  if (o.vendor_id) {
+    try {
+      const { data: v, error: vErr } = await sb.from('vendors')
+        .select('business_name, area, city, address, emoji, user_id, users(phone)')
+        .eq('id', o.vendor_id)
+        .maybeSingle();
+      if (!vErr && v) {
+        vendor = v;
+        vendor.phone = v.users?.phone || null;
+      } else console.warn('Vendor fetch:', vErr?.message);
+    } catch(e) { console.warn('Vendor fetch error:', e.message); }
+  }
+
+  // Fallback vendor name from order if available
+  const vendorName = (vendor && vendor.business_name) || o.vendor_name || 'Vendor';
+  const vendorAddr = vendor ? ((vendor.address || '') + ' ' + (vendor.area || '') + ', ' + (vendor.city || '')).trim() : '';
+
+  const steps = ['accepted','ready','out_for_delivery','delivered'];
+  const stepLabels = ['Accepted','Ready','Picked up','Delivered'];
+  const cur = steps.indexOf(o.status);
+  const isMyDelivery = o.status === 'out_for_delivery' && o.rider_id === (driverProfile && driverProfile.id);
+  const isReady = o.status === 'ready' && !o.rider_id;
+  const isMyAccepted = o.status === 'accepted' && o.rider_id === (driverProfile && driverProfile.id);
+
+  const stepsHtml = stepLabels.map(function(s,i) {
+    return '<div class="status-node '+(i<cur?'done':i===cur?'current':'')+'\">' + s + '</div>';
+  }).join('');
+
+  const itemsHtml = (o.items||[]).map(function(i) {
+    return '<span style="display:inline-block;background:var(--surface2);border-radius:8px;padding:3px 8px;margin:2px;font-size:12px">' + i.qty + 'x ' + i.name + '</span>';
+  }).join('') || '<span style="color:var(--muted);font-size:13px">No items listed</span>';
+
+  const callVendor = (vendor && vendor.phone)
+    ? '<a href="tel:' + vendor.phone + '" style="display:inline-flex;align-items:center;gap:6px;margin-top:10px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:8px 14px;font-size:13px;color:var(--text);text-decoration:none">📞 Call Vendor</a>'
+    : '';
+
+  const callCustomer = o.customer_phone
+    ? '<a href="tel:' + o.customer_phone + '" style="display:inline-flex;align-items:center;gap:6px;margin-top:10px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:8px 14px;font-size:13px;color:var(--text);text-decoration:none">📞 Call Customer</a>'
+    : '';
+
+  const noteHtml = o.note ? '<div style="font-size:12px;color:var(--muted);margin-top:6px">📝 ' + o.note + '</div>' : '';
+
+  const collectHtml = isMyDelivery
+    ? '<div style="background:rgba(245,166,35,.08);border:1px solid rgba(245,166,35,.2);border-radius:14px;padding:14px;margin-bottom:14px;text-align:center">'
+      + '<div style="font-size:14px;font-weight:700;color:var(--accent)">💵 Collect ' + formatCurrency(o.total_amount) + ' (Cash)</div>'
+      + '<div style="font-size:12px;color:var(--muted);margin-top:4px">Your earnings: ' + formatCurrency(DELIVERY_FEE) + '</div>'
+      + '</div>'
+      + '<button onclick="markDelivered(\'' + o.id + '\')" style="width:100%;padding:14px;border-radius:14px;border:none;background:var(--green);color:#fff;font-size:15px;font-weight:700;font-family:var(--font-head);cursor:pointer;margin-bottom:16px">✓ Mark as Delivered</button>'
+    : '';
+
+  const acceptHtml = isReady
+    ? '<button onclick="acceptOrder(\'' + o.id + '\')" style="width:100%;padding:14px;border-radius:14px;border:none;background:var(--accent);color:#000;font-size:15px;font-weight:700;font-family:var(--font-head);cursor:pointer;margin-bottom:16px">Accept Delivery → ' + formatCurrency(DELIVERY_FEE) + '</button>'
+    : '';
+
+  el.innerHTML =
+    '<div class="status-track">' + stepsHtml + '</div>'
+    + '<div class="order-card" style="margin-bottom:14px">'
+    + '<div style="font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">📍 Pickup From</div>'
+    + '<div style="font-size:16px;font-weight:700">' + vendorName + '</div>'
+    + (vendorAddr ? '<div style="font-size:13px;color:var(--muted);margin-top:4px">' + vendorAddr + '</div>' : '')
+    + callVendor + '</div>'
+    + '<div class="order-card" style="margin-bottom:14px">'
+    + '<div style="font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">👤 Deliver To</div>'
+    + '<div style="font-size:16px;font-weight:700">' + (o.customer_name || 'Customer') + '</div>'
+    + (o.customer_phone ? '<div style="font-size:13px;color:var(--muted);margin-top:4px">' + o.customer_phone + '</div>' : '')
+    + (o.delivery_address ? '<div style="font-size:13px;color:var(--muted);margin-top:4px">📍 ' + o.delivery_address + '</div>' : '')
+    + callCustomer + '</div>'
+    + '<div class="order-card" style="margin-bottom:14px">'
+    + '<div style="font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">🛒 Order Items</div>'
+    + '<div style="font-size:13px;margin-bottom:10px">' + itemsHtml + '</div>'
+    + '<div style="display:flex;justify-content:space-between;align-items:center">'
+    + '<span style="font-size:13px;color:var(--muted)">' + (o.delivery_type === 'delivery' ? '🛵 Delivery' : '🚶 Pickup') + '</span>'
+    + '<span style="font-size:18px;font-weight:800;color:var(--accent)">' + formatCurrency(o.total_amount) + '</span>'
+    + '</div>' + noteHtml + '</div>'
+    + acceptedHtml + collectHtml + acceptHtml;
+  // Resume countdown if this is an accepted order
+  if (isMyAccepted && o.pickup_deadline) {
+    startPickupCountdown(o.id, o.pickup_deadline);
+  }
+}
+
+
+async function markDelivered(orderId) {
+  try {
+    // Get order details for commission
+    const { data: order } = await sb.from('orders').select('id,total_amount,vendor_id').eq('id', orderId).single();
+    await sb.from('orders').update({ status: 'delivered' }).eq('id', orderId);
+    // Log commission
+    if (order && order.vendor_id) {
+      const commAmt = (order.total_amount || 0) >= 3000 ? 500 : 200;
+      await sb.from('commissions').upsert({
+        vendor_id: order.vendor_id,
+        order_id: order.id,
+        order_amount: order.total_amount || 0,
+        commission_amt: commAmt,
+        status: 'unpaid'
+      }, { onConflict: 'order_id' }).catch(() => {});
+    }
+  } catch(_) {}
+  activeDelivery = null;
+  const section = document.getElementById('active-delivery-section');
+  if (section) section.style.display = 'none';
+  showToast(`Delivery complete! +${formatCurrency(DELIVERY_FEE)} earned 🎉`);
+  await loadDashboardStats();
+  showScreen('screen-dashboard');
+  loadAvailableOrders();
+}
+
+// ── Earnings ──────────────────────────────────────────────────
+async function loadEarnings() {
+  if (!driverProfile?.id) return;
+  try {
+    const { data: trips } = await sb.from('orders')
+      .select('id, total_amount, created_at, customer_name, vendor_id, delivery_type')
+      .eq('rider_id', driverProfile.id)
+      .eq('status', 'delivered')
+      .order('created_at', { ascending: false });
+
+    const all = trips || [];
+    const now = new Date();
+    const todayStart = new Date(); todayStart.setHours(0,0,0,0);
+    const weekAgo = new Date(Date.now() - 7*24*60*60*1000);
+    const monthAgo = new Date(Date.now() - 30*24*60*60*1000);
+
+    const todayTrips = all.filter(t => new Date(t.created_at) >= todayStart);
+    const weekTrips = all.filter(t => new Date(t.created_at) >= weekAgo);
+    const monthTrips = all.filter(t => new Date(t.created_at) >= monthAgo);
+
+    const s = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+    s('total-earned', formatCurrency(all.length * DELIVERY_FEE));
+    s('today-earned', formatCurrency(todayTrips.length * DELIVERY_FEE));
+    s('week-earned', formatCurrency(weekTrips.length * DELIVERY_FEE));
+    s('month-earned', formatCurrency(monthTrips.length * DELIVERY_FEE));
+    s('total-trips', all.length);
+
+    const el = document.getElementById('trips-list');
+    if (!el) return;
+    if (!all.length) {
+      el.innerHTML = '<div style="padding:40px 0;text-align:center;color:var(--muted)"><div style="font-size:40px;margin-bottom:12px">🛵</div><div style="font-size:15px;font-weight:600">No completed trips yet</div><div style="font-size:13px;margin-top:6px">Completed deliveries will appear here</div></div>';
+      return;
+    }
+
+    // Fetch vendor names for recent trips
+    const vendorIds = [...new Set(all.slice(0,20).map(t => t.vendor_id).filter(Boolean))];
+    let vendorMap = {};
+    if (vendorIds.length) {
+      try {
+        const { data: vendors } = await sb.from('vendors').select('id,business_name').in('id', vendorIds);
+        (vendors||[]).forEach(v => vendorMap[v.id] = v.business_name);
+      } catch(e) {}
+    }
+
+    // Group by date
+    let lastDate = '';
+    el.innerHTML = all.slice(0,30).map(t => {
+      const date = new Date(t.created_at);
+      const dateStr = date.toLocaleDateString('en-NG', { weekday:'long', day:'numeric', month:'short' });
+      const timeStr = date.toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' });
+      const vendorName = vendorMap[t.vendor_id] || 'Vendor';
+      const isToday = date >= todayStart;
+      const isNew = dateStr !== lastDate;
+      lastDate = dateStr;
+
+      return (isNew ? '<div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;padding:12px 0 8px">' + (isToday ? '📅 Today' : dateStr) + '</div>' : '')
+        + '<div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--border)">'
+        + '<div style="display:flex;align-items:center;gap:10px">'
+        + '<div style="width:36px;height:36px;border-radius:10px;background:rgba(76,175,125,.12);display:flex;align-items:center;justify-content:center;font-size:18px">🛵</div>'
+        + '<div><div style="font-size:13px;font-weight:600">' + vendorName + '</div>'
+        + '<div style="font-size:11px;color:var(--muted)">' + (t.customer_name || 'Customer') + ' · ' + timeStr + '</div></div></div>'
+        + '<div style="text-align:right">'
+        + '<div style="font-size:14px;font-weight:700;color:var(--green)">+' + formatCurrency(DELIVERY_FEE) + '</div>'
+        + '<div style="font-size:11px;color:var(--muted)">₦' + Number(t.total_amount||0).toLocaleString() + ' order</div>'
+        + '</div></div>';
+    }).join('');
+  } catch(e) {
+    console.error('loadEarnings:', e.message);
+    document.getElementById('trips-list').innerHTML = '<div style="padding:20px;text-align:center;color:var(--muted);font-size:13px">Could not load trips</div>';
+  }
+}
+
+// ── Nav ───────────────────────────────────────────────────────
+function navTo(tab) {
+  ['home','earnings','profile'].forEach(t => document.getElementById('nav-'+t)?.classList.toggle('active', t===tab));
+  if (tab === 'home') showScreen('screen-dashboard');
+  else if (tab === 'earnings') { showScreen('screen-earnings'); loadEarnings(); }
+  else if (tab === 'profile') { showScreen('screen-profile'); loadProfileScreen(); }
+}
+</script>
+
+  <script>
+    let _swReg = null;
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+          .then(reg => { _swReg = reg; window._swReg = reg; })
+          .catch(() => {});
+      });
+    }
+
+    async function requestPushPermission() {
+      if (!('Notification' in window)) return;
+      if (Notification.permission === 'denied') return;
+      if (Notification.permission !== 'granted') {
+        const perm = await Notification.requestPermission();
+        if (perm !== 'granted') return;
+      }
+      showBrowserNotif('abinci Driver 🛵', 'Notifications on! You will be alerted when new orders are ready.');
+    }
+    window.requestPushPermission = requestPushPermission;
+    // PWA install prompt
+    let deferredPrompt;
+    window.addEventListener('beforeinstallprompt', e => {
+      e.preventDefault();
+      deferredPrompt = e;
+      const btn = document.getElementById('pwa-install-btn');
+      if (btn) btn.style.display = 'flex';
+    });
+    function installPWA() {
+      if (!deferredPrompt) return;
+      deferredPrompt.prompt();
+      deferredPrompt.userChoice.then(() => { deferredPrompt = null; });
+    }
+    window.addEventListener('appinstalled', () => {
+      const btn = document.getElementById('pwa-install-btn');
+      if (btn) btn.style.display = 'none';
+    });
+  </script>
+</body>
+</html>

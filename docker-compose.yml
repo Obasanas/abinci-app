@@ -1,0 +1,71 @@
+version: '3.9'
+
+services:
+
+  # ── Node.js API ──────────────────────────────────────────────
+  api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    container_name: abinci-api
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: development
+      PORT: 3000
+      SUPABASE_URL: ${SUPABASE_URL}
+      SUPABASE_ANON_KEY: ${SUPABASE_ANON_KEY}
+      SUPABASE_SERVICE_ROLE_KEY: ${SUPABASE_SERVICE_ROLE_KEY}
+      AT_USERNAME: ${AT_USERNAME}
+      AT_API_KEY: ${AT_API_KEY}
+      VAPID_PUBLIC_KEY: ${VAPID_PUBLIC_KEY}
+      VAPID_PRIVATE_KEY: ${VAPID_PRIVATE_KEY}
+      VAPID_EMAIL: ${VAPID_EMAIL}
+      API_SECRET: ${API_SECRET}
+      CORS_ORIGINS: "http://localhost:3001,http://localhost:3002,http://localhost:3003"
+    volumes:
+      - ./api/src:/app/src   # hot-reload: map source into container
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ── Static file servers (dev only) ───────────────────────────
+  customer:
+    image: nginx:alpine
+    container_name: abinci-customer
+    ports:
+      - "3001:80"
+    volumes:
+      - ./customer-app:/usr/share/nginx/html:ro
+      - ./shared:/usr/share/nginx/html/../shared:ro
+      - ./_nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+    restart: unless-stopped
+
+  driver:
+    image: nginx:alpine
+    container_name: abinci-driver
+    ports:
+      - "3002:80"
+    volumes:
+      - ./driver-app:/usr/share/nginx/html:ro
+      - ./shared:/usr/share/nginx/html/../shared:ro
+      - ./_nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+    restart: unless-stopped
+
+  admin:
+    image: nginx:alpine
+    container_name: abinci-admin
+    ports:
+      - "3003:80"
+    volumes:
+      - ./admin-app:/usr/share/nginx/html:ro
+      - ./shared:/usr/share/nginx/html/../shared:ro
+      - ./_nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+    restart: unless-stopped
+
+networks:
+  default:
+    name: abinci-net

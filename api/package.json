@@ -1,0 +1,25 @@
+{
+  "name": "abinci-api",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "abinci.food \u2014 Node.js REST API",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --env-file=.env --watch src/index.js"
+  },
+  "engines": {
+    "node": ">=20.6.0"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.45.0",
+    "africastalking": "^0.6.6",
+    "cors": "^2.8.5",
+    "express": "^4.19.2",
+    "express-rate-limit": "^7.3.1",
+    "helmet": "^7.1.0",
+    "joi": "^17.13.1",
+    "web-push": "^3.6.7",
+    "winston": "^3.13.0"
+  }
+}
