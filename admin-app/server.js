@@ -62,7 +62,7 @@ app.post('/api/admin-auth', (req, res) => {
 // ── Customers endpoints ───────────────────────────────────────
 app.get('/api/admin/customers', requireAdmin, async (req, res) => {
   try {
-    const data = await sbGet('users?role=eq.customer&order=created_at.desc&limit=100&select=id,full_name,phone,created_at');
+    const data = await sbGet('users?role=eq.customer&order=created_at.desc&limit=100&select=id,full_name,phone,created_at,is_suspended');
     res.json({ customers: Array.isArray(data) ? data : [] });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
