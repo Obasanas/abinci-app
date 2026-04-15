@@ -181,7 +181,13 @@ router.patch('/:id/status', requireAuth, requireRole('vendor'), validate(schemas
     }
 
     // Notify customer
-    const notifType = { accepted: 'order_accepted', rejected: 'order_rejected', ready: 'order_ready' }[status];
+    const notifType = {
+      accepted:         'order_accepted',
+      rejected:         'order_rejected',
+      ready:            'order_ready',
+      out_for_delivery: 'order_out_for_delivery',
+      delivered:        'order_delivered',
+    }[status];
     if (notifType && order.customer_id) {
       notifyCustomerOrderUpdate(order.customer_id, notifType, {
         ...order,

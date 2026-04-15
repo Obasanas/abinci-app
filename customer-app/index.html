@@ -11,7 +11,7 @@
   <link rel="apple-touch-icon" href="/icon-192.png">
   <meta name="mobile-web-app-capable" content="yes">
 <title>abinci.food</title>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,300;1,400&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <!-- ============================================================
@@ -21,23 +21,32 @@
 ============================================================ -->
 <style>
 
-/* ── BASE ─────────────────────────────────────── */
+/* ── BASE — dark is default ───────────────────── */
 :root{--bg:#0f0e0c;--surface:#1a1916;--surface2:#242220;--border:#2e2c29;
       --accent:#f5a623;--accent2:#e8603c;--text:#f0ede8;--muted:#8a8680;
-      --green:#4caf7d;--red:#e05c5c;--blue:#5b9cf6}
+      --green:#4caf7d;--red:#e05c5c;--blue:#5b9cf6;--html-bg:#0a0a0a;
+      --shadow:0 0 60px rgba(0,0,0,.8)}
+/* Light theme */
+[data-theme="light"]{
+  --bg:#faf8f5;--surface:#ffffff;--surface2:#f0eeea;--border:#e0dbd4;
+  --text:#1c1a17;--muted:#6b6560;--green:#2a8f56;--red:#c94444;--blue:#2563eb;
+  --html-bg:#e8e3dc;--shadow:0 0 40px rgba(0,0,0,.12)
+}
+
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 /* ── DESKTOP WRAPPER — forces mobile view on all screen sizes ── */
 html {
-  background: #0a0a0a; /* dark surround on desktop */
+  background: var(--html-bg);
+  transition: background .3s;
 }
-body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);transition:background .3s,color .3s;
      min-height:100vh;
      width:100%;
      max-width:430px;
      margin:0 auto;
      overflow-x:hidden;
      position:relative;
-     box-shadow: 0 0 60px rgba(0,0,0,.8); /* subtle shadow on desktop */
+     box-shadow: var(--shadow);
 }
 /* Prevent input zoom on iOS */
 input,select,textarea{font-size:16px !important;}
@@ -45,7 +54,7 @@ img{max-width:100%;height:auto;}
 *{box-sizing:border-box;-webkit-text-size-adjust:100%;}
 /* Safe area for notched phones */
 body{padding-top:env(safe-area-inset-top);padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-right);}
-h1,h2,h3,h4{font-family:'Syne',sans-serif}
+h1,h2,h3,h4{font-family:'DM Sans',sans-serif}
 
 /* ── SCREEN SYSTEM ───────────────────────────── */
 .screen{display:none;min-height:100vh;padding-bottom:80px;animation:fadeIn .25s ease}
@@ -100,7 +109,7 @@ h1,h2,h3,h4{font-family:'Syne',sans-serif}
 /* ── SHARED COMPONENTS ───────────────────────── */
 .topbar{padding:20px 20px 12px;display:flex;align-items:center;
         justify-content:space-between;position:sticky;top:0;z-index:50;background:var(--bg)}
-.topbar-logo{font-family:'Syne',sans-serif;font-size:22px;font-weight:800}
+.topbar-logo{font-family:'DM Sans',sans-serif;font-size:22px;font-weight:800}
 .topbar-logo span{color:var(--accent)}
 .avatar{width:36px;height:36px;border-radius:50%;
         background:linear-gradient(135deg,var(--accent),var(--accent2));
@@ -111,7 +120,7 @@ h1,h2,h3,h4{font-family:'Syne',sans-serif}
           display:flex;align-items:center;justify-content:center;
           cursor:pointer;backdrop-filter:blur(8px);font-size:16px;flex-shrink:0}
 .big-btn{width:100%;background:var(--accent);color:#000;border:none;border-radius:16px;
-         padding:16px;font-size:16px;font-weight:700;font-family:'Syne',sans-serif;
+         padding:16px;font-size:16px;font-weight:700;font-family:'DM Sans',sans-serif;
          cursor:pointer;margin-top:20px;transition:opacity .2s}
 .big-btn:disabled{opacity:.35;cursor:default}
 .big-btn:not(:disabled):hover{opacity:.85}
@@ -127,7 +136,7 @@ h1,h2,h3,h4{font-family:'Syne',sans-serif}
              font-family:'DM Sans',sans-serif;outline:none;appearance:none}
 .form-select option{background:var(--surface2);color:var(--text)}
 .divider{height:1px;background:var(--border);margin:20px 0}
-.section-label{font-size:16px;font-weight:700;margin-bottom:12px;font-family:'Syne',sans-serif}
+.section-label{font-size:16px;font-weight:700;margin-bottom:12px;font-family:'DM Sans',sans-serif}
 .menu-row{background:var(--surface);border:1px solid var(--border);border-radius:14px;
           padding:14px 16px;display:flex;align-items:center;justify-content:space-between;cursor:pointer}
 .menu-row-left{display:flex;align-items:center;gap:12px;font-size:15px;font-weight:500}
@@ -142,7 +151,7 @@ h1,h2,h3,h4{font-family:'Syne',sans-serif}
        padding:24px 20px calc(24px + env(safe-area-inset-bottom));
        width:100%;max-width:430px;animation:slideUp .3s ease;max-height:90vh;overflow-y:auto}
 @keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
-.modal-title{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;margin-bottom:20px}
+.modal-title{font-family:'DM Sans',sans-serif;font-size:20px;font-weight:800;margin-bottom:20px}
 .modal-close{position:absolute;top:16px;right:20px;background:var(--surface2);
              border:1px solid var(--border);color:var(--muted);width:32px;height:32px;
              border-radius:50%;display:flex;align-items:center;justify-content:center;
@@ -166,32 +175,32 @@ h1,h2,h3,h4{font-family:'Syne',sans-serif}
 .chip{background:var(--surface);border:1px solid var(--border);border-radius:20px;
       padding:6px 14px;font-size:12px;white-space:nowrap;cursor:pointer;transition:all .2s;color:var(--muted)}
 .chip.active{background:var(--accent);color:#000;border-color:var(--accent);font-weight:600}
-.vendor-list{padding:0 20px;display:flex;flex-direction:column;gap:14px}
-.vendor-card{background:var(--surface);border:1px solid var(--border);border-radius:20px;
+.vendor-list{padding:0 14px;display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.vendor-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;
              overflow:hidden;cursor:pointer;transition:transform .15s,border-color .2s}
-.vendor-card:active{transform:scale(.98)}
+.vendor-card:active{transform:scale(.97)}
 .vendor-card:hover{border-color:var(--accent)}
-.vendor-banner{height:100px;position:relative;background:linear-gradient(135deg,#2a1f0e,#3d2a0e);
-               display:flex;align-items:center;justify-content:center;font-size:48px}
+.vendor-banner{height:90px;position:relative;background:linear-gradient(135deg,#2a1f0e,#3d2a0e);
+               display:flex;align-items:center;justify-content:center;font-size:38px}
 .vendor-banner-overlay{position:absolute;inset:0;background:linear-gradient(to bottom,transparent 40%,rgba(15,14,12,.9))}
-.availability-badge{padding:4px 10px;border-radius:20px;font-size:11px;font-weight:600;font-family:'Syne',sans-serif}
+.availability-badge{padding:3px 7px;border-radius:20px;font-size:10px;font-weight:600;font-family:'DM Sans',sans-serif}
 .available{background:rgba(76,175,125,.2);color:var(--green);border:1px solid rgba(76,175,125,.3)}
 .unavailable{background:rgba(224,92,92,.15);color:var(--red);border:1px solid rgba(224,92,92,.2)}
-.vendor-info{padding:14px}
-.vendor-name{font-size:17px;font-weight:700;margin-bottom:3px}
-.vendor-category{font-size:12px;color:var(--accent);font-weight:500;margin-bottom:8px}
-.vendor-meta{display:flex;align-items:center;justify-content:space-between}
-.stars{display:flex;align-items:center;gap:4px;font-size:13px}
-.star-icon{color:var(--accent);font-size:12px}
-.review-count{color:var(--muted);font-size:12px}
-.vendor-location{color:var(--muted);font-size:12px;display:flex;align-items:center;gap:4px}
+.vendor-info{padding:10px}
+.vendor-name{font-size:13px;font-weight:700;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.vendor-category{font-size:11px;color:var(--accent);font-weight:500;margin-bottom:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.vendor-meta{display:flex;flex-direction:column;gap:4px}
+.stars{display:flex;align-items:center;gap:3px;font-size:12px}
+.star-icon{color:var(--accent);font-size:11px}
+.review-count{color:var(--muted);font-size:11px}
+.vendor-location{color:var(--muted);font-size:11px;display:flex;align-items:center;gap:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .hero{margin:0 20px 20px;background:linear-gradient(135deg,#1e1508,#2e1f0a);
       border:1px solid #3a2a10;border-radius:20px;padding:20px;position:relative;overflow:hidden}
 .hero::before{content:'🍲';position:absolute;right:-10px;bottom:-10px;font-size:90px;opacity:.15;transform:rotate(-15deg)}
 .hero-label{font-size:11px;color:var(--accent);font-weight:600;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:6px}
 .hero-title{font-size:22px;font-weight:800;line-height:1.2;margin-bottom:12px}
 .hero-btn{background:var(--accent);color:#000;border:none;border-radius:10px;
-          padding:10px 20px;font-size:13px;font-weight:700;font-family:'Syne',sans-serif;cursor:pointer}
+          padding:10px 20px;font-size:13px;font-weight:700;font-family:'DM Sans',sans-serif;cursor:pointer}
 
 /* ── VENDOR DETAIL ───────────────────────────── */
 .detail-banner{height:200px;position:relative;background:linear-gradient(135deg,#1a1200,#2e1e00);
@@ -201,11 +210,11 @@ h1,h2,h3,h4{font-family:'Syne',sans-serif}
 .detail-name{font-size:24px;font-weight:800}
 .detail-category{color:var(--accent);font-size:13px;font-weight:500;margin-top:2px}
 .chat-btn{background:var(--accent);color:#000;border:none;border-radius:12px;
-          padding:10px 16px;font-size:13px;font-weight:700;font-family:'Syne',sans-serif;
+          padding:10px 16px;font-size:13px;font-weight:700;font-family:'DM Sans',sans-serif;
           cursor:pointer;display:flex;align-items:center;gap:6px}
 .detail-stats{display:flex;gap:10px;margin-bottom:20px}
 .stat-box{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:12px;flex:1;text-align:center}
-.stat-val{font-size:18px;font-weight:800;font-family:'Syne',sans-serif;color:var(--accent)}
+.stat-val{font-size:18px;font-weight:800;font-family:'DM Sans',sans-serif;color:var(--accent)}
 .stat-lbl{font-size:10px;color:var(--muted);margin-top:2px}
 .vendor-bio{color:var(--muted);font-size:14px;line-height:1.6;margin-bottom:20px}
 .menu-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px}
@@ -240,7 +249,7 @@ h1,h2,h3,h4{font-family:'Syne',sans-serif}
 .toggle.on::after{left:27px}
 .dash-stat-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;padding:0 20px 20px}
 .dash-stat{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:12px 8px;text-align:center}
-.dash-stat-num{font-size:20px;font-weight:800;font-family:'Syne',sans-serif;color:var(--accent)}
+.dash-stat-num{font-size:20px;font-weight:800;font-family:'DM Sans',sans-serif;color:var(--accent)}
 .dash-stat-label{font-size:10px;color:var(--muted);margin-top:2px}
 
 /* ── PROFILE ─────────────────────────────────── */
@@ -399,20 +408,20 @@ h1,h2,h3,h4{font-family:'Syne',sans-serif}
 .rider-status-step.done::before{background:var(--green)}
 .rider-status-step.active-step::before{background:var(--accent)}
 .rider-action-btn{width:100%;padding:14px;border:none;border-radius:14px;
-                  font-family:'Syne',sans-serif;font-weight:700;font-size:15px;
+                  font-family:'DM Sans',sans-serif;font-weight:700;font-size:15px;
                   cursor:pointer;margin-top:12px}
 
 /* ── ADMIN SCREENS ────────────────────────────── */
 .admin-stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 20px 16px}
 .admin-stat-card{background:var(--surface);border:1px solid var(--border);
                  border-radius:16px;padding:16px}
-.admin-stat-num{font-size:26px;font-weight:800;font-family:'Syne',sans-serif;color:var(--accent)}
+.admin-stat-num{font-size:26px;font-weight:800;font-family:'DM Sans',sans-serif;color:var(--accent)}
 .admin-stat-label{font-size:11px;color:var(--muted);margin-top:4px}
 .admin-stat-sub{font-size:12px;color:var(--green);margin-top:2px;font-weight:600}
 .admin-tab-bar{display:flex;background:var(--surface2);border-radius:14px;padding:4px;
                margin:0 20px 16px;gap:4px}
 .admin-tab{flex:1;padding:8px 4px;border:none;border-radius:10px;font-size:12px;
-           font-weight:600;font-family:'Syne',sans-serif;cursor:pointer;
+           font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;
            background:transparent;color:var(--muted);transition:all .2s}
 .admin-tab.active{background:var(--surface);color:var(--text)}
 .vendor-approval-card{background:var(--surface);border:1px solid var(--border);
@@ -422,7 +431,7 @@ h1,h2,h3,h4{font-family:'Syne',sans-serif}
 .earnings-card{background:linear-gradient(135deg,#1e1508,#2e1f0a);
                border:1px solid #3a2a10;border-radius:20px;
                padding:24px 20px;margin:0 20px 16px;text-align:center}
-.earnings-amount{font-size:36px;font-weight:800;font-family:'Syne',sans-serif;color:var(--accent)}
+.earnings-amount{font-size:36px;font-weight:800;font-family:'DM Sans',sans-serif;color:var(--accent)}
 .earnings-label{font-size:13px;color:var(--muted);margin-top:4px}
 .payout-row{display:flex;justify-content:space-between;align-items:center;
             padding:12px 0;border-bottom:1px solid var(--border)}
@@ -437,7 +446,7 @@ h1,h2,h3,h4{font-family:'Syne',sans-serif}
 
 <!-- App Loading Overlay - prevents flash on refresh -->
 <div id="app-loading" style="display:flex;position:fixed;inset:0;background:#0f0e0c;z-index:9999;align-items:center;justify-content:center;flex-direction:column;gap:16px">
-  <div style="font-family:'Syne',sans-serif;font-size:28px;font-weight:900;color:#fdf6e9">abinci<span style="color:#f5a623">.food</span></div>
+  <div style="font-family:'DM Sans',sans-serif;font-size:28px;font-weight:900;color:#fdf6e9">abinci<span style="color:#f5a623">.food</span></div>
   <div style="width:40px;height:40px;border:3px solid rgba(245,166,35,.2);border-top-color:#f5a623;border-radius:50%;animation:spin .8s linear infinite"></div>
 </div>
 
@@ -447,7 +456,7 @@ h1,h2,h3,h4{font-family:'Syne',sans-serif}
 <div class="screen active" id="screen-onboard">
   <div style="padding:48px 24px 0">
     <div style="font-size:52px;margin-bottom:16px">🍽️</div>
-    <div style="font-family:'Syne',sans-serif;font-size:30px;font-weight:800;margin-bottom:8px">abinci<span style="color:var(--accent)">.food</span></div>
+    <div style="font-family:'DM Sans',sans-serif;font-size:30px;font-weight:800;margin-bottom:8px">abinci<span style="color:var(--accent)">.food</span></div>
     <div style="color:var(--muted);font-size:15px;margin-bottom:36px">Home chefs &amp; food lovers,<br>all in one place.</div>
     <div style="font-size:15px;font-weight:600;margin-bottom:16px">I want to…</div>
     <div class="role-card" id="role-customer" onclick="selectRole('customer')">
@@ -472,13 +481,13 @@ h1,h2,h3,h4{font-family:'Syne',sans-serif}
 <div class="screen" id="screen-auth">
   <div style="background:linear-gradient(135deg,#1c1400,var(--bg));padding:56px 28px 32px">
     <div style="font-size:40px;margin-bottom:12px" id="auth-role-emoji">📱</div>
-    <div style="font-family:'Syne',sans-serif;font-size:26px;font-weight:800">abinci<span style="color:var(--accent)">.food</span></div>
+    <div style="font-family:'DM Sans',sans-serif;font-size:26px;font-weight:800">abinci<span style="color:var(--accent)">.food</span></div>
     <div style="color:var(--muted);font-size:13px;margin-top:6px" id="auth-role-label">Sign in to continue</div>
   </div>
   <div style="padding:0 24px 24px">
     <div style="display:flex;background:var(--surface2);border-radius:14px;padding:4px;margin-bottom:24px">
-      <button id="tab-signin" onclick="switchAuthTab('signin')" style="flex:1;padding:10px;border:none;border-radius:10px;font-family:'Syne',sans-serif;font-weight:700;font-size:14px;cursor:pointer;background:var(--accent);color:#000;transition:all .2s">Sign In</button>
-      <button id="tab-signup" onclick="switchAuthTab('signup')" style="flex:1;padding:10px;border:none;border-radius:10px;font-family:'Syne',sans-serif;font-weight:700;font-size:14px;cursor:pointer;background:transparent;color:var(--muted);transition:all .2s">Create Account</button>
+      <button id="tab-signin" onclick="switchAuthTab('signin')" style="flex:1;padding:10px;border:none;border-radius:10px;font-family:'DM Sans',sans-serif;font-weight:700;font-size:14px;cursor:pointer;background:var(--accent);color:#000;transition:all .2s">Sign In</button>
+      <button id="tab-signup" onclick="switchAuthTab('signup')" style="flex:1;padding:10px;border:none;border-radius:10px;font-family:'DM Sans',sans-serif;font-weight:700;font-size:14px;cursor:pointer;background:transparent;color:var(--muted);transition:all .2s">Create Account</button>
     </div>
     <div id="signup-name-wrap" style="display:none;margin-bottom:16px">
       <div class="form-label">Full Name *</div>
@@ -489,7 +498,7 @@ h1,h2,h3,h4{font-family:'Syne',sans-serif}
       <div style="background:var(--surface2);border:1.5px solid var(--border);border-radius:12px;padding:13px 14px;color:var(--muted);font-size:15px;white-space:nowrap">🇳🇬 +234</div>
       <input id="auth-phone" class="form-input" type="tel" placeholder="801 234 5678" style="flex:1" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
     </div>
-    <button id="auth-cta" onclick="doSendOTP()" style="width:100%;padding:16px;background:var(--accent);border:none;border-radius:14px;font-family:'Syne',sans-serif;font-weight:700;font-size:15px;cursor:pointer;color:#000">Sign In →</button>
+    <button id="auth-cta" onclick="doSendOTP()" style="width:100%;padding:16px;background:var(--accent);border:none;border-radius:14px;font-family:'DM Sans',sans-serif;font-weight:700;font-size:15px;cursor:pointer;color:#000">Sign In →</button>
     <div style="margin-top:14px;text-align:center">
       <span onclick="navBack('screen-onboard')" style="font-size:13px;color:var(--muted);cursor:pointer">← Back to role selection</span>
     </div>
@@ -503,23 +512,23 @@ h1,h2,h3,h4{font-family:'Syne',sans-serif}
   <div style="padding:60px 28px 0">
     <div onclick="navBack('screen-auth')" style="width:36px;height:36px;border-radius:50%;background:var(--surface);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;margin-bottom:24px">←</div>
     <div style="font-size:48px;margin-bottom:16px">💬</div>
-    <div style="font-family:'Syne',sans-serif;font-size:28px;font-weight:800;margin-bottom:8px">Verify via WhatsApp</div>
+    <div style="font-family:'DM Sans',sans-serif;font-size:28px;font-weight:800;margin-bottom:8px">Verify via WhatsApp</div>
     <div style="color:var(--muted);font-size:14px;margin-bottom:24px">Verifying <span id="otp-phone-display" style="color:var(--text);font-weight:600"></span></div>
 
     <div style="background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:24px;margin-bottom:20px;text-align:center">
       <div style="font-size:13px;color:var(--muted);margin-bottom:12px">Your verification code</div>
-      <div style="font-size:52px;font-weight:800;font-family:'Syne',sans-serif;color:var(--accent);letter-spacing:10px" id="otp-code-display">—</div>
+      <div style="font-size:52px;font-weight:800;font-family:'DM Sans',sans-serif;color:var(--accent);letter-spacing:10px" id="otp-code-display">—</div>
       <div style="font-size:12px;color:var(--muted);margin-top:10px">Enter this code below to verify your number</div>
     </div>
     <input id="otp-input" maxlength="4" type="number" placeholder="Enter code"
-      style="width:100%;background:var(--surface2);border:1.5px solid var(--border);border-radius:14px;padding:20px;font-size:32px;font-family:'Syne',sans-serif;font-weight:800;color:var(--text);text-align:center;letter-spacing:12px;outline:none;margin-bottom:12px"
+      style="width:100%;background:var(--surface2);border:1.5px solid var(--border);border-radius:14px;padding:20px;font-size:32px;font-family:'DM Sans',sans-serif;font-weight:800;color:var(--text);text-align:center;letter-spacing:12px;outline:none;margin-bottom:12px"
       oninput="if(this.value.length===4)doVerifyOTP()">
     <input type="hidden" id="otp-hidden-name">
     <div style="text-align:center;margin-bottom:20px">
       <span id="otp-timer" style="font-size:13px;color:var(--muted)">Code expires in 10 minutes</span>
       <span id="otp-resend-wrap" style="display:none"><span onclick="resendOTP()" style="font-size:13px;color:var(--accent);cursor:pointer;font-weight:600">Get new code</span></span>
     </div>
-    <button id="otp-verify-btn" onclick="doVerifyOTP()" style="width:100%;padding:16px;background:var(--accent);border:none;border-radius:14px;font-family:'Syne',sans-serif;font-weight:700;font-size:15px;cursor:pointer;color:#000">Verify &amp; Continue →</button>
+    <button id="otp-verify-btn" onclick="doVerifyOTP()" style="width:100%;padding:16px;background:var(--accent);border:none;border-radius:14px;font-family:'DM Sans',sans-serif;font-weight:700;font-size:15px;cursor:pointer;color:#000">Verify &amp; Continue →</button>
   </div>
 </div>
 
@@ -607,10 +616,6 @@ h1,h2,h3,h4{font-family:'Syne',sans-serif}
       <div class="delivery-opt" onclick="pickDelivery(this,'pickup')"><div class="d-check">✓</div><div><div style="font-size:15px;font-weight:600">🏠 Pickup Only</div><div style="font-size:12px;color:var(--muted);margin-top:2px">Customers come to your location</div></div></div>
       <div class="delivery-opt" onclick="pickDelivery(this,'both')"><div class="d-check">✓</div><div><div style="font-size:15px;font-weight:600">✅ Both Options</div><div style="font-size:12px;color:var(--muted);margin-top:2px">Offer delivery &amp; pickup</div></div></div>
     </div>
-    <div id="delivery-fee-wrap" style="display:none">
-      <div class="form-group"><label class="form-label">Delivery Fee (₦)</label><input class="form-input" id="ob-dfee" type="number" placeholder="e.g. 500 (0 for free)"></div>
-      <div class="form-group"><label class="form-label">Delivery Radius</label><select class="form-select" id="ob-dradius"><option value="">Select radius…</option><option>Within 2km</option><option>Within 5km</option><option>Within 10km</option><option>Anywhere in the city</option></select></div>
-    </div>
     <button class="big-btn" id="ob-next-5" disabled onclick="obNext(5)">Continue →</button>
   </div>
   <!-- Step 6 -->
@@ -623,22 +628,10 @@ h1,h2,h3,h4{font-family:'Syne',sans-serif}
   </div>
   <!-- Step 7 -->
   <div class="ob-body" id="ob-step-7" style="display:none">
-    <div class="ob-icon">⏰</div><div class="ob-title">When are you<br>available for orders?</div>
-    <div class="ob-subtitle">Set your typical hours. Switch available/unavailable anytime from your dashboard.</div>
-    <div class="form-group"><label class="form-label">Available From</label><input class="form-input" id="ob-open" type="time" value="08:00"></div>
-    <div class="form-group"><label class="form-label">Unavailable From</label><input class="form-input" id="ob-close" type="time" value="20:00"></div>
-    <div class="form-group"><label class="form-label">Operating Days</label>
-      <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:4px" id="days-wrap">
-        <div class="chip active" onclick="this.classList.toggle('active')">Mon</div>
-        <div class="chip active" onclick="this.classList.toggle('active')">Tue</div>
-        <div class="chip active" onclick="this.classList.toggle('active')">Wed</div>
-        <div class="chip active" onclick="this.classList.toggle('active')">Thu</div>
-        <div class="chip active" onclick="this.classList.toggle('active')">Fri</div>
-        <div class="chip active" onclick="this.classList.toggle('active')">Sat</div>
-        <div class="chip" onclick="this.classList.toggle('active')">Sun</div>
-      </div>
-    </div>
-    <div class="form-group"><label class="form-label">Minimum Order (₦)</label><input class="form-input" id="ob-minorder" type="number" placeholder="e.g. 1000 (optional)"></div>
+    <div class="ob-icon">✅</div><div class="ob-title">Almost done!</div>
+    <div class="ob-subtitle">Set a minimum order amount if you'd like. You can always update this later.</div>
+    <div class="form-group"><label class="form-label">Minimum Order (₦) <span style="color:var(--muted);font-weight:400">(optional)</span></label><input class="form-input" id="ob-minorder" type="number" placeholder="e.g. 1000 — leave blank for no minimum"></div>
+    <div style="background:rgba(76,175,125,.08);border:1px solid rgba(76,175,125,.2);border-radius:12px;padding:12px 14px;font-size:13px;color:var(--muted);margin-bottom:4px">💡 Use the <strong style="color:var(--text)">Available toggle</strong> on your dashboard to go online or offline anytime.</div>
     <button class="big-btn" onclick="obFinish()">Finish Setup 🎉</button>
   </div>
 </div>
@@ -739,7 +732,7 @@ h1,h2,h3,h4{font-family:'Syne',sans-serif}
         <div id="ann-dispatch" style="font-size:13px;color:var(--text);font-weight:600;margin-bottom:2px"></div>
         <div id="ann-cutoff" style="font-size:12px;color:var(--muted);margin-bottom:8px"></div>
         <div id="ann-portions" style="font-size:12px;color:var(--green);font-weight:600;margin-bottom:12px"></div>
-        <button id="preorder-btn" onclick="placePreOrder()" style="width:100%;padding:12px;border-radius:12px;border:none;background:var(--accent);color:#000;font-size:14px;font-weight:700;font-family:'Syne',sans-serif;cursor:pointer">Pre-order Now →</button>
+        <button id="preorder-btn" onclick="placePreOrder()" style="width:100%;padding:12px;border-radius:12px;border:none;background:var(--accent);color:#000;font-size:14px;font-weight:700;font-family:'DM Sans',sans-serif;cursor:pointer">Pre-order Now →</button>
       </div>
     </div>
     <div class="divider"></div>
@@ -755,7 +748,7 @@ h1,h2,h3,h4{font-family:'Syne',sans-serif}
     </button>
     <div style="height:90px"></div>
   </div>
-  <div id="cart-fab" onclick="openCart()" style="display:none;position:fixed;bottom:24px;right:20px;background:var(--accent);color:#000;border-radius:50px;padding:12px 20px;font-size:14px;font-weight:700;font-family:'Syne',sans-serif;cursor:pointer;box-shadow:0 4px 20px rgba(245,166,35,.4);z-index:200;align-items:center;gap:8px">
+  <div id="cart-fab" onclick="openCart()" style="display:none;position:fixed;bottom:24px;right:20px;background:var(--accent);color:#000;border-radius:50px;padding:12px 20px;font-size:14px;font-weight:700;font-family:'DM Sans',sans-serif;cursor:pointer;box-shadow:0 4px 20px rgba(245,166,35,.4);z-index:200;align-items:center;gap:8px">
     🛒 <span id="cart-fab-label">Cart (0)</span>
   </div>
 </div>
@@ -770,7 +763,7 @@ h1,h2,h3,h4{font-family:'Syne',sans-serif}
     <div class="back-btn" onclick="closeChat()">←</div>
     <div class="chat-avatar" id="chat-avatar">🍲</div>
     <div style="flex:1">
-      <div style="font-size:16px;font-weight:700;font-family:'Syne',sans-serif" id="chat-vname">Vendor</div>
+      <div style="font-size:16px;font-weight:700;font-family:'DM Sans',sans-serif" id="chat-vname">Vendor</div>
       <div style="font-size:12px;color:var(--muted)" id="chat-status">Tap to chat</div>
     </div>
   </div>
@@ -788,7 +781,7 @@ h1,h2,h3,h4{font-family:'Syne',sans-serif}
   <div class="topbar">
     <div style="display:flex;align-items:center;gap:10px">
       <div class="back-btn" onclick="navBack()">←</div>
-      <div style="font-size:18px;font-weight:700;font-family:'Syne',sans-serif">Messages</div>
+      <div style="font-size:18px;font-weight:700;font-family:'DM Sans',sans-serif">Messages</div>
     </div>
   </div>
   <div id="conversations-list">
@@ -816,7 +809,7 @@ h1,h2,h3,h4{font-family:'Syne',sans-serif}
   </div>
   <div style="padding:0 20px 16px">
     <div style="font-size:13px;color:var(--muted)" id="dash-greeting">Welcome 👋</div>
-    <div style="font-size:22px;font-weight:800;font-family:'Syne',sans-serif">Your Dashboard</div>
+    <div style="font-size:22px;font-weight:800;font-family:'DM Sans',sans-serif">Your Dashboard</div>
   </div>
   <div class="toggle-row">
     <div><div style="font-size:15px;font-weight:600">Kitchen Status</div><div style="font-size:12px;color:var(--muted);margin-top:2px" id="avail-sub">Available for Orders</div></div>
@@ -840,11 +833,11 @@ h1,h2,h3,h4{font-family:'Syne',sans-serif}
         <div id="announcement-preview" style="font-size:14px;font-weight:600;margin-bottom:4px"></div>
         <div id="announcement-meta" style="font-size:12px;color:var(--muted);margin-bottom:12px"></div>
         <div style="display:flex;gap:8px">
-          <button onclick="shareAnnouncementWhatsApp()" style="flex:1;padding:10px;border-radius:12px;border:1.5px solid #25D366;background:rgba(37,211,102,.08);color:#25D366;font-size:13px;font-weight:700;font-family:'Syne',sans-serif;cursor:pointer">
+          <button onclick="shareAnnouncementWhatsApp()" style="flex:1;padding:10px;border-radius:12px;border:1.5px solid #25D366;background:rgba(37,211,102,.08);color:#25D366;font-size:13px;font-weight:700;font-family:'DM Sans',sans-serif;cursor:pointer">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="#25D366" style="vertical-align:middle;margin-right:4px"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
             Share Pre-order
           </button>
-          <button onclick="startDispatch()" id="dispatch-btn" style="display:none;flex:1;padding:10px;border-radius:12px;border:none;background:var(--green);color:#fff;font-size:13px;font-weight:700;font-family:'Syne',sans-serif;cursor:pointer">🚀 Start Dispatch</button>
+          <button onclick="startDispatch()" id="dispatch-btn" style="display:none;flex:1;padding:10px;border-radius:12px;border:none;background:var(--green);color:#fff;font-size:13px;font-weight:700;font-family:'DM Sans',sans-serif;cursor:pointer">🚀 Start Dispatch</button>
         </div>
       </div>
     </div>
@@ -875,9 +868,9 @@ h1,h2,h3,h4{font-family:'Syne',sans-serif}
   <div class="topbar">
     <div style="display:flex;align-items:center;gap:10px">
       <div class="back-btn" onclick="navBack('screen-vendor-dash')">←</div>
-      <div style="font-size:18px;font-weight:700;font-family:'Syne',sans-serif">My Menu</div>
+      <div style="font-size:18px;font-weight:700;font-family:'DM Sans',sans-serif">My Menu</div>
     </div>
-    <button onclick="openAddMenuModal()" style="background:var(--accent);color:#000;border:none;border-radius:10px;padding:8px 14px;font-size:13px;font-weight:700;font-family:'Syne',sans-serif;cursor:pointer">+ Add</button>
+    <button onclick="openAddMenuModal()" style="background:var(--accent);color:#000;border:none;border-radius:10px;padding:8px 14px;font-size:13px;font-weight:700;font-family:'DM Sans',sans-serif;cursor:pointer">+ Add</button>
   </div>
   <div style="padding:0 20px" id="vendor-menu-list"></div>
 </div>
@@ -889,7 +882,7 @@ h1,h2,h3,h4{font-family:'Syne',sans-serif}
   <div class="topbar">
     <div style="display:flex;align-items:center;gap:10px">
       <div class="back-btn" onclick="navBack('screen-discover')">←</div>
-      <div style="font-size:18px;font-weight:700;font-family:'Syne',sans-serif">My Orders</div>
+      <div style="font-size:18px;font-weight:700;font-family:'DM Sans',sans-serif">My Orders</div>
     </div>
   </div>
   <div style="padding:0 20px" id="customer-orders-list">
@@ -904,7 +897,7 @@ h1,h2,h3,h4{font-family:'Syne',sans-serif}
   <div class="topbar">
     <div style="display:flex;align-items:center;gap:10px">
       <div class="back-btn" onclick="showScreen('screen-orders');renderCustomerOrders()">←</div>
-      <div style="font-size:18px;font-weight:700;font-family:'Syne',sans-serif">Track Order</div>
+      <div style="font-size:18px;font-weight:700;font-family:'DM Sans',sans-serif">Track Order</div>
     </div>
     <div id="track-order-id" style="font-size:11px;color:var(--muted)"></div>
   </div>
@@ -912,7 +905,7 @@ h1,h2,h3,h4{font-family:'Syne',sans-serif}
   <!-- Status Hero -->
   <div id="track-hero" style="background:linear-gradient(135deg,#1a1200,#2a1c00);padding:28px 20px 24px;text-align:center;border-bottom:1px solid var(--border)">
     <div style="font-size:56px;margin-bottom:12px" id="track-status-emoji">⏳</div>
-    <div style="font-size:20px;font-weight:800;font-family:'Syne',sans-serif;margin-bottom:6px" id="track-status-label">Waiting for vendor</div>
+    <div style="font-size:20px;font-weight:800;font-family:'DM Sans',sans-serif;margin-bottom:6px" id="track-status-label">Waiting for vendor</div>
     <div style="font-size:13px;color:rgba(253,246,233,.6)" id="track-status-sub">Your order has been placed</div>
   </div>
 
@@ -977,7 +970,7 @@ h1,h2,h3,h4{font-family:'Syne',sans-serif}
   <div class="topbar">
     <div style="display:flex;align-items:center;gap:10px">
       <div class="back-btn" onclick="clearInterval(_ordersPoller);navBack('screen-vendor-dash')">←</div>
-      <div style="font-size:18px;font-weight:700;font-family:'Syne',sans-serif">Incoming Orders</div>
+      <div style="font-size:18px;font-weight:700;font-family:'DM Sans',sans-serif">Incoming Orders</div>
     </div>
     <div style="display:flex;align-items:center;gap:8px">
       <div id="vendor-orders-badge" style="display:none;background:var(--red);color:#fff;font-size:11px;font-weight:700;padding:3px 9px;border-radius:10px"></div>
@@ -987,23 +980,23 @@ h1,h2,h3,h4{font-family:'Syne',sans-serif}
   <!-- Order summary stats -->
   <div style="display:flex;gap:8px;padding:0 20px 16px;overflow-x:auto">
     <div style="flex:0 0 auto;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:10px 16px;text-align:center;min-width:80px">
-      <div style="font-size:18px;font-weight:800;color:var(--accent);font-family:'Syne',sans-serif" id="ord-count-pending">0</div>
+      <div style="font-size:18px;font-weight:800;color:var(--accent);font-family:'DM Sans',sans-serif" id="ord-count-pending">0</div>
       <div style="font-size:11px;color:var(--muted)">Pending</div>
     </div>
     <div style="flex:0 0 auto;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:10px 16px;text-align:center;min-width:80px">
-      <div style="font-size:18px;font-weight:800;color:var(--green);font-family:'Syne',sans-serif" id="ord-count-accepted">0</div>
+      <div style="font-size:18px;font-weight:800;color:var(--green);font-family:'DM Sans',sans-serif" id="ord-count-accepted">0</div>
       <div style="font-size:11px;color:var(--muted)">Accepted</div>
     </div>
     <div style="flex:0 0 auto;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:10px 16px;text-align:center;min-width:80px">
-      <div style="font-size:18px;font-weight:800;color:var(--blue);font-family:'Syne',sans-serif" id="ord-count-ready">0</div>
+      <div style="font-size:18px;font-weight:800;color:var(--blue);font-family:'DM Sans',sans-serif" id="ord-count-ready">0</div>
       <div style="font-size:11px;color:var(--muted)">Ready</div>
     </div>
     <div style="flex:0 0 auto;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:10px 16px;text-align:center;min-width:80px">
-      <div style="font-size:18px;font-weight:800;color:var(--muted);font-family:'Syne',sans-serif" id="ord-count-delivered">0</div>
+      <div style="font-size:18px;font-weight:800;color:var(--muted);font-family:'DM Sans',sans-serif" id="ord-count-delivered">0</div>
       <div style="font-size:11px;color:var(--muted)">Delivered</div>
     </div>
     <div style="flex:0 0 auto;background:linear-gradient(135deg,rgba(245,166,35,.15),rgba(232,96,60,.1));border:1px solid rgba(245,166,35,.3);border-radius:12px;padding:10px 16px;text-align:center;min-width:90px">
-      <div style="font-size:18px;font-weight:800;color:var(--accent);font-family:'Syne',sans-serif" id="ord-gmv">₦0</div>
+      <div style="font-size:18px;font-weight:800;color:var(--accent);font-family:'DM Sans',sans-serif" id="ord-gmv">₦0</div>
       <div style="font-size:11px;color:var(--muted)">Today's GMV</div>
     </div>
   </div>
@@ -1019,7 +1012,7 @@ h1,h2,h3,h4{font-family:'Syne',sans-serif}
   <div class="topbar">
     <div style="display:flex;align-items:center;gap:10px">
       <div class="back-btn" onclick="navBack()">←</div>
-      <div style="font-size:18px;font-weight:700;font-family:'Syne',sans-serif">Profile</div>
+      <div style="font-size:18px;font-weight:700;font-family:'DM Sans',sans-serif">Profile</div>
     </div>
     <button onclick="openProfileEdit()" style="background:var(--surface2);border:1px solid var(--border);color:var(--muted);border-radius:10px;padding:7px 14px;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">Edit</button>
   </div>
@@ -1047,7 +1040,7 @@ h1,h2,h3,h4{font-family:'Syne',sans-serif}
   <div class="topbar">
     <div style="display:flex;align-items:center;gap:10px">
       <div class="back-btn" onclick="navBack()">←</div>
-      <div style="font-size:18px;font-weight:700;font-family:'Syne',sans-serif">Notifications</div>
+      <div style="font-size:18px;font-weight:700;font-family:'DM Sans',sans-serif">Notifications</div>
     </div>
     <button onclick="markAllNotifsRead()" style="background:transparent;border:none;color:var(--muted);font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif">Mark all read</button>
   </div>
@@ -1067,9 +1060,9 @@ h1,h2,h3,h4{font-family:'Syne',sans-serif}
   <div class="topbar">
     <div style="display:flex;align-items:center;gap:10px">
       <div class="back-btn" onclick="navBack('screen-profile')">←</div>
-      <div style="font-size:18px;font-weight:700;font-family:'Syne',sans-serif">Edit Profile</div>
+      <div style="font-size:18px;font-weight:700;font-family:'DM Sans',sans-serif">Edit Profile</div>
     </div>
-    <button onclick="saveProfileEdit()" id="profile-save-btn" style="background:var(--accent);border:none;color:#000;border-radius:10px;padding:8px 16px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif">Save</button>
+    <button onclick="saveProfileEdit()" id="profile-save-btn" style="background:var(--accent);border:none;color:#000;border-radius:10px;padding:8px 16px;font-size:13px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif">Save</button>
   </div>
   <div style="padding:24px 20px">
     <!-- Avatar -->
@@ -1112,6 +1105,32 @@ h1,h2,h3,h4{font-family:'Syne',sans-serif}
         <label class="form-label">City</label>
         <input class="form-input" id="edit-city" placeholder="e.g. Kano">
       </div>
+      <div class="form-group">
+        <label class="form-label">State</label>
+        <select class="form-select" id="edit-state"><option value="">Select state…</option><option>Abia</option><option>Adamawa</option><option>Akwa Ibom</option><option>Anambra</option><option>Bauchi</option><option>Bayelsa</option><option>Benue</option><option>Borno</option><option>Cross River</option><option>Delta</option><option>Ebonyi</option><option>Edo</option><option>Ekiti</option><option>Enugu</option><option>FCT (Abuja)</option><option>Gombe</option><option>Imo</option><option>Jigawa</option><option>Kaduna</option><option>Kano</option><option>Katsina</option><option>Kebbi</option><option>Kogi</option><option>Kwara</option><option>Lagos</option><option>Nasarawa</option><option>Niger</option><option>Ogun</option><option>Ondo</option><option>Osun</option><option>Oyo</option><option>Plateau</option><option>Rivers</option><option>Sokoto</option><option>Taraba</option><option>Yobe</option><option>Zamfara</option></select>
+      </div>
+      <div class="divider"></div>
+      <div style="font-size:15px;font-weight:700;margin-bottom:6px">Food Types</div>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:12px">Select all that apply</div>
+      <div class="food-grid" id="edit-food-grid">
+        <div class="food-tile" data-type="Rice &amp; Stews" onclick="toggleEditFood(this,'Rice &amp; Stews')"><div class="food-tile-icon">🍛</div><div class="food-tile-name">Rice &amp; Stews</div></div>
+        <div class="food-tile" data-type="Soups" onclick="toggleEditFood(this,'Soups')"><div class="food-tile-icon">🍲</div><div class="food-tile-name">Soups</div></div>
+        <div class="food-tile" data-type="Swallow" onclick="toggleEditFood(this,'Swallow')"><div class="food-tile-icon">🫙</div><div class="food-tile-name">Swallow</div></div>
+        <div class="food-tile" data-type="Traditional Food" onclick="toggleEditFood(this,'Traditional Food')"><div class="food-tile-icon">🍜</div><div class="food-tile-name">Traditional Food</div></div>
+        <div class="food-tile" data-type="Snacks" onclick="toggleEditFood(this,'Snacks')"><div class="food-tile-icon">🥜</div><div class="food-tile-name">Snacks</div></div>
+        <div class="food-tile" data-type="Pastry &amp; Bakes" onclick="toggleEditFood(this,'Pastry &amp; Bakes')"><div class="food-tile-icon">🥧</div><div class="food-tile-name">Pastry &amp; Bakes</div></div>
+        <div class="food-tile" data-type="Drinks &amp; Smoothies" onclick="toggleEditFood(this,'Drinks &amp; Smoothies')"><div class="food-tile-icon">🥤</div><div class="food-tile-name">Drinks &amp; Smoothies</div></div>
+        <div class="food-tile" data-type="Grills &amp; BBQ" onclick="toggleEditFood(this,'Grills &amp; BBQ')"><div class="food-tile-icon">🍖</div><div class="food-tile-name">Grills &amp; BBQ</div></div>
+        <div class="food-tile" data-type="Breakfast" onclick="toggleEditFood(this,'Breakfast')"><div class="food-tile-icon">🥞</div><div class="food-tile-name">Breakfast</div></div>
+        <div class="food-tile" data-type="Desserts" onclick="toggleEditFood(this,'Desserts')"><div class="food-tile-icon">🍮</div><div class="food-tile-name">Desserts</div></div>
+      </div>
+      <div class="divider"></div>
+      <div style="font-size:15px;font-weight:700;margin-bottom:12px">Delivery Options</div>
+      <div class="delivery-opts" id="edit-delivery-opts">
+        <div class="delivery-opt" data-delivery="delivery" onclick="pickEditDelivery(this,'delivery')"><div class="d-check">✓</div><div><div style="font-size:15px;font-weight:600">🚚 Delivery</div><div style="font-size:12px;color:var(--muted);margin-top:2px">You deliver within a set radius</div></div></div>
+        <div class="delivery-opt" data-delivery="pickup" onclick="pickEditDelivery(this,'pickup')"><div class="d-check">✓</div><div><div style="font-size:15px;font-weight:600">🏠 Pickup Only</div><div style="font-size:12px;color:var(--muted);margin-top:2px">Customers come to your location</div></div></div>
+        <div class="delivery-opt" data-delivery="both" onclick="pickEditDelivery(this,'both')"><div class="d-check">✓</div><div><div style="font-size:15px;font-weight:600">✅ Both Options</div><div style="font-size:12px;color:var(--muted);margin-top:2px">Offer delivery &amp; pickup</div></div></div>
+      </div>
     </div>
     <input type="hidden" id="edit-avatar-url">
   </div>
@@ -1128,9 +1147,27 @@ h1,h2,h3,h4{font-family:'Syne',sans-serif}
       <input id="search-input-main" class="form-input" style="padding-left:38px;margin:0" placeholder="Search vendors or dishes…" oninput="runSearch(this.value)" autofocus>
     </div>
   </div>
+  <div style="padding:10px 20px 12px;border-bottom:1px solid var(--border)">
+    <div style="position:relative;margin-bottom:10px">
+      <svg style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--muted)" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+      <input id="search-city-filter" class="form-input" style="padding-left:32px;margin:0;font-size:13px" placeholder="Filter by city (e.g. Kano)" oninput="runSearch(document.getElementById('search-input-main').value)">
+    </div>
+    <div id="search-food-chips" style="display:flex;gap:8px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none;-webkit-overflow-scrolling:touch">
+      <div class="chip active" style="flex-shrink:0" onclick="setSearchFoodFilter(this,'all')">All</div>
+      <div class="chip" style="flex-shrink:0" onclick="setSearchFoodFilter(this,'Rice &amp; Stews')">Rice &amp; Stews</div>
+      <div class="chip" style="flex-shrink:0" onclick="setSearchFoodFilter(this,'Soups')">Soups</div>
+      <div class="chip" style="flex-shrink:0" onclick="setSearchFoodFilter(this,'Snacks')">Snacks</div>
+      <div class="chip" style="flex-shrink:0" onclick="setSearchFoodFilter(this,'Swallow')">Swallow</div>
+      <div class="chip" style="flex-shrink:0" onclick="setSearchFoodFilter(this,'Drinks &amp; Smoothies')">Drinks</div>
+      <div class="chip" style="flex-shrink:0" onclick="setSearchFoodFilter(this,'Pastry &amp; Bakes')">Pastry</div>
+      <div class="chip" style="flex-shrink:0" onclick="setSearchFoodFilter(this,'Traditional Food')">Traditional</div>
+      <div class="chip" style="flex-shrink:0" onclick="setSearchFoodFilter(this,'Grills &amp; BBQ')">Grills</div>
+      <div class="chip" style="flex-shrink:0" onclick="setSearchFoodFilter(this,'Breakfast')">Breakfast</div>
+    </div>
+  </div>
   <div id="search-results-wrap">
     <div style="padding:40px 20px;text-align:center;color:var(--muted)">
-      <div style="font-size:13px">Type to search vendors and dishes</div>
+      <div style="font-size:13px">Type to search, or filter by city / food type</div>
     </div>
   </div>
 </div>
@@ -1163,7 +1200,7 @@ h1,h2,h3,h4{font-family:'Syne',sans-serif}
   <div onclick="closeCart()" style="position:absolute;inset:0;background:rgba(0,0,0,.5)"></div>
   <div style="position:absolute;bottom:0;left:0;right:0;background:var(--surface);border-radius:24px 24px 0 0;padding:24px 20px;max-height:80vh;overflow-y:auto">
     <div style="width:40px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 20px"></div>
-    <div style="font-family:'Syne',sans-serif;font-size:20px;font-weight:800;margin-bottom:4px">Your Cart 🛒</div>
+    <div style="font-family:'DM Sans',sans-serif;font-size:20px;font-weight:800;margin-bottom:4px">Your Cart 🛒</div>
     <div style="font-size:13px;color:var(--muted);margin-bottom:20px" id="cart-vendor-name"></div>
     <div id="cart-items-list"></div>
     <div style="border-top:1px solid var(--border);margin-top:16px;padding-top:16px">
@@ -1178,10 +1215,15 @@ h1,h2,h3,h4{font-family:'Syne',sans-serif}
         <div id="del-opt-delivery" onclick="selectDeliveryOpt('delivery')" style="flex:1;padding:10px;border-radius:12px;border:1.5px solid var(--accent);color:var(--accent);text-align:center;font-size:13px;cursor:pointer">🛵 Delivery</div>
         <div id="del-opt-pickup" onclick="selectDeliveryOpt('pickup')" style="flex:1;padding:10px;border-radius:12px;border:1.5px solid var(--border);text-align:center;font-size:13px;cursor:pointer">🚶 Pickup</div>
       </div>
+      <div id="cart-address-wrap" style="margin-bottom:16px">
+        <div style="font-size:13px;font-weight:600;margin-bottom:8px;color:var(--muted)">Delivery address <span style="color:var(--red)">*</span></div>
+        <input class="form-input" id="cart-address" placeholder="e.g. 12 Zaria Road, Kano — near the mosque" style="margin-bottom:0">
+        <div style="font-size:11px;color:var(--muted);margin-top:5px">📍 Be specific so the rider can find you easily</div>
+      </div>
       <div style="font-size:13px;font-weight:600;margin-bottom:8px;color:var(--muted)">Add a note (optional)</div>
       <input class="form-input" id="cart-note" placeholder="e.g. No pepper, extra sauce…" style="margin-bottom:16px">
       <button class="big-btn" onclick="placeOrderInApp()" style="margin-top:0;margin-bottom:10px">📲 Place Order</button>
-      <button onclick="placeOrderWhatsApp()" style="width:100%;padding:14px;border-radius:14px;border:1.5px solid #25D366;background:rgba(37,211,102,.08);color:#25D366;font-size:15px;font-weight:700;font-family:'Syne',sans-serif;cursor:pointer">
+      <button onclick="placeOrderWhatsApp()" style="width:100%;padding:14px;border-radius:14px;border:1.5px solid #25D366;background:rgba(37,211,102,.08);color:#25D366;font-size:15px;font-weight:700;font-family:'DM Sans',sans-serif;cursor:pointer">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="#25D366" style="vertical-align:middle;margin-right:6px"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
         Order via WhatsApp
       </button>
@@ -1337,11 +1379,37 @@ const DEMO_VENDORS = [
    reviewList:[{name:"Sandra K.",stars:5,date:"1 day ago",text:"Best kunu in Kano!"}]},
 ];
 
+/* ── THEME ─────────────────────────────────────── */
+(function() {
+  // Runs immediately — sets data-theme before first paint to avoid flash
+  const saved = localStorage.getItem('abinci_theme');
+  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  document.documentElement.dataset.theme = saved || (prefersDark ? 'dark' : 'light');
+})();
+
+function toggleTheme() {
+  const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+  document.documentElement.dataset.theme = next;
+  localStorage.setItem('abinci_theme', next);
+  updateThemeToggleUI();
+}
+function updateThemeToggleUI() {
+  const isDark = document.documentElement.dataset.theme === 'dark';
+  const toggle = document.getElementById('theme-toggle');
+  const knob = document.getElementById('theme-toggle-knob');
+  const icon = document.getElementById('theme-icon');
+  if (toggle) toggle.style.background = isDark ? 'var(--green)' : '#c0bab4';
+  if (knob) knob.style.left = isDark ? '22px' : '2px';
+  if (icon) icon.textContent = isDark ? '🌙' : '☀️';
+}
+
 // App state
 let currentRole = null, currentVendor = null;
 const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:3000' : 'https://api.abinci.food';
 let sbUser = null, userProfile = null, vendorProfile = null, vendorLogoUrl = null;
 let availability = true, selectedFoods = [], selectedDelivery = null;
+let editSelectedFoods = [], editSelectedDelivery = null;
+let _searchFoodFilter = 'all';
 let obStep = 1, selectedStars = 0;
 let _otpPhone = '', _authMode = 'signin', _otpTimer = null;
 let cart = [], cartVendor = null, cartDeliveryOpt = 'delivery';
@@ -1364,6 +1432,8 @@ function showScreen(id) {
   document.getElementById(id)?.classList.add('active');
   document.getElementById('bottom-nav').style.display = NO_NAV.has(id) ? 'none' : 'flex';
   window.scrollTo(0, 0);
+  if (id === 'screen-settings') updateThemeToggleUI();
+  if (id === 'screen-notifications') renderNotifications();
 }
 function navBack(dest) {
   dest = dest || (currentRole === 'vendor' ? 'screen-vendor-dash' : 'screen-discover');
@@ -1549,7 +1619,16 @@ async function doVerifyOTP() {
     const isNewUser = !otpRow._wasExisting;
     showToast('Welcome to abinci.food ✓');
     btn.textContent = 'Verify & Continue →'; btn.disabled = false;
-    if (currentRole==='vendor') { obStep=1; renderObStep(1); showScreen('screen-vendor-ob'); }
+    if (currentRole==='vendor') {
+      // Check if vendor already has a profile started
+      if (await loadExistingVendor()) {
+        // They have a profile — go straight to dashboard to edit/complete
+        navTab('profile');
+      } else {
+        // New vendor — start onboarding
+        obStep=1; renderObStep(1); showScreen('screen-vendor-ob');
+      }
+    }
     else await autoRoute();
   } catch(err) {
     console.error('doVerifyOTP error:', err);
@@ -1586,10 +1665,15 @@ async function autoRoute() {
       await loadVendors(); showScreen('screen-discover');
       document.getElementById('bottom-nav').style.display='flex';
     }
-    // Load notifications
+    // Load notifications + subscribe to realtime updates
     loadNotifications();
-    // Ask for push permission after short delay (less intrusive)
-    setTimeout(() => { if (window.requestPushPermission) window.requestPushPermission(); }, 3000);
+    if (userProfile?.id && !userProfile.id.startsWith('demo-')) subscribeToNotifications(userProfile.id);
+    // Ask for push permission once (only if not yet decided)
+    if (Notification.permission === 'default') {
+      setTimeout(() => { if (window.requestPushPermission) window.requestPushPermission(); }, 4000);
+    } else if (Notification.permission === 'granted') {
+      setTimeout(() => { if (window.subscribeToPush) window.subscribeToPush(); }, 2000);
+    }
     return;
   }
   let session = null;
@@ -1678,14 +1762,14 @@ function renderVendors(list) {
     +'<div class="vendor-banner" style="'+(v.logoUrl?'padding:0;overflow:hidden;background:none':'')+'\">'
     +(v.logoUrl
       ? '<img src="'+v.logoUrl+'" style="width:100%;height:100%;object-fit:cover;display:block" onerror="this.style.display=\'none\';this.parentElement.style.background=\'linear-gradient(135deg,#2a1f0e,#3d2a0e)\'">'
-      : '<span style="font-size:52px">'+v.emoji+'</span>')
+      : '<span style="font-size:38px">'+v.emoji+'</span>')
     +'<div class="vendor-banner-overlay"></div>'
     +'<div class="availability-badge '+(v.available?'available':'unavailable')+'" style="position:absolute;top:10px;right:10px">'+(v.available?'● Open':'● Closed')+'</div>'
     +(v.isApproved?'<div class="verified-badge" style="position:absolute;bottom:10px;left:10px;font-size:10px">✓ Verified</div>':'')
     +'</div>'
     +(v.announcement
       ? '<div style="border-top:1px solid rgba(245,166,35,.2)">'
-        + (v.announcement.image_url ? '<img src="'+v.announcement.image_url+'" style="width:100%;height:110px;object-fit:cover;display:block" onerror="this.style.display=\'none\'">' : '')
+        + (v.announcement.image_url ? '<img src="'+v.announcement.image_url+'" style="width:100%;height:70px;object-fit:cover;display:block" onerror="this.style.display=\'none\'">' : '')
         + '<div style="background:rgba(245,166,35,.1);padding:8px 14px;display:flex;align-items:center;gap:6px">'
         + '<span style="font-size:14px">📢</span>'
         + '<div style="flex:1;min-width:0"><div style="font-size:12px;font-weight:700;color:var(--accent);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+v.announcement.dish_name+'</div>'
@@ -1787,14 +1871,14 @@ function renderVendorDetail() {
     +(cv.isApproved?'<span class="verified-badge" style="margin-left:4px">✓ Verified</span>':'');
   document.getElementById('cart-nudge').style.display='block';
   document.getElementById('detail-menu').innerHTML = cv.menu.length
-    ? cv.menu.map((m,i)=>'<div class="menu-item" onclick="addToCart('+i+')" style="cursor:pointer;'+(m.plates===0?'opacity:.6':'')+'">'
+    ? cv.menu.map((m,i)=>'<div class="menu-item" id="mi-'+i+'" onclick="addToCart('+i+')" style="cursor:pointer;'+(m.plates===0?'opacity:.6':'')+'">'
         +(m.imgUrl
           ?'<div style="padding:0;overflow:hidden;height:80px;background:var(--surface2)"><img src="'+m.imgUrl+'" style="width:100%;height:80px;object-fit:cover;display:block" loading="lazy"></div>'
           :'<div class="menu-emoji">'+m.emoji+'</div>')
         +'<div class="menu-details"><div class="menu-name">'+m.name+'</div><div class="menu-price">'+m.price+'</div><div class="menu-desc">'+m.desc+'</div>'
-        +(m.plates!=null?(m.plates>0
+        +'<div id="mi-badge-'+i+'">'+(m.plates!=null?(m.plates>0
           ?'<div style="display:inline-flex;align-items:center;gap:3px;margin-top:5px;background:rgba(76,175,125,.12);color:var(--green);border-radius:20px;padding:2px 7px;font-size:10px;font-weight:700">🍽 '+m.plates+' left</div>'
-          :'<div style="display:inline-flex;align-items:center;gap:3px;margin-top:5px;background:rgba(224,92,92,.12);color:var(--red);border-radius:20px;padding:2px 7px;font-size:10px;font-weight:700">✕ Sold out</div>'):'')
+          :'<div style="display:inline-flex;align-items:center;gap:3px;margin-top:5px;background:rgba(224,92,92,.12);color:var(--red);border-radius:20px;padding:2px 7px;font-size:10px;font-weight:700">✕ Sold out</div>'):'')+'</div>'
         +(m.plates!==0?'<div style="margin-top:6px;font-size:10px;color:var(--accent);font-weight:700">+ Add to cart</div>':'')
         +'</div></div>').join('')
     : '<div style="grid-column:1/-1;color:var(--muted);font-size:13px;padding:16px 0">No menu items yet.</div>';
@@ -1816,15 +1900,21 @@ async function submitReview() {
   const name=document.getElementById('rev-name').value.trim()||'Anonymous';
   const text=document.getElementById('rev-text').value.trim();
   if (!text||!selectedStars) { alert('Please add a rating and review text.'); return; }
-  if (currentVendor?._db&&currentVendor?._id) {
-    const { error: revErr } = await sb.from('reviews').insert({vendor_id:currentVendor._id,customer_id:userProfile?.id||null,customer_name:name,rating:selectedStars,review_text:text});
+  const vendorIdToUse = currentVendor?._id || _reviewVendorId;
+  if (vendorIdToUse) {
+    const { error: revErr } = await sb.from('reviews').insert({vendor_id:vendorIdToUse,customer_id:userProfile?.id||null,customer_name:name,rating:selectedStars,review_text:text});
     if (revErr) { showToast('Error: '+revErr.message,'err'); return; }
     showToast('Review saved! ✓');
+  } else {
+    showToast('Review saved locally ✓');
   }
-  currentVendor.reviewList.unshift({name,stars:selectedStars,date:'Just now',text});
-  currentVendor.reviews++;
-  renderReviews();
-  document.getElementById('d-reviews').textContent=currentVendor.reviews;
+  if (currentVendor) {
+    currentVendor.reviewList.unshift({name,stars:selectedStars,date:'Just now',text});
+    currentVendor.reviews++;
+    renderReviews();
+    document.getElementById('d-reviews').textContent=currentVendor.reviews;
+  }
+  _reviewVendorId = null;
   closeModal('review-modal');
   document.getElementById('rev-name').value=''; document.getElementById('rev-text').value='';
   setStars(0); selectedStars=0;
@@ -1834,60 +1924,91 @@ async function submitReview() {
   MODULE 6 — SEARCH (vendors + dishes)
 ============================================================ */
 function openSearchScreen() {
+  _searchFoodFilter = 'all';
+  document.querySelectorAll('#search-food-chips .chip').forEach((c,i)=>c.classList.toggle('active',i===0));
+  const cityEl = document.getElementById('search-city-filter'); if(cityEl) cityEl.value='';
+  const mainEl = document.getElementById('search-input-main'); if(mainEl) mainEl.value='';
+  const wrap = document.getElementById('search-results-wrap');
+  if(wrap) wrap.innerHTML='<div style="padding:40px 20px;text-align:center;color:var(--muted);font-size:13px">Type to search, or filter by city / food type</div>';
   showScreen('screen-search');
   setTimeout(()=>document.getElementById('search-input-main')?.focus(), 100);
 }
 let _searchTimeout = null;
+function setSearchFoodFilter(el, type) {
+  document.querySelectorAll('#search-food-chips .chip').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');
+  _searchFoodFilter = type;
+  runSearch(document.getElementById('search-input-main')?.value||'');
+}
 async function runSearch(q) {
   const wrap = document.getElementById('search-results-wrap');
-  if (!q || q.length < 2) {
-    wrap.innerHTML='<div style="padding:40px 20px;text-align:center;color:var(--muted);font-size:13px">Type to search vendors and dishes</div>';
+  const cityFilter = (document.getElementById('search-city-filter')?.value||'').trim().toLowerCase();
+  const hasFilter = _searchFoodFilter !== 'all' || cityFilter;
+  const hasQuery = q && q.length >= 2;
+  if (!hasQuery && !hasFilter) {
+    wrap.innerHTML='<div style="padding:40px 20px;text-align:center;color:var(--muted);font-size:13px">Type to search, or filter by city / food type</div>';
     return;
   }
   clearTimeout(_searchTimeout);
   _searchTimeout = setTimeout(async () => {
     wrap.innerHTML='<div style="padding:20px;text-align:center;color:var(--muted);font-size:13px">Searching…</div>';
     const term = q.toLowerCase();
-    // Search vendors by name/category from DB + demo
     let dbVendors=[], dbItems=[];
     try {
-      const [vr, mr] = await Promise.all([
-        sb.from('vendors').select('id,business_name,food_types,area,city,emoji,logo_url,is_available,is_approved').ilike('business_name','%'+q+'%').eq('is_approved',true).limit(10),
-        sb.from('menu_items').select('id,name,description,price,emoji,vendor_id,vendors(id,business_name,area,city,emoji,is_approved)').ilike('name','%'+q+'%').eq('is_available',true).limit(20)
-      ]);
-      dbVendors=vr.data||[]; dbItems=mr.data||[];
+      // Build vendor query with optional filters
+      let vq = sb.from('vendors').select('id,business_name,food_types,area,city,emoji,logo_url,is_available,is_approved').eq('is_approved',true).limit(20);
+      if (hasQuery) vq = vq.ilike('business_name','%'+q+'%');
+      if (cityFilter) vq = vq.ilike('city','%'+cityFilter+'%');
+      if (_searchFoodFilter !== 'all') vq = vq.contains('food_types',[_searchFoodFilter]);
+      // Build menu query (only filtered by text; city/food-type filter applied client-side via vendor join)
+      let mq = sb.from('menu_items').select('id,name,description,price,emoji,vendor_id,vendors(id,business_name,area,city,emoji,is_approved,food_types)').eq('is_available',true).limit(30);
+      if (hasQuery) mq = mq.ilike('name','%'+q+'%');
+      const [vr, mr] = await Promise.all([vq, hasQuery ? mq : Promise.resolve({data:[]})]);
+      dbVendors=vr.data||[];
+      // Filter menu items by city/food_type via their vendor data
+      dbItems=(mr.data||[]).filter(m=>{
+        const v=m.vendors||{};
+        if(cityFilter && !(v.city||'').toLowerCase().includes(cityFilter)) return false;
+        if(_searchFoodFilter!=='all' && !(v.food_types||[]).includes(_searchFoodFilter)) return false;
+        return true;
+      });
     } catch(e){}
-    // Also search demo vendors
-    const demoVendorMatches=DEMO_VENDORS.filter(v=>v.name.toLowerCase().includes(term)||v.category.toLowerCase().includes(term));
+    // Demo vendors (city filter applied client-side, no food_type data on demos)
+    const demoVendorMatches=DEMO_VENDORS.filter(v=>{
+      if(hasQuery&&!v.name.toLowerCase().includes(term)&&!v.category.toLowerCase().includes(term)) return false;
+      if(cityFilter&&!v.location.toLowerCase().includes(cityFilter)) return false;
+      return true;
+    });
     const demoDishMatches=[];
-    DEMO_VENDORS.forEach(v=>{ v.menu.filter(m=>m.name.toLowerCase().includes(term)).forEach(m=>demoDishMatches.push({...m,vendorName:v.name,vendorId:v.id,isDemo:true})); });
+    if(hasQuery) DEMO_VENDORS.forEach(v=>{
+      if(cityFilter&&!v.location.toLowerCase().includes(cityFilter)) return;
+      v.menu.filter(m=>m.name.toLowerCase().includes(term)).forEach(m=>demoDishMatches.push({...m,vendorName:v.name,vendorId:v.id,isDemo:true}));
+    });
     let html='';
-    // Vendor results
     const allVendors=[
       ...dbVendors.map(v=>({id:v.id,name:v.business_name,sub:(v.food_types||[])[0]||'Home Kitchen',loc:v.area+', '+v.city,emoji:v.emoji||'🍲',logoUrl:v.logo_url,_db:true})),
       ...demoVendorMatches.map(v=>({id:v.id,name:v.name,sub:v.category,loc:v.location,emoji:v.emoji,_db:false}))
     ];
     if (allVendors.length) {
       html+='<div style="padding:10px 20px 4px;font-size:11px;font-weight:600;color:var(--muted);letter-spacing:.5px;text-transform:uppercase">Kitchens</div>';
-      html+=allVendors.map(v=>'<div class="search-result-item" data-vid="'+v.id+'" data-db="'+!!v._db+'" onclick="openVendor(this.dataset.vid,this.dataset.db===\'true\')" >'
+      html+=allVendors.map(v=>'<div class="search-result-item" data-vid="'+v.id+'" data-db="'+!!v._db+'" onclick="openVendor(this.dataset.vid,this.dataset.db===\'true\')">'
         +(v.logoUrl?'<img src="'+v.logoUrl+'" style="width:44px;height:44px;border-radius:10px;object-fit:cover;flex-shrink:0">'
                    :'<div class="search-result-emoji">'+v.emoji+'</div>')
         +'<div class="search-result-body"><div class="search-result-name">'+v.name+'</div><div class="search-result-sub">'+v.sub+' · '+v.loc+'</div></div></div>'
       ).join('');
     }
-    // Dish results
     const allDishes=[
       ...dbItems.map(m=>({name:m.name,desc:m.description||'',price:'₦'+m.price,emoji:m.emoji||'🍽️',vendorName:m.vendors?.business_name||'',vendorId:m.vendor_id,_db:true})),
       ...demoDishMatches
     ];
     if (allDishes.length) {
       html+='<div style="padding:10px 20px 4px;font-size:11px;font-weight:600;color:var(--muted);letter-spacing:.5px;text-transform:uppercase">Dishes</div>';
-      html+=allDishes.map(d=>'<div class="search-result-item" data-vid="'+d.vendorId+'" data-db="'+!!d._db+'" onclick="openVendor(this.dataset.vid,this.dataset.db===\'true\')" >'
+      html+=allDishes.map(d=>'<div class="search-result-item" data-vid="'+d.vendorId+'" data-db="'+!!d._db+'" onclick="openVendor(this.dataset.vid,this.dataset.db===\'true\')">'
         +'<div class="search-result-emoji">'+d.emoji+'</div>'
         +'<div><div class="search-result-name">'+d.name+'</div><div class="search-result-sub">'+d.vendorName+(d.price?' · '+d.price:'')+'</div></div></div>'
       ).join('');
     }
-    if (!html) html='<div style="padding:40px 20px;text-align:center;color:var(--muted)"><div style="font-size:32px;margin-bottom:8px">🔍</div><div style="font-size:14px;font-weight:600">No results for "'+q+'"</div><div style="font-size:12px;margin-top:4px">Try a different dish or kitchen name</div></div>';
+    if (!html) html='<div style="padding:40px 20px;text-align:center;color:var(--muted)"><div style="font-size:32px;margin-bottom:8px">🔍</div><div style="font-size:14px;font-weight:600">No results found</div><div style="font-size:12px;margin-top:4px">Try a different name, city, or food type</div></div>';
     wrap.innerHTML=html;
   }, 300);
 }
@@ -2144,14 +2265,31 @@ async function openConversation(convId) {
 ============================================================ */
 function addToCart(menuIndex) {
   if (!cartVendor) return;
-  const item=cartVendor.menu[menuIndex];
-  if (item.plates===0) { showToast('Sorry, this item is sold out','err'); return; }
-  const existing=cart.find(c=>c.menuIndex===menuIndex);
+  const item = cartVendor.menu[menuIndex];
+  if (item.plates === 0) { showToast('Sorry, this item is sold out', 'err'); return; }
+  const existing = cart.find(c => c.menuIndex === menuIndex);
   if (existing) {
-    if (item.plates!=null&&existing.qty>=item.plates) { showToast('Only '+item.plates+' plates available','info'); return; }
+    if (item.plates != null && existing.qty >= item.plates) {
+      showToast('Only ' + item.plates + ' plates available', 'info'); return;
+    }
     existing.qty++;
-  } else { cart.push({name:item.name,price:item.price,emoji:item.emoji||'🍽️',plates:item.plates,qty:1,menuIndex}); }
-  updateCartFab(); showToast(item.name+' added ✓');
+  } else {
+    cart.push({name:item.name, price:item.price, emoji:item.emoji||'🍽️', plates:item.plates, qty:1, menuIndex});
+  }
+  // Decrement displayed count and update badge live
+  if (item.plates != null) {
+    item.plates--;
+    const badge = document.getElementById('mi-badge-' + menuIndex);
+    const card  = document.getElementById('mi-' + menuIndex);
+    if (badge) {
+      badge.innerHTML = item.plates > 0
+        ? '<div style="display:inline-flex;align-items:center;gap:3px;margin-top:5px;background:rgba(76,175,125,.12);color:var(--green);border-radius:20px;padding:2px 7px;font-size:10px;font-weight:700">🍽 '+item.plates+' left</div>'
+        : '<div style="display:inline-flex;align-items:center;gap:3px;margin-top:5px;background:rgba(224,92,92,.12);color:var(--red);border-radius:20px;padding:2px 7px;font-size:10px;font-weight:700">✕ Sold out</div>';
+    }
+    if (card && item.plates === 0) card.style.opacity = '.6';
+  }
+  updateCartFab();
+  showToast(item.name + ' added ✓');
 }
 function updateCartFab() {
   const fab=document.getElementById('cart-fab');
@@ -2164,12 +2302,16 @@ function updateCartFab() {
 }
 function openCart() { if (!cart.length) { showToast('Your cart is empty','info'); return; } renderCartSheet(); document.getElementById('cart-sheet').style.display='block'; }
 function closeCart() { document.getElementById('cart-sheet').style.display='none'; }
+
+// ── Vendor hours check removed — availability toggle is the only gate ──
 function selectDeliveryOpt(opt) {
   cartDeliveryOpt=opt;
   ['delivery','pickup'].forEach(o=>{
     const el=document.getElementById('del-opt-'+o);
     if(el){el.style.borderColor=o===opt?'var(--accent)':'var(--border)';el.style.color=o===opt?'var(--accent)':'var(--text)';}
   });
+  const addrWrap=document.getElementById('cart-address-wrap');
+  if(addrWrap) addrWrap.style.display=opt==='delivery'?'block':'none';
 }
 function renderCartSheet() {
   const vn=document.getElementById('cart-vendor-name'); if(vn) vn.textContent=cartVendor?.name||'';
@@ -2186,22 +2328,48 @@ function renderCartSheet() {
   document.getElementById('cart-total').textContent='₦'+total.toLocaleString();
   selectDeliveryOpt(cartDeliveryOpt);
 }
-function changeQty(i,delta) {
-  cart[i].qty+=delta;
-  if(cart[i].qty<=0)cart.splice(i,1);
-  if(!cart.length){closeCart();updateCartFab();return;}
-  renderCartSheet();updateCartFab();
+function changeQty(i, delta) {
+  const cartItem = cart[i];
+  const menuIndex = cartItem.menuIndex;
+  cart[i].qty += delta;
+  if (cart[i].qty <= 0) cart.splice(i, 1);
+  // Restore plate to menu display when qty decreases
+  if (delta < 0 && menuIndex != null && currentVendor?.menu?.[menuIndex]) {
+    const menuItem = currentVendor.menu[menuIndex];
+    if (menuItem.plates != null) {
+      menuItem.plates++;
+      const badge = document.getElementById('mi-badge-' + menuIndex);
+      const card  = document.getElementById('mi-' + menuIndex);
+      if (badge) {
+        badge.innerHTML = menuItem.plates > 0
+          ? '<div style="display:inline-flex;align-items:center;gap:3px;margin-top:5px;background:rgba(76,175,125,.12);color:var(--green);border-radius:20px;padding:2px 7px;font-size:10px;font-weight:700">🍽 '+menuItem.plates+' left</div>'
+          : '<div style="display:inline-flex;align-items:center;gap:3px;margin-top:5px;background:rgba(224,92,92,.12);color:var(--red);border-radius:20px;padding:2px 7px;font-size:10px;font-weight:700">✕ Sold out</div>';
+      }
+      if (card) card.style.opacity = menuItem.plates > 0 ? '1' : '.6';
+    }
+  }
+  if (!cart.length) { closeCart(); updateCartFab(); return; }
+  renderCartSheet(); updateCartFab();
 }
 async function placeOrderInApp() {
   if(!cartVendor)return;
+  const note=document.getElementById('cart-note')?.value.trim()||'';
+  const deliveryAddress=document.getElementById('cart-address')?.value.trim()||'';
+  // Validate delivery address for delivery orders
+  if(cartDeliveryOpt==='delivery' && !deliveryAddress){
+    showToast('Please enter your delivery address 📍','err');
+    document.getElementById('cart-address')?.focus();
+    return;
+  }
+  // Check vendor availability (toggle only — no hours enforcement)
+  if(currentVendor?.is_available===false){ showToast((currentVendor.name||'This vendor')+' is currently closed 🔒','err'); return; }
   const btn=document.querySelector('#cart-sheet .big-btn');
   if(btn){btn.textContent='Placing…';btn.disabled=true;}
-  const note=document.getElementById('cart-note')?.value.trim()||'';
   const total=cart.reduce((s,c)=>{const p=parseFloat(String(c.price).replace(/[₦,]/g,''))||0;return s+p*c.qty;},0);
   const vendorId=cartVendor._id||cartVendor.id;
   const order={id:'ord-'+Date.now(),vendor_id:vendorId,vendor_name:cartVendor.name,
-    customer_name:userProfile?.full_name||'Customer',customer_phone:_otpPhone||'',
-    items:[...cart],total,delivery:cartDeliveryOpt,note,status:'pending',created_at:new Date().toISOString()};
+    customer_name:userProfile?.full_name||'Customer',customer_phone:userProfile?.phone||_otpPhone||'',
+    items:[...cart],total,delivery:cartDeliveryOpt,note,delivery_address:deliveryAddress,status:'pending',created_at:new Date().toISOString()};
   let dbId=null;
   try {
     const{data,error}=await sb.from('orders').insert({
@@ -2212,6 +2380,7 @@ async function placeOrderInApp() {
       items: order.items,
       total_amount: total,
       delivery_type: cartDeliveryOpt,
+      delivery_address: cartDeliveryOpt==='delivery' ? deliveryAddress : null,
       note, status:'pending'
     }).select().single();
     if(error) console.error('Order insert error:', error.message);
@@ -2270,7 +2439,7 @@ async function renderCustomerOrders() {
   if (userProfile?.id) {
     try {
       const{data}=await sb.from('orders')
-        .select('id,status,total_amount,delivery_type,note,items,created_at,vendor_id,vendors(business_name,emoji)')
+        .select('id,status,total_amount,delivery_type,note,items,created_at,vendor_id,delivery_address,vendors(business_name,emoji)')
         .eq('customer_id',userProfile.id)
         .order('created_at',{ascending:false}).limit(50);
       dbOrders=data||[];
@@ -2282,8 +2451,9 @@ async function renderCustomerOrders() {
   const dbIds=new Set(dbOrders.map(o=>o.id));
   const lsOnly=lsOrders.filter(o=>!o.db_id||!dbIds.has(o.db_id));
   const all=[...dbOrders.map(o=>({
-    id:o.id, vendor_name:o.vendors?.business_name||'Vendor', status:o.status,
-    total:o.total_amount, delivery:o.delivery_type, items:o.items||[], created_at:o.created_at, fromDB:true
+    id:o.id, vendor_id:o.vendor_id, vendor_name:o.vendors?.business_name||'Vendor', status:o.status,
+    total:o.total_amount, delivery:o.delivery_type, items:o.items||[], created_at:o.created_at,
+    delivery_address:o.delivery_address, fromDB:true
   })),...lsOnly];
   if(!all.length){
     el.innerHTML='<div style="padding:60px 0;text-align:center;color:var(--muted)"><div style="font-size:48px;margin-bottom:12px">🛒</div><div style="font-size:15px;font-weight:600">No orders yet</div><div style="font-size:13px;margin-top:6px">Browse vendors and place your first order!</div></div>';
@@ -2313,9 +2483,37 @@ async function renderCustomerOrders() {
       +'<span style="font-size:13px;color:var(--muted)">'+(o.delivery==='delivery'||o.delivery_type==='delivery'?'🛵 Delivery':'🚶 Pickup')+'</span>'
       +'<span style="font-size:15px;font-weight:700;color:var(--accent)">₦'+(o.total||0).toLocaleString()+'</span>'
       +'</div>'
-      +(o.fromDB && !isDone && !isRejected?'<div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);font-size:12px;color:var(--blue);font-weight:600;text-align:center">Tap to track →</div>':'')
+      +(o.delivery_address?'<div style="margin-top:8px;font-size:12px;color:var(--muted);background:rgba(245,166,35,.07);border-radius:8px;padding:7px 10px">📍 '+o.delivery_address+'</div>':'')
+      +(o.fromDB && o.status==='pending'
+        ? '<div style="display:flex;gap:8px;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)">'
+          +'<button onclick="event.stopPropagation();cancelOrder(\''+o.id+'\')" style="flex:1;padding:9px;border-radius:12px;border:1.5px solid var(--red);background:transparent;color:var(--red);font-size:12px;font-weight:700;cursor:pointer">✕ Cancel Order</button>'
+          +'<div style="flex:1;text-align:center;font-size:12px;color:var(--blue);font-weight:600;padding:9px">Tap to track →</div>'
+          +'</div>'
+        : o.fromDB && !isDone && !isRejected && o.status!=='cancelled'
+          ? '<div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);font-size:12px;color:var(--blue);font-weight:600;text-align:center">Tap to track →</div>'
+          : o.fromDB && isDone
+            ? '<div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);text-align:center">'
+              +'<button onclick="event.stopPropagation();openReviewFromOrder(\''+o.id+'\',\''+o.vendor_id+'\')" style="background:transparent;border:1.5px dashed var(--accent);color:var(--accent);border-radius:12px;padding:8px 16px;font-size:12px;font-weight:700;cursor:pointer">⭐ Rate your experience</button>'
+              +'</div>'
+            : '')
       +'</div>';
   }).join('');
+}
+
+async function cancelOrder(orderId) {
+  if(!confirm('Cancel this order?')) return;
+  try {
+    const { error } = await sb.from('orders').update({ status:'cancelled' }).eq('id', orderId).eq('status','pending');
+    if(error) throw error;
+    showToast('Order cancelled');
+    renderCustomerOrders();
+  } catch(e) { showToast('Could not cancel — order may already be accepted','err'); }
+}
+
+let _reviewVendorId = null;
+function openReviewFromOrder(orderId, vendorId) {
+  _reviewVendorId = vendorId || null;
+  openModal('review-modal');
 }
 /* ============================================================
   MODULE 9C — ORDER TRACKING
@@ -2336,6 +2534,15 @@ async function openOrderTracking(orderId) {
       // Show notification on status change
       const labels = { accepted:'✓ Vendor accepted your order', ready:'📦 Order ready — rider coming', out_for_delivery:'🛵 Rider is on the way!', delivered:'✅ Order delivered!' };
       if (labels[payload.new.status]) showBrowserNotif('abinci.food', labels[payload.new.status]);
+      // Auto-prompt review when delivered
+      if (payload.new.status === 'delivered') {
+        setTimeout(() => {
+          if (confirm('Your order was delivered! 🎉\n\nWould you like to rate your experience?')) {
+            _reviewVendorId = payload.new.vendor_id || null;
+            openModal('review-modal');
+          }
+        }, 1500);
+      }
     })
     .subscribe();
 }
@@ -2812,6 +3019,7 @@ function renderVendorOrders() {
       +'<span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;background:'+sc+'22;color:'+sc+'">'+sl+'</span>'
       +'</div>'
       +'<div style="font-size:13px;margin-bottom:8px">'+(o.items||[]).map(i=>'<span style="display:inline-block;background:var(--surface2);border-radius:8px;padding:3px 8px;margin:2px;font-size:12px">'+i.qty+'x '+i.name+'</span>').join('')+'</div>'
+      +(o.delivery_address?'<div style="font-size:12px;color:var(--text);background:rgba(245,166,35,.08);border:1px solid rgba(245,166,35,.2);border-radius:8px;padding:7px 10px;margin-bottom:8px">📍 <strong>Deliver to:</strong> '+o.delivery_address+'</div>':'')
       +(o.note?'<div style="font-size:12px;color:var(--muted);margin-bottom:8px">📝 '+o.note+'</div>':'')
       +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">'
       +'<span style="font-size:13px;color:var(--muted)">'+(o.delivery_type==='delivery'?'🛵 Delivery':'🚶 Pickup')+'</span>'
@@ -2920,49 +3128,106 @@ function subscribeToCustomerOrders(userId) {
 /* ============================================================
   MODULE 12 — NOTIFICATIONS
 ============================================================ */
-function addLocalNotif(type, title, body) {
-  const n={id:Date.now(),type,title,body,is_read:false,created_at:new Date().toISOString()};
+const NOTIF_ICONS = {
+  new_order:'🛒', order_accepted:'✅', order_rejected:'❌',
+  order_ready:'📦', order_out_for_delivery:'🛵', order_delivered:'🎉',
+  vendor_approved:'🎊', announcement:'📢', system:'📣'
+};
+
+async function addNotif(type, title, body) {
+  const n = {id:'local-'+Date.now(), type, title, body, is_read:false, created_at:new Date().toISOString()};
   notifications.unshift(n);
   updateNotifBadge();
   renderNotifications();
+  // Persist to Supabase
+  if (userProfile?.id && !userProfile.id.startsWith('demo-')) {
+    try {
+      const {data} = await sb.from('notifications').insert({
+        user_id: userProfile.id, type, title, body, is_read: false
+      }).select('id,created_at').single();
+      if (data?.id) { n.id = data.id; n.created_at = data.created_at; }
+    } catch(e) {}
+  }
 }
+// Legacy alias — keeps existing call sites working
+function addLocalNotif(type, title, body) { addNotif(type, title, body); }
+
 async function loadNotifications() {
-  if (!userProfile?.id) return;
+  if (!userProfile?.id || userProfile.id.startsWith('demo-')) return;
   try {
-    const{data}=await sb.from('notifications').select('*').eq('user_id',userProfile.id).order('created_at',{ascending:false}).limit(30);
-    if(data&&data.length) notifications=[...data,...notifications.filter(n=>!data.find(d=>d.id===n.id))];
-  } catch(e){}
-  updateNotifBadge(); renderNotifications();
+    const {data} = await sb.from('notifications').select('*')
+      .eq('user_id', userProfile.id).order('created_at',{ascending:false}).limit(50);
+    if (data?.length) {
+      // Merge: DB records take priority, keep any local-only items not yet saved
+      const dbIds = new Set(data.map(d=>String(d.id)));
+      const localOnly = notifications.filter(n=>!dbIds.has(String(n.id)));
+      notifications = [...data, ...localOnly];
+    }
+  } catch(e) {}
+  updateNotifBadge();
+  renderNotifications();
 }
+
+function subscribeToNotifications(userId) {
+  sb.channel('notifs-'+userId)
+    .on('postgres_changes',{event:'INSERT',schema:'public',table:'notifications',filter:'user_id=eq.'+userId}, payload => {
+      const n = payload.new;
+      // Skip if we already have it (from our own addNotif insert)
+      if (notifications.find(x => String(x.id) === String(n.id))) return;
+      notifications.unshift(n);
+      updateNotifBadge();
+      renderNotifications();
+      showBrowserNotif(n.title, n.body||'');
+    })
+    .subscribe();
+}
+
 function updateNotifBadge() {
-  const unread=notifications.filter(n=>!n.is_read).length;
+  const unread = notifications.filter(n=>!n.is_read).length;
   ['vendor-notif-dot','customer-notif-dot'].forEach(id=>{
-    const el=document.getElementById(id); if(el) el.classList.toggle('show',unread>0);
+    const el=document.getElementById(id); if(el) el.classList.toggle('show', unread>0);
   });
-  const pc=document.getElementById('profile-notif-count');
-  if(pc){pc.textContent=unread||'';pc.style.display=unread?'inline':'none';}
+  const pc = document.getElementById('profile-notif-count');
+  if (pc) { pc.textContent=unread||''; pc.style.display=unread?'inline':'none'; }
 }
+
 function renderNotifications() {
-  const el=document.getElementById('notif-list'); if(!el) return;
-  if(!notifications.length){
-    el.innerHTML='<div style="padding:60px 20px;text-align:center;color:var(--muted)"><div style="font-size:48px;margin-bottom:12px">🔔</div><div style="font-size:15px;font-weight:600">No notifications yet</div></div>';
+  const el = document.getElementById('notif-list'); if(!el) return;
+  if (!notifications.length) {
+    el.innerHTML='<div style="padding:60px 20px;text-align:center;color:var(--muted)"><div style="font-size:48px;margin-bottom:12px">🔔</div><div style="font-size:15px;font-weight:600">No notifications yet</div><div style="font-size:13px;margin-top:6px">Order updates and alerts will appear here</div></div>';
     return;
   }
-  el.innerHTML=notifications.map(n=>'<div class="notif-item'+(n.is_read?'':' unread')+'" onclick="markNotifRead(\''+n.id+'\')">'
-    +'<div class="notif-icon">🔔</div>'
-    +'<div class="notif-body"><div class="notif-title">'+n.title+'</div><div class="notif-text">'+n.body+'</div><div class="notif-time">'+timeAgo(n.created_at)+'</div></div>'
-    +(!n.is_read?'<div class="notif-unread-dot"></div>':'')
-    +'</div>'
-  ).join('');
+  el.innerHTML = notifications.map(n => {
+    const icon = NOTIF_ICONS[n.type] || '🔔';
+    return '<div class="notif-item'+(n.is_read?'':' unread')+'" onclick="markNotifRead(\''+n.id+'\')">'
+      +'<div class="notif-icon">'+icon+'</div>'
+      +'<div class="notif-body"><div class="notif-title">'+n.title+'</div>'
+      +(n.body?'<div class="notif-text">'+n.body+'</div>':'')
+      +'<div class="notif-time">'+timeAgo(n.created_at)+'</div></div>'
+      +(!n.is_read?'<div class="notif-unread-dot"></div>':'')
+      +'</div>';
+  }).join('');
 }
-function markNotifRead(id) {
-  const n=notifications.find(n=>String(n.id)===String(id)); if(!n) return;
-  n.is_read=true; updateNotifBadge(); renderNotifications();
+
+async function markNotifRead(id) {
+  const n = notifications.find(n=>String(n.id)===String(id)); if(!n) return;
+  n.is_read = true;
+  updateNotifBadge();
+  renderNotifications();
+  // Persist to Supabase (only for real UUID ids, not local- prefix ones)
+  if (userProfile?.id && !String(id).startsWith('local-')) {
+    try { await sb.from('notifications').update({is_read:true}).eq('id',id).eq('user_id',userProfile.id); } catch(e) {}
+  }
 }
+
 async function markAllNotifsRead() {
-  notifications.forEach(n=>n.is_read=true);
-  updateNotifBadge(); renderNotifications();
-  showToast('All notifications marked as read');
+  notifications.forEach(n => n.is_read=true);
+  updateNotifBadge();
+  renderNotifications();
+  showToast('All marked as read ✓');
+  if (userProfile?.id && !userProfile.id.startsWith('demo-')) {
+    try { await sb.from('notifications').update({is_read:true}).eq('user_id',userProfile.id).eq('is_read',false); } catch(e) {}
+  }
 }
 
 /* ============================================================
@@ -3080,8 +3345,30 @@ function openProfileEdit() {
     const bio=document.getElementById('edit-bio'); if(bio){bio.value=vendorProfile.bio||'';countChars(bio,'edit-bio-count',160);}
     const area=document.getElementById('edit-area'); if(area) area.value=vendorProfile.area||'';
     const city=document.getElementById('edit-city'); if(city) city.value=vendorProfile.city||'';
+    const state=document.getElementById('edit-state'); if(state) state.value=vendorProfile.state||'';
+    // Food types
+    editSelectedFoods=[...(vendorProfile.food_types||[])];
+    document.querySelectorAll('#edit-food-grid .food-tile').forEach(tile=>{
+      tile.classList.toggle('selected', editSelectedFoods.includes(tile.dataset.type));
+    });
+    // Delivery option
+    editSelectedDelivery=vendorProfile.delivery_option||null;
+    document.querySelectorAll('#edit-delivery-opts .delivery-opt').forEach(opt=>{
+      opt.classList.toggle('selected', opt.dataset.delivery===editSelectedDelivery);
+    });
   }
   showScreen('screen-profile-edit');
+}
+function toggleEditFood(el, type) {
+  el.classList.toggle('selected');
+  editSelectedFoods=editSelectedFoods.includes(type)
+    ?editSelectedFoods.filter(t=>t!==type)
+    :[...editSelectedFoods, type];
+}
+function pickEditDelivery(el, type) {
+  document.querySelectorAll('#edit-delivery-opts .delivery-opt').forEach(o=>o.classList.remove('selected'));
+  el.classList.add('selected');
+  editSelectedDelivery=type;
 }
 function handleProfileImgUpload(input) {
   if(!input.files||!input.files[0]) return;
@@ -3101,7 +3388,7 @@ async function saveProfileEdit() {
     if(fullName&&userProfile){
       userProfile.full_name=fullName;
       if(userProfile.id&&!userProfile.id.startsWith('demo-')){
-        await sb.from('users').update({full_name:fullName}).eq('id',userProfile.id).catch(()=>{});
+        await sb.from('users').update({full_name:fullName}).eq('id',userProfile.id);
       }
       const cached=JSON.parse(localStorage.getItem('vh_users')||'{}');
       if(cached[_otpPhone]){cached[_otpPhone].full_name=fullName;localStorage.setItem('vh_users',JSON.stringify(cached));}
@@ -3112,15 +3399,22 @@ async function saveProfileEdit() {
       const bio=document.getElementById('edit-bio')?.value.trim(); if(bio!==undefined) updates.bio=bio;
       const area=document.getElementById('edit-area')?.value.trim(); if(area) updates.area=area;
       const city=document.getElementById('edit-city')?.value.trim(); if(city) updates.city=city;
+      const state=document.getElementById('edit-state')?.value; if(state) updates.state=state;
+      if(editSelectedFoods.length) updates.food_types=editSelectedFoods;
+      if(editSelectedDelivery) updates.delivery_option=editSelectedDelivery;
       if(Object.keys(updates).length){
-        const{data}=await sb.from('vendors').update(updates).eq('id',vendorProfile.id).select().single();
+        const{data,error}=await sb.from('vendors').update(updates).eq('id',vendorProfile.id).select().single();
+        if(error) throw new Error(error.message||'Update failed');
         if(data) vendorProfile={...vendorProfile,...data};
       }
     }
     updateProfileUI(); renderVendorDash?.();
     showToast('Profile updated ✓');
     navBack('screen-profile');
-  } catch(e){ showToast('Error saving. Try again.','err'); }
+  } catch(e){
+    console.error('Save profile error:', e);
+    showToast('Error: '+(e.message||'Could not save'),'err');
+  }
   btn.textContent='Save'; btn.disabled=false;
 }
 
@@ -3137,7 +3431,7 @@ function renderVendorMenu() {
         +'<div style="font-size:12px;color:var(--muted)">₦'+item.price+(item.desc?' · '+item.desc:'')+'</div>'
         +'<div style="display:flex;align-items:center;gap:6px;margin-top:6px">'
         +'<input id="plates-input-'+i+'" type="number" min="0" value="'+(item.plates!=null?item.plates:'')+'" placeholder="Plates?" inputmode="numeric" style="width:80px;padding:4px 8px;border-radius:8px;border:1.5px solid var(--border);background:var(--surface2);color:var(--text);font-size:13px;font-family:\'DM Sans\',sans-serif">'
-        +'<button onclick="savePlates('+i+')" style="padding:4px 12px;border-radius:8px;border:none;background:var(--accent);color:#000;font-size:12px;font-weight:700;font-family:\'Syne\',sans-serif;cursor:pointer">Save</button>'
+        +'<button onclick="savePlates('+i+')" style="padding:4px 12px;border-radius:8px;border:none;background:var(--accent);color:#000;font-size:12px;font-weight:700;font-family:\'DM Sans\',sans-serif;cursor:pointer">Save</button>'
         +(item.plates!=null?'<span style="font-size:11px;color:'+(item.plates>0?'var(--green)':'var(--red)')+';font-weight:600">'+(item.plates>0?item.plates+' left':'Sold out')+'</span>':'')
         +'</div></div></div>'
         +'<div style="color:var(--red);cursor:pointer;font-size:22px;padding-left:8px;align-self:center" onclick="removeMenuItem('+i+')">×</div>'
@@ -3206,8 +3500,68 @@ function renderObStep(step){
   const bb=document.getElementById('ob-back-btn');if(bb)bb.style.visibility=step===1?'hidden':'visible';
   window.scrollTo(0,0);if(step===6)renderObMenuList();
 }
-function obNext(step){obStep=step+1;renderObStep(obStep);}
+function obNext(step){
+  obStep=step+1;
+  // Auto-save progress after step 3 (location complete)
+  if(step===3) saveObProgress();
+  renderObStep(obStep);
+}
 function obBack(){if(obStep<=1){showScreen('screen-onboard');return;}obStep--;renderObStep(obStep);}
+
+// ── Save onboarding progress early so vendors don't lose data ──
+async function saveObProgress() {
+  if (!userProfile?.id || userProfile.id.startsWith('demo-')) return;
+  try {
+    // Extract current form data
+    const fn = document.getElementById('ob-fullname')?.value.trim() || '';
+    const phone = document.getElementById('ob-phone')?.value.trim() || '';
+    const bn = document.getElementById('ob-bizname')?.value.trim() || '';
+    const bio = document.getElementById('ob-bio')?.value.trim() || '';
+    const address = document.getElementById('ob-address')?.value.trim() || '';
+    const area = document.getElementById('ob-area')?.value.trim() || '';
+    const city = document.getElementById('ob-city')?.value.trim() || '';
+    const state = document.getElementById('ob-state')?.value || '';
+
+    // Check if vendor already exists
+    const { data: existing } = await sb.from('vendors').select('id').eq('user_id', userProfile.id).maybeSingle();
+
+    if (existing?.id) {
+      // Update existing
+      await sb.from('vendors').update({
+        business_name: bn, bio, address, area, city, state,
+        updated_at: new Date().toISOString()
+      }).eq('id', existing.id);
+      vendorProfile = { ...vendorProfile, business_name: bn, bio, address, area, city, state };
+    } else if (bn && address && city) {
+      // Create new vendor profile (minimal, just basic info)
+      const { data: vd } = await sb.from('vendors').insert({
+        user_id: userProfile.id,
+        business_name: bn,
+        bio: bio || '',
+        address, area, city, state,
+        is_available: true,
+        is_approved: false, // pending admin approval
+        emoji: '🍲'
+      }).select().single();
+      if (vd) vendorProfile = vd;
+    }
+  } catch (e) {
+    console.warn('Onboarding progress save failed:', e);
+  }
+}
+
+// ── Load existing vendor profile if they're returning mid-registration ──
+async function loadExistingVendor() {
+  if (!userProfile?.id || userProfile.id.startsWith('demo-')) return;
+  try {
+    const { data: existing } = await sb.from('vendors').select('*').eq('user_id', userProfile.id).maybeSingle();
+    if (existing) {
+      vendorProfile = existing;
+      return true; // they have a vendor profile
+    }
+  } catch (e) {}
+  return false;
+}
 function obValidate(step){
   let ok=false;
   if(step===1)ok=v('ob-fullname')&&v('ob-phone');
@@ -3225,7 +3579,6 @@ function toggleFood(el,type){
 function pickDelivery(el,type){
   document.querySelectorAll('.delivery-opt').forEach(o=>o.classList.remove('selected'));
   el.classList.add('selected');selectedDelivery=type;
-  document.getElementById('delivery-fee-wrap').style.display=(type==='delivery'||type==='both')?'block':'none';
   const n5=document.getElementById('ob-next-5');if(n5)n5.disabled=false;
 }
 function renderObMenuList(){
@@ -3261,12 +3614,7 @@ async function obFinish(){
   const area=document.getElementById('ob-area').value.trim();
   const city=document.getElementById('ob-city').value.trim();
   const state=document.getElementById('ob-state').value;
-  const open=document.getElementById('ob-open').value;
-  const close=document.getElementById('ob-close').value;
   const minOrder=document.getElementById('ob-minorder').value;
-  const dfee=document.getElementById('ob-dfee').value;
-  const dradius=document.getElementById('ob-dradius').value;
-  const days=[...document.querySelectorAll('#days-wrap .chip.active')].map(d=>d.textContent);
   const dlLabel={delivery:'🚚 Delivery',pickup:'🏠 Pickup Only',both:'✅ Delivery & Pickup'}[selectedDelivery]||'—';
   const avatarHtml=vendorLogoUrl?'<img src="'+vendorLogoUrl+'" style="width:100%;height:100%;object-fit:cover;border-radius:50%">':fn.charAt(0).toUpperCase();
   let savedOk=false;
@@ -3285,19 +3633,38 @@ async function obFinish(){
       }
 
       if(btn){btn.textContent='Saving…';}
-      const{data:vd,error}=await sb.from('vendors').insert({
-        user_id:uid,business_name:bn,bio:document.getElementById('ob-bio').value.trim(),
-        address:document.getElementById('ob-address').value.trim(),area,city,state,
-        food_types:selectedFoods,delivery_option:selectedDelivery,
-        delivery_fee:dfee?parseFloat(dfee):0,delivery_radius:dradius,
-        open_time:open,close_time:close,operating_days:days,
-        min_order:minOrder?parseFloat(minOrder):null,
-        logo_url:logoPublicUrl,
-        is_available:true,is_approved:true,emoji:'🍲'
-      }).select().single();
-      if(error){ saveError=error.message; console.error('Vendor insert error:',error); }
-      else if(vd){ console.log('Vendor saved, logo_url:', vd.logo_url ? vd.logo_url.substring(0,80) : 'NULL');
-        vendorProfile=vd;savedOk=true;
+
+      // Check if vendor already exists
+      const{data:existing}=await sb.from('vendors').select('id').eq('user_id',uid).maybeSingle();
+
+      let vd=null;
+      if(existing?.id){
+        // Update existing vendor profile
+        const{data:updated,error:updateErr}=await sb.from('vendors').update({
+          business_name:bn,bio:document.getElementById('ob-bio').value.trim(),
+          address:document.getElementById('ob-address').value.trim(),area,city,state,
+          food_types:selectedFoods,delivery_option:selectedDelivery,
+          min_order:minOrder?parseFloat(minOrder):null,
+          logo_url:logoPublicUrl,
+          is_available:true,is_approved:true
+        }).eq('id',existing.id).select().single();
+        if(updateErr){ saveError=updateErr.message; console.error('Vendor update error:',updateErr); }
+        else{ vd=updated; }
+      }else{
+        // Insert new vendor profile
+        const{data:inserted,error:insertErr}=await sb.from('vendors').insert({
+          user_id:uid,business_name:bn,bio:document.getElementById('ob-bio').value.trim(),
+          address:document.getElementById('ob-address').value.trim(),area,city,state,
+          food_types:selectedFoods,delivery_option:selectedDelivery,
+          min_order:minOrder?parseFloat(minOrder):null,
+          logo_url:logoPublicUrl,
+          is_available:true,is_approved:true,emoji:'🍲'
+        }).select().single();
+        if(insertErr){ saveError=insertErr.message; console.error('Vendor insert error:',insertErr); }
+        else{ vd=inserted; }
+      }
+
+      if(vd){ console.log('Vendor saved successfully'); vendorProfile=vd; savedOk=true;
         // Upload menu item images and save
         for(const item of obMenuItems){
           let imageUrl = null;
@@ -3324,7 +3691,7 @@ async function obFinish(){
     +'<div style="width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;overflow:hidden;flex-shrink:0">'+avatarHtml+'</div>'
     +'<div><div style="font-size:17px;font-weight:800">'+bn+'</div><div style="font-size:12px;color:var(--accent)">'+selectedFoods.join(' · ')+'</div></div></div>'
     +row('👤 Vendor',fn)+row('📍 Location',area+', '+city+(state?', '+state:''))
-    +row('🚚 Fulfillment',dlLabel)+row('⏰ Hours',open+' – '+close)
+    +row('🚚 Fulfillment',dlLabel)
     +row('🍽️ Menu',obMenuItems.length+' dishes')
     +(savedOk?'<div style="color:var(--green);font-size:13px;margin-top:10px">✓ Saved to database</div>'
              :'<div style="color:var(--red);font-size:12px;margin-top:10px;padding:8px;background:rgba(224,92,92,.08);border-radius:8px">✗ DB save failed: '+saveError+'</div>');
@@ -3457,7 +3824,7 @@ function handleFoodImgUpload(input,zoneId,previewId){
   </div>
   <div style="padding:0 20px 16px">
     <div style="font-size:13px;color:var(--muted)" id="rider-greeting">Ready to ride 👋</div>
-    <div style="font-size:22px;font-weight:800;font-family:'Syne',sans-serif">Rider Dashboard</div>
+    <div style="font-size:22px;font-weight:800;font-family:'DM Sans',sans-serif">Rider Dashboard</div>
   </div>
   <!-- Earnings summary -->
   <div class="earnings-card">
@@ -3497,7 +3864,7 @@ function handleFoodImgUpload(input,zoneId,previewId){
   <div class="topbar">
     <div style="display:flex;align-items:center;gap:10px">
       <div class="back-btn" onclick="navBack('screen-rider-dash')">←</div>
-      <div style="font-size:18px;font-weight:700;font-family:'Syne',sans-serif">Delivery Details</div>
+      <div style="font-size:18px;font-weight:700;font-family:'DM Sans',sans-serif">Delivery Details</div>
     </div>
   </div>
   <div style="padding:0 20px" id="rider-order-detail-content">
@@ -3512,7 +3879,7 @@ function handleFoodImgUpload(input,zoneId,previewId){
   <div class="topbar">
     <div style="display:flex;align-items:center;gap:10px">
       <div class="back-btn" onclick="navBack('screen-rider-dash')">←</div>
-      <div style="font-size:18px;font-weight:700;font-family:'Syne',sans-serif">My Earnings</div>
+      <div style="font-size:18px;font-weight:700;font-family:'DM Sans',sans-serif">My Earnings</div>
     </div>
   </div>
   <div class="earnings-card" style="margin-top:8px">
@@ -3546,7 +3913,7 @@ function handleFoodImgUpload(input,zoneId,previewId){
   </div>
   <div style="padding:0 20px 16px">
     <div style="font-size:13px;color:var(--muted)">Admin Panel</div>
-    <div style="font-size:22px;font-weight:800;font-family:'Syne',sans-serif">Overview</div>
+    <div style="font-size:22px;font-weight:800;font-family:'DM Sans',sans-serif">Overview</div>
   </div>
   <!-- KPI Stats -->
   <div class="admin-stat-grid">
@@ -3591,7 +3958,7 @@ function handleFoodImgUpload(input,zoneId,previewId){
   <div class="topbar">
     <div style="display:flex;align-items:center;gap:10px">
       <div class="back-btn" onclick="navBack('screen-vendor-dash')">←</div>
-      <div style="font-size:18px;font-weight:700;font-family:'Syne',sans-serif">Earnings & Commission</div>
+      <div style="font-size:18px;font-weight:700;font-family:'DM Sans',sans-serif">Earnings & Commission</div>
     </div>
   </div>
   <!-- Revenue card -->
@@ -3611,7 +3978,7 @@ function handleFoodImgUpload(input,zoneId,previewId){
       <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:8px">
         <div>
           <div style="font-size:12px;font-weight:700;color:var(--red);text-transform:uppercase;letter-spacing:.5px">Commission Owed</div>
-          <div style="font-size:28px;font-weight:800;font-family:'Syne',sans-serif;margin-top:4px" id="comm-outstanding">₦0</div>
+          <div style="font-size:28px;font-weight:800;font-family:'DM Sans',sans-serif;margin-top:4px" id="comm-outstanding">₦0</div>
         </div>
         <div style="text-align:right">
           <div style="font-size:11px;color:var(--muted)">Rate</div>
@@ -3646,7 +4013,7 @@ function handleFoodImgUpload(input,zoneId,previewId){
   <div class="topbar">
     <div style="display:flex;align-items:center;gap:10px">
       <div class="back-btn" onclick="navBack('screen-admin-dash')">←</div>
-      <div style="font-size:18px;font-weight:700;font-family:'Syne',sans-serif">Vendor Review</div>
+      <div style="font-size:18px;font-weight:700;font-family:'DM Sans',sans-serif">Vendor Review</div>
     </div>
   </div>
   <div style="padding:0 20px" id="admin-vendor-detail-content">
@@ -4028,7 +4395,7 @@ async function renderAdminApprovals(el) {
         <div style="font-size:12px;color:var(--muted);margin-bottom:12px">${v.bio||'No bio provided'}</div>
         <div style="font-size:12px;color:var(--muted);margin-bottom:12px">Food types: ${(v.food_types||[]).join(', ')||'—'}</div>
         <div style="display:flex;gap:8px">
-          <button onclick="approveVendor('${v.id}')" style="flex:1;padding:10px;border-radius:12px;border:none;background:var(--green);color:#fff;font-size:13px;font-weight:700;font-family:'Syne',sans-serif;cursor:pointer">✓ Approve</button>
+          <button onclick="approveVendor('${v.id}')" style="flex:1;padding:10px;border-radius:12px;border:none;background:var(--green);color:#fff;font-size:13px;font-weight:700;font-family:'DM Sans',sans-serif;cursor:pointer">✓ Approve</button>
           <button onclick="viewAdminVendor('${v.id}')" style="flex:0 0 90px;padding:10px;border-radius:12px;border:1px solid var(--border);background:transparent;color:var(--text);font-size:13px;font-weight:600;cursor:pointer">View</button>
           <button onclick="rejectVendor('${v.id}')" style="flex:0 0 80px;padding:10px;border-radius:12px;border:none;background:var(--red);color:#fff;font-size:13px;font-weight:700;cursor:pointer">✕</button>
         </div>
@@ -4158,8 +4525,8 @@ async function viewAdminVendor(vendorId) {
       <div style="font-size:14px;font-weight:700;margin-bottom:10px">Menu (${(menu||[]).length} items)</div>
       ${(menu||[]).map(m=>`<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px"><span>${m.name}</span><span style="color:var(--accent)">₦${m.price}</span></div>`).join('')}
       <div style="display:flex;gap:8px;margin-top:20px">
-        ${!v.is_approved ? `<button onclick="approveVendor('${v.id}');navBack('screen-admin-dash')" style="flex:1;padding:12px;border-radius:14px;border:none;background:var(--green);color:#fff;font-size:14px;font-weight:700;font-family:'Syne',sans-serif;cursor:pointer">✓ Approve Vendor</button>` : ''}
-        ${v.is_approved ? `<button onclick="suspendVendor('${v.id}');navBack('screen-admin-dash')" style="flex:1;padding:12px;border-radius:14px;border:none;background:var(--red);color:#fff;font-size:14px;font-weight:700;font-family:'Syne',sans-serif;cursor:pointer">Suspend</button>` : ''}
+        ${!v.is_approved ? `<button onclick="approveVendor('${v.id}');navBack('screen-admin-dash')" style="flex:1;padding:12px;border-radius:14px;border:none;background:var(--green);color:#fff;font-size:14px;font-weight:700;font-family:'DM Sans',sans-serif;cursor:pointer">✓ Approve Vendor</button>` : ''}
+        ${v.is_approved ? `<button onclick="suspendVendor('${v.id}');navBack('screen-admin-dash')" style="flex:1;padding:12px;border-radius:14px;border:none;background:var(--red);color:#fff;font-size:14px;font-weight:700;font-family:'DM Sans',sans-serif;cursor:pointer">Suspend</button>` : ''}
       </div>`;
   } catch(e) { el.innerHTML = '<div style="padding:20px;text-align:center;color:var(--muted);font-size:13px">Error loading vendor</div>'; }
 }
@@ -4243,7 +4610,7 @@ async function showVendorEarnings() {
   <div class="topbar">
     <div style="display:flex;align-items:center;gap:10px">
       <div class="back-btn" onclick="navBack('screen-profile')">←</div>
-      <div style="font-size:18px;font-weight:700;font-family:'Syne',sans-serif">My Reviews</div>
+      <div style="font-size:18px;font-weight:700;font-family:'DM Sans',sans-serif">My Reviews</div>
     </div>
   </div>
   <div style="padding:0 20px" id="my-reviews-list">
@@ -4260,7 +4627,7 @@ async function showVendorEarnings() {
   <div class="topbar">
     <div style="display:flex;align-items:center;gap:10px">
       <div class="back-btn" onclick="navBack('screen-profile')">←</div>
-      <div style="font-size:18px;font-weight:700;font-family:'Syne',sans-serif">Saved Vendors</div>
+      <div style="font-size:18px;font-weight:700;font-family:'DM Sans',sans-serif">Saved Vendors</div>
     </div>
   </div>
   <div style="padding:0 20px" id="saved-vendors-list">
@@ -4277,7 +4644,7 @@ async function showVendorEarnings() {
   <div class="topbar">
     <div style="display:flex;align-items:center;gap:10px">
       <div class="back-btn" onclick="navBack('screen-profile')">←</div>
-      <div style="font-size:18px;font-weight:700;font-family:'Syne',sans-serif">Settings</div>
+      <div style="font-size:18px;font-weight:700;font-family:'DM Sans',sans-serif">Settings</div>
     </div>
   </div>
   <div style="padding:0 20px">
@@ -4294,6 +4661,12 @@ async function showVendorEarnings() {
     </div>
     <div style="font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;font-weight:600;padding:16px 0 8px">App</div>
     <div class="menu-row" style="margin-bottom:8px">
+      <div class="menu-row-left"><span style="font-size:20px" id="theme-icon">🌙</span>Dark Mode</div>
+      <div id="theme-toggle" onclick="toggleTheme()" style="width:44px;height:24px;border-radius:12px;position:relative;cursor:pointer;transition:background .25s;flex-shrink:0">
+        <div id="theme-toggle-knob" style="position:absolute;top:2px;left:2px;width:20px;height:20px;background:#fff;border-radius:50%;transition:left .25s;box-shadow:0 1px 4px rgba(0,0,0,.3)"></div>
+      </div>
+    </div>
+    <div class="menu-row" style="margin-bottom:8px">
       <div class="menu-row-left"><span style="font-size:20px">🌐</span>Language</div>
       <span style="font-size:13px;color:var(--muted)">English</span>
     </div>
@@ -4307,16 +4680,19 @@ async function showVendorEarnings() {
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
     </div>
     <div style="margin-top:24px;padding:20px;background:var(--surface);border:1px solid var(--border);border-radius:16px;text-align:center">
-      <div style="font-size:22px;font-weight:800;font-family:'Syne',sans-serif;margin-bottom:4px">abinci<span style="color:var(--accent)">.food</span></div>
+      <div style="font-size:22px;font-weight:800;font-family:'DM Sans',sans-serif;margin-bottom:4px">abinci<span style="color:var(--accent)">.food</span></div>
       <div style="font-size:12px;color:var(--muted)">Homemade food, made with love 🍲</div>
       <div style="font-size:11px;color:var(--muted);margin-top:8px">© 2025 abinci.food · Kano, Nigeria</div>
     </div>
-    <button onclick="signOut()" style="width:100%;margin-top:16px;padding:14px;border-radius:14px;border:1.5px solid var(--red);background:transparent;color:var(--red);font-size:15px;font-weight:700;font-family:'Syne',sans-serif;cursor:pointer">Sign Out</button>
+    <button onclick="signOut()" style="width:100%;margin-top:16px;padding:14px;border-radius:14px;border:1.5px solid var(--red);background:transparent;color:var(--red);font-size:15px;font-weight:700;font-family:'DM Sans',sans-serif;cursor:pointer">Sign Out</button>
   </div>
 </div>
 
 
   <script>
+    // Update theme toggle UI now that all DOM elements exist
+    updateThemeToggleUI();
+
     let _swReg = null;
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
@@ -4330,28 +4706,53 @@ async function showVendorEarnings() {
     async function requestPushPermission() {
       if (!('Notification' in window)) return;
       if (Notification.permission === 'denied') return;
-      if (Notification.permission !== 'granted') {
-        const perm = await Notification.requestPermission();
-        if (perm !== 'granted') return;
+      if (Notification.permission === 'granted') return; // already granted — don't re-ask or re-ping
+      const perm = await Notification.requestPermission();
+      if (perm === 'granted') {
+        await subscribeToPush(); // register and save push token
+        showBrowserNotif('abinci.food 🍽️', 'Notifications enabled! You\'ll be notified of order updates.');
       }
-      // Send a welcome notification to confirm it works
-      showBrowserNotif('abinci.food 🍽️', 'Notifications are on! You will be notified of new orders.');
+    }
+
+    // ── VAPID public key — replace with your key from: npx web-push generate-vapid-keys ──
+    // See supabase/functions/push-notify/README.md for full setup instructions
+    const VAPID_PUBLIC_KEY = 'BEa-0auMM6KppXO6458e6J08mDXI1bj11fnR-Cc80t57hLd9Y-jkN7NWZvQ6ZLw3bNIdHnAth_AGRXCeGRV_LnE';
+
+    function urlBase64ToUint8Array(base64String) {
+      const padding = '='.repeat((4 - base64String.length % 4) % 4);
+      const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+      const rawData = window.atob(base64);
+      return Uint8Array.from([...rawData].map(c => c.charCodeAt(0)));
     }
 
     async function subscribeToPush() {
       try {
         if (!_swReg) return;
-        // Use a simple local notification approach — no VAPID server needed
-        // Store in Supabase push_tokens for future server-push
-        const existing = await _swReg.pushManager.getSubscription();
-        const sub = existing || null;
+        if (VAPID_PUBLIC_KEY.startsWith('REPLACE_')) return; // not configured yet
+
+        // Get or create subscription
+        let sub = await _swReg.pushManager.getSubscription();
+        if (!sub) {
+          sub = await _swReg.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
+          });
+        }
+
+        // Save to Supabase push_tokens (endpoint + keys as separate columns)
         if (sub && window.userProfile?.id) {
+          const key = sub.getKey('p256dh');
+          const auth = sub.getKey('auth');
+          if (!key || !auth) return;
+          const p256dh = btoa(String.fromCharCode(...new Uint8Array(key)));
+          const authStr = btoa(String.fromCharCode(...new Uint8Array(auth)));
           try {
             await window.sb?.from('push_tokens').upsert({
               user_id: window.userProfile.id,
-              token: JSON.stringify(sub),
-              platform: 'web'
-            }, { onConflict: 'user_id' });
+              endpoint: sub.endpoint,
+              p256dh,
+              auth: authStr,
+            }, { onConflict: 'endpoint' });
           } catch(e) {}
         }
       } catch(e) {}
@@ -4360,6 +4761,7 @@ async function showVendorEarnings() {
     // Show local browser notification (works without server)
     // Make available globally
     window.requestPushPermission = requestPushPermission;
+    window.subscribeToPush = subscribeToPush;
   </script>
 
   <!-- PWA Install Banner -->

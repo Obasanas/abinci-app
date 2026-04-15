@@ -37,8 +37,16 @@ const TEMPLATES = {
     body:  `Your order from ${order.vendor_name} was not accepted. Try another vendor.`,
   }),
   order_ready: (order) => ({
-    title: '🍽 Order Ready!',
-    body:  `Your order from ${order.vendor_name} is ready for ${order.delivery_type === 'pickup' ? 'pickup' : 'delivery'}!`,
+    title: '📦 Order Ready!',
+    body:  `Your order from ${order.vendor_name} is ready — a rider will pick it up shortly.`,
+  }),
+  order_out_for_delivery: (order) => ({
+    title: '🛵 On the Way!',
+    body:  `Your order from ${order.vendor_name} is out for delivery. Should arrive soon!`,
+  }),
+  order_delivered: (order) => ({
+    title: '✅ Order Delivered!',
+    body:  `Your order from ${order.vendor_name} has been delivered. Enjoy your meal!`,
   }),
 };
 

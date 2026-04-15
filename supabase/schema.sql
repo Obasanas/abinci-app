@@ -330,6 +330,7 @@ CREATE POLICY "reviews_anon_insert"       ON public.reviews FOR INSERT TO anon W
 
 -- notifications
 CREATE POLICY "notif_read_own"   ON public.notifications FOR SELECT TO authenticated USING (user_id = auth.uid());
+CREATE POLICY "notif_insert_own" ON public.notifications FOR INSERT TO authenticated WITH CHECK (user_id = auth.uid());
 CREATE POLICY "notif_update_own" ON public.notifications FOR UPDATE TO authenticated USING (user_id = auth.uid());
 
 -- push_tokens
@@ -373,3 +374,6 @@ CREATE POLICY "media_owner_manage" ON storage.objects
 
 -- Add pickup_deadline for 2-stage driver accept flow
 ALTER TABLE public.orders ADD COLUMN IF NOT EXISTS pickup_deadline TIMESTAMPTZ;
+
+-- Add delivery address
+ALTER TABLE public.orders ADD COLUMN IF NOT EXISTS delivery_address TEXT;

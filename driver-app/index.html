@@ -11,7 +11,7 @@
   <link rel="apple-touch-icon" href="/icon-192.png">
   <meta name="mobile-web-app-capable" content="yes">
 <title>abinci.food — Driver</title>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="tokens.css">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
@@ -42,6 +42,7 @@
 .order-card {
   background:var(--surface); border:1px solid var(--border);
   border-radius:var(--radius-lg); padding:16px; margin-bottom:12px;
+  box-sizing:border-box;
 }
 .order-card.available { border-color:var(--accent); }
 .order-card.active { border-color:var(--green); }
@@ -67,136 +68,14 @@
 
 .trip-row { display:flex; justify-content:space-between; align-items:center; padding:12px 0; border-bottom:1px solid var(--border); }
 .trip-row:last-child { border-bottom:none; }
-.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;align-items:flex-end;justify-content:center;padding:0}
-.modal-overlay.open{display:flex}
-.modal{background:var(--surface);border-radius:24px 24px 0 0;padding:28px 24px 40px;width:100%;max-width:430px;max-height:90vh;overflow-y:auto}
-.modal-close{position:absolute;top:16px;right:16px;width:32px;height:32px;border-radius:50%;background:var(--surface2);border:none;color:var(--text);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1}
-.modal-title{font-family:var(--font-head);font-size:20px;font-weight:800;margin-bottom:20px}
-.form-group{margin-bottom:16px}
-.form-label{font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;display:block}
 
-/* ── KYC scroll fix ── */
-#screen-kyc-step1,
-#screen-kyc-step2,
-#screen-kyc-step3 {
-  overflow-y: auto !important;
-  height: 100% !important;
-  display: block !important;
-}
-#screen-kyc-step1 > div,
-#screen-kyc-step2 > div,
-#screen-kyc-step3 > div {
-  overflow-y: auto;
-  max-height: 100vh;
-  padding-bottom: 40px;
-}
-
-/* ── Global responsiveness ── */
-* { box-sizing: border-box; }
-html, body { margin: 0; padding: 0; overflow-x: hidden; }
-input, select, button, textarea {
-  max-width: 100%;
-  font-size: 16px; /* Prevents iOS zoom on focus */
-}
-img { max-width: 100%; height: auto; }
-
-/* Safe area insets for notched phones */
-.bottom-nav {
-  padding-bottom: calc(10px + env(safe-area-inset-bottom)) !important;
-}
-.screen {
-  padding-bottom: calc(80px + env(safe-area-inset-bottom));
-  min-height: 100%;
-  overflow-y: auto;
-}
-#screen-kyc-step1, #screen-kyc-step2, #screen-kyc-step3 {
-  padding-bottom: 40px;
-}
-@keyframes spin{to{transform:rotate(360deg)}}
-
-/* ═══════════════════════════════════════════════════
-   RESPONSIVE — Mobile-first, fits all screen sizes
-═══════════════════════════════════════════════════ */
-
-/* App container */
-html, body {
-  height: 100%;
-  width: 100%;
-  margin: 0;
-  padding: 0;
-  overflow: hidden;
-  -webkit-text-size-adjust: 100%;
-  text-size-adjust: 100%;
-}
-
-/* All screens fill viewport */
-.screen {
-  position: fixed;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  overflow-y: auto;
-  overflow-x: hidden;
-  -webkit-overflow-scrolling: touch;
-  padding-bottom: calc(80px + env(safe-area-inset-bottom));
-  box-sizing: border-box;
-}
-
-.screen:not(.active) { display: none !important; }
-.screen.active { display: block !important; }
-
-/* Bottom nav safe area */
-.bottom-nav {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  padding-bottom: env(safe-area-inset-bottom);
-  z-index: 100;
-}
-
-/* Prevent input zoom on iOS */
-input, select, textarea {
-  font-size: 16px !important;
-  max-width: 100%;
-}
-
-/* Images never overflow */
-img { max-width: 100%; height: auto; }
-
-/* Topbar always at top */
-.topbar {
-  position: sticky;
-  top: 0;
-  z-index: 50;
-}
-
-/* Forms fill width */
-.form-input, .form-select, .big-btn {
-  width: 100%;
-  box-sizing: border-box;
-}
-
-/* Cards never overflow */
-.order-card, .menu-card, .vendor-card {
-  max-width: 100%;
-  box-sizing: border-box;
-}
-
-/* Modal full width on mobile */
-.modal-overlay {
-  padding: 0 !important;
-}
-
-/* Safe scrolling for KYC */
-#screen-kyc-step1,
-#screen-kyc-step2,
-#screen-kyc-step3 {
-  padding-bottom: 60px !important;
-}
+/* Modal — driver app uses display toggle (not opacity) */
+.modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.7); z-index:200; align-items:flex-end; justify-content:center; padding:0; }
+.modal-overlay.open { display:flex; }
+.modal { background:var(--surface); border-radius:24px 24px 0 0; padding:28px 24px calc(40px + env(safe-area-inset-bottom)); width:100%; max-width:var(--app-width); max-height:90vh; overflow-y:auto; position:relative; }
+.modal-close { position:absolute; top:16px; right:16px; width:32px; height:32px; border-radius:50%; background:var(--surface2); border:none; color:var(--text); font-size:18px; cursor:pointer; display:flex; align-items:center; justify-content:center; line-height:1; }
 
 @keyframes spin { to { transform: rotate(360deg); } }
-
 </style>
 </head>
 <body>
@@ -573,8 +452,6 @@ img { max-width: 100%; height: auto; }
     <div id="trips-list">
       <div style="padding:20px 0;text-align:center;color:var(--muted);font-size:13px">No completed trips yet</div>
     </div>
-  </div>
-</div>
   </div>
 </div>
 
@@ -1619,6 +1496,15 @@ async function renderOrderDetail(orderId, isActive) {
     } catch(e) { console.warn('Vendor fetch error:', e.message); }
   }
 
+  // Fetch customer phone from users table if missing on the order
+  let customerPhone = o.customer_phone || '';
+  if (!customerPhone && o.customer_id) {
+    try {
+      const { data: cu } = await sb.from('users').select('phone').eq('id', o.customer_id).maybeSingle();
+      if (cu?.phone) customerPhone = cu.phone;
+    } catch(_) {}
+  }
+
   // Fallback vendor name from order if available
   const vendorName = (vendor && vendor.business_name) || o.vendor_name || 'Vendor';
   const vendorAddr = vendor ? ((vendor.address || '') + ' ' + (vendor.area || '') + ', ' + (vendor.city || '')).trim() : '';
@@ -1642,8 +1528,8 @@ async function renderOrderDetail(orderId, isActive) {
     ? '<a href="tel:' + vendor.phone + '" style="display:inline-flex;align-items:center;gap:6px;margin-top:10px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:8px 14px;font-size:13px;color:var(--text);text-decoration:none">📞 Call Vendor</a>'
     : '';
 
-  const callCustomer = o.customer_phone
-    ? '<a href="tel:' + o.customer_phone + '" style="display:inline-flex;align-items:center;gap:6px;margin-top:10px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:8px 14px;font-size:13px;color:var(--text);text-decoration:none">📞 Call Customer</a>'
+  const callCustomer = customerPhone
+    ? '<a href="tel:' + customerPhone + '" style="display:inline-flex;align-items:center;gap:6px;margin-top:10px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:8px 14px;font-size:13px;color:var(--text);text-decoration:none">📞 Call Customer</a>'
     : '';
 
   const noteHtml = o.note ? '<div style="font-size:12px;color:var(--muted);margin-top:6px">📝 ' + o.note + '</div>' : '';
@@ -1660,6 +1546,17 @@ async function renderOrderDetail(orderId, isActive) {
     ? '<button onclick="acceptOrder(\'' + o.id + '\')" style="width:100%;padding:14px;border-radius:14px;border:none;background:var(--accent);color:#000;font-size:15px;font-weight:700;font-family:var(--font-head);cursor:pointer;margin-bottom:16px">Accept Delivery → ' + formatCurrency(DELIVERY_FEE) + '</button>'
     : '';
 
+  // Stage 2: driver accepted, on the way to vendor — show countdown + confirm pickup
+  const acceptedHtml = isMyAccepted
+    ? '<div style="background:rgba(245,166,35,.08);border:1px solid rgba(245,166,35,.3);border-radius:14px;padding:14px;margin-bottom:14px;text-align:center">'
+      + '<div style="font-size:12px;color:var(--muted);margin-bottom:4px">⏱ Time to reach vendor</div>'
+      + '<div id="pickup-countdown" style="font-size:28px;font-weight:800;color:var(--accent);font-family:var(--font-head)">15:00</div>'
+      + '<div style="font-size:11px;color:var(--muted);margin-top:4px">Head to vendor and tap confirm when you arrive</div>'
+      + '</div>'
+      + '<button id="confirm-pickup-btn" onclick="confirmPickup(\'' + o.id + '\')" style="width:100%;padding:14px;border-radius:14px;border:none;background:var(--green);color:#fff;font-size:15px;font-weight:700;font-family:var(--font-head);cursor:pointer;margin-bottom:10px">✓ Confirm Pickup — I\'m at the vendor</button>'
+      + '<button onclick="releaseOrder(\'' + o.id + '\')" style="width:100%;padding:12px;border-radius:14px;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:13px;cursor:pointer;margin-bottom:16px">Can\'t make it — Release order</button>'
+    : '';
+
   el.innerHTML =
     '<div class="status-track">' + stepsHtml + '</div>'
     + '<div class="order-card" style="margin-bottom:14px">'
@@ -1670,7 +1567,7 @@ async function renderOrderDetail(orderId, isActive) {
     + '<div class="order-card" style="margin-bottom:14px">'
     + '<div style="font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">👤 Deliver To</div>'
     + '<div style="font-size:16px;font-weight:700">' + (o.customer_name || 'Customer') + '</div>'
-    + (o.customer_phone ? '<div style="font-size:13px;color:var(--muted);margin-top:4px">' + o.customer_phone + '</div>' : '')
+    + (customerPhone ? '<div style="font-size:13px;color:var(--muted);margin-top:4px">📞 ' + customerPhone + '</div>' : '')
     + (o.delivery_address ? '<div style="font-size:13px;color:var(--muted);margin-top:4px">📍 ' + o.delivery_address + '</div>' : '')
     + callCustomer + '</div>'
     + '<div class="order-card" style="margin-bottom:14px">'
