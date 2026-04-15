@@ -213,6 +213,14 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:#f4f5f7;color:
       <span class="ni">💰</span>Commission
       <span class="nav-badge" id="comm-badge" style="display:none">0</span>
     </div>
+    <div class="sb-section">Community</div>
+    <div class="nav-item" id="nav-reports" onclick="switchPage('reports')">
+      <span class="ni">⚠️</span>Reports
+      <span class="nav-badge" id="reports-badge" style="display:none">0</span>
+    </div>
+    <div class="nav-item" id="nav-customers" onclick="switchPage('customers')">
+      <span class="ni">👥</span>Customers
+    </div>
     <div class="sb-footer">
       <div class="sb-signout" onclick="adminLogout()">
         <span>🚪</span><span>Sign Out</span>
@@ -331,12 +339,18 @@ async function loadStats(){
       var cb=document.getElementById('comm-badge');
       if(cb){ cb.textContent=pr.count||''; cb.style.display=pr.count?'inline':'none'; }
     } catch(e){}
+    // Reports badge
+    try {
+      var rr=await sb.from('customer_reports').select('id',{count:'exact',head:true}).eq('status','pending');
+      var rb=document.getElementById('reports-badge');
+      if(rb){ rb.textContent=rr.count||''; rb.style.display=rr.count?'inline':'none'; }
+    } catch(e){}
     if(_currentPage==='overview') renderOverview();
   } catch(e){ console.error('Stats:', e); }
 }
 
 // ── Page routing ──────────────────────────────────────
-var _pageTitles={overview:'Overview',approvals:'Approvals',orders:'Orders',vendors:'Vendors',drivers:'Drivers',commission:'Commission'};
+var _pageTitles={overview:'Overview',approvals:'Approvals',orders:'Orders',vendors:'Vendors',drivers:'Drivers',commission:'Commission',reports:'Reports',customers:'Customers'};
 function switchPage(page){
   _currentPage=page;
   document.querySelectorAll('.nav-item').forEach(function(n){ n.classList.remove('active'); });
@@ -351,6 +365,8 @@ function switchPage(page){
   else if(page==='vendors') renderVendors(el);
   else if(page==='drivers') renderDrivers(el);
   else if(page==='commission') renderCommission(el);
+  else if(page==='reports') renderReports(el);
+  else if(page==='customers') renderCustomers(el);
 }
 function refreshPage(){ switchPage(_currentPage); loadStats(); }
 
@@ -834,6 +850,94 @@ async function markPaidVendor(btn){
   if(r.error){ toast('Error: '+r.error.message,'err'); return; }
   toast('✓ Marked as paid — '+name);
   loadStats(); switchPage('commission');
+}
+
+// ── REPORTS PAGE ──────────────────────────────────────
+async function renderReports(el){
+  try {
+    var r=await sb.from('customer_reports')
+      .select('id,reason,details,status,created_at,customer_id,order_id,users!customer_reports_driver_id_fkey(full_name)')
+      .order('created_at',{ascending:false});
+    var reports=r.data||[];
+    var pending=reports.filter(function(x){return x.status==='pending';});
+    var rb=document.getElementById('reports-badge');
+    if(rb){rb.textContent=pending.length||'';rb.style.display=pending.length?'inline':'none';}
+    var reasonLabels={rude:'Rude / Disrespectful',no_answer:"Didn't Answer",wrong_payment:'Wrong Payment / Cheating',fraud:'Fraud / Counterfeit Money',other:'Other'};
+    var html='<div class="page-header"><div><div class="section-title">Customer Reports</div>'
+      +'<div class="section-sub">Reports submitted by drivers</div></div></div>';
+    if(!reports.length){
+      html+='<div class="content-card" style="text-align:center;padding:40px;color:#8a8680">No reports yet</div>';
+    } else {
+      html+='<div style="display:flex;flex-direction:column;gap:12px">'
+        +reports.map(function(rep){
+          var isPending=rep.status==='pending';
+          return '<div class="content-card" style="'+(isPending?'':'opacity:.6')+'">'
+            +'<div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:12px">'
+            +'<div><div style="font-size:14px;font-weight:700">Customer Report</div>'
+            +'<div style="font-size:12px;color:#8a8680;margin-top:2px">By driver: '+(rep.users&&rep.users.full_name||'Unknown')+'</div></div>'
+            +'<span style="font-size:11px;padding:4px 10px;border-radius:20px;'+(isPending?'background:#fff8ec;color:#c07a00;border:1px solid #fde68a':'background:#f0faf5;color:#2e9e5c;border:1px solid #c6e8d5')+'">'
+            +(isPending?'⏳ Pending':'✓ '+rep.status.charAt(0).toUpperCase()+rep.status.slice(1))+'</span></div>'
+            +'<div style="background:#f9fafb;border-radius:10px;padding:10px 14px;margin-bottom:10px">'
+            +'<div style="font-size:11px;color:#8a8680;margin-bottom:2px">Reason</div>'
+            +'<div style="font-weight:700;color:#dc2626">'+(reasonLabels[rep.reason]||rep.reason)+'</div></div>'
+            +(rep.details?'<div style="font-size:12px;color:#6b7280;margin-bottom:10px;padding:8px 12px;background:#f9fafb;border-radius:8px;border-left:3px solid #e5e7eb">'+rep.details+'</div>':'')
+            +'<div style="font-size:11px;color:#8a8680;margin-bottom:12px">Order: '+(rep.order_id?rep.order_id.substring(0,8)+'…':'—')+' · '+fmtDate(rep.created_at)+'</div>'
+            +(isPending?'<div style="display:flex;gap:8px">'
+            +'<button onclick="resolveReport(\''+rep.id+'\')" style="flex:1;padding:8px;border-radius:10px;border:none;background:#2e9e5c;color:#fff;font-size:12px;font-weight:700;cursor:pointer">Resolve</button>'
+            +'<button onclick="dismissReport(\''+rep.id+'\')" style="flex:1;padding:8px;border-radius:10px;border:1px solid #e5e7eb;background:#fff;color:#6b7280;font-size:12px;font-weight:700;cursor:pointer">Dismiss</button>'
+            +'</div>':'')
+            +'</div>';
+        }).join('')+'</div>';
+    }
+    el.innerHTML=html;
+  } catch(e){ el.innerHTML='<div style="padding:20px;color:#dc2626">Error loading reports: '+e.message+'</div>'; }
+}
+async function resolveReport(id){
+  await sb.from('customer_reports').update({status:'resolved'}).eq('id',id);
+  toast('Report resolved ✓'); switchPage('reports');
+}
+async function dismissReport(id){
+  await sb.from('customer_reports').update({status:'dismissed'}).eq('id',id);
+  toast('Report dismissed'); switchPage('reports');
+}
+
+// ── CUSTOMERS PAGE ────────────────────────────────────
+async function renderCustomers(el){
+  try {
+    var r=await sb.from('users').select('id,full_name,phone,created_at,is_suspended').eq('role','customer').order('created_at',{ascending:false}).limit(100);
+    var customers=r.data||[];
+    var html='<div class="page-header"><div><div class="section-title">Customers</div>'
+      +'<div class="section-sub">'+customers.length+' registered customers</div></div></div>';
+    if(!customers.length){
+      html+='<div class="content-card" style="text-align:center;padding:40px;color:#8a8680">No customers yet</div>';
+    } else {
+      html+='<div class="content-card"><table class="data-table"><thead><tr>'
+        +'<th>Name</th><th>Phone</th><th>Joined</th><th>Status</th><th>Actions</th>'
+        +'</tr></thead><tbody>'
+        +customers.map(function(c){
+          return '<tr>'
+            +'<td style="font-weight:600">'+(c.full_name||'—')+'</td>'
+            +'<td style="color:#8a8680">'+(c.phone||'—')+'</td>'
+            +'<td style="color:#8a8680">'+fmtDate(c.created_at)+'</td>'
+            +'<td>'+(c.is_suspended?'<span class="status-pill pill-rejected">Suspended</span>':'<span class="status-pill pill-accepted">Active</span>')+'</td>'
+            +'<td><div style="display:flex;gap:6px">'
+            +(c.is_suspended
+              ?'<button onclick="activateCustomer(\''+c.id+'\')" style="padding:5px 10px;border-radius:8px;border:none;background:#2e9e5c;color:#fff;font-size:11px;font-weight:700;cursor:pointer">Activate</button>'
+              :'<button onclick="suspendCustomer(\''+c.id+'\')" style="padding:5px 10px;border-radius:8px;border:none;background:#f59e0b;color:#000;font-size:11px;font-weight:700;cursor:pointer">Suspend</button>')
+            +'</div></td></tr>';
+        }).join('')+'</tbody></table></div>';
+    }
+    el.innerHTML=html;
+  } catch(e){ el.innerHTML='<div style="padding:20px;color:#dc2626">Error loading customers: '+e.message+'</div>'; }
+}
+async function activateCustomer(id){
+  await sb.from('users').update({is_suspended:false}).eq('id',id);
+  toast('Customer activated ✓'); switchPage('customers');
+}
+async function suspendCustomer(id){
+  if(!confirm('Suspend this customer?')) return;
+  await sb.from('users').update({is_suspended:true}).eq('id',id);
+  toast('Customer suspended'); switchPage('customers');
 }
 
 // ── Init ──────────────────────────────────────────────
