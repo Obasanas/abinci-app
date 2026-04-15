@@ -643,7 +643,7 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif}
   <div class="success-wrap">
     <div class="success-ring">🎉</div>
     <div style="font-size:28px;font-weight:800;margin-bottom:8px">You're all set!</div>
-    <div style="color:var(--muted);font-size:15px;line-height:1.6;margin-bottom:20px">Your kitchen is now live on abinci.food. Customers in your area can discover and order from you.</div>
+    <div style="color:var(--muted);font-size:15px;line-height:1.6;margin-bottom:20px">Registration submitted! Your kitchen will be live on abinci.food once our team verifies it. Check back soon!</div>
     <div style="background:rgba(245,166,35,.08);border:1px solid rgba(245,166,35,.2);border-radius:14px;padding:14px 16px;width:100%;text-align:left;margin-bottom:20px;display:flex;gap:10px;align-items:flex-start">
       <span style="font-size:18px;flex-shrink:0">⏳</span>
       <div>
@@ -3646,7 +3646,7 @@ async function obFinish(){
           food_types:selectedFoods,delivery_option:selectedDelivery,
           min_order:minOrder?parseFloat(minOrder):null,
           logo_url:logoPublicUrl,
-          is_available:true,is_approved:true
+          is_available:false,is_approved:false
         }).eq('id',existing.id).select().single();
         if(updateErr){ saveError=updateErr.message; console.error('Vendor update error:',updateErr); }
         else{ vd=updated; }
@@ -3658,7 +3658,7 @@ async function obFinish(){
           food_types:selectedFoods,delivery_option:selectedDelivery,
           min_order:minOrder?parseFloat(minOrder):null,
           logo_url:logoPublicUrl,
-          is_available:true,is_approved:true,emoji:'🍲'
+          is_available:false,is_approved:false,emoji:'🍲'
         }).select().single();
         if(insertErr){ saveError=insertErr.message; console.error('Vendor insert error:',insertErr); }
         else{ vd=inserted; }
