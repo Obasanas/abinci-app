@@ -2929,16 +2929,46 @@ function renderVendorDash() {
     const r=document.getElementById('dash-rating'); if(r) r.textContent=vendorProfile.rating?Number(vendorProfile.rating).toFixed(1):'—';
     const rv=document.getElementById('dash-reviews'); if(rv) rv.textContent=vendorProfile.review_count||0;
     loadVendorDashStats();
-    const existing=document.getElementById('vendor-verify-banner');
-    if(!vendorProfile.is_approved&&!existing){
-      const banner=document.createElement('div');
-      banner.id='vendor-verify-banner';
-      banner.style.cssText='margin:0 20px 16px;background:rgba(245,166,35,.08);border:1px solid rgba(245,166,35,.2);border-radius:14px;padding:12px 16px;display:flex;gap:10px;align-items:center';
-      banner.innerHTML='<span style="font-size:18px">⏳</span><div><div style="font-size:13px;font-weight:600;color:var(--accent)">Pending Verification</div><div style="font-size:11px;color:var(--muted);margin-top:2px">Our team will review your kitchen within 24hrs</div></div>';
-      const toggleRow=document.querySelector('.toggle-row');
-      if(toggleRow) toggleRow.insertAdjacentElement('afterend',banner);
-    } else if(vendorProfile.is_approved&&existing){
-      existing.remove();
+    // Remove existing banner so we can re-render it fresh
+    document.getElementById('vendor-verify-banner')?.remove();
+
+    const comp = calcProfileCompletion(vendorProfile, vendorMenuItems.length);
+    const isComplete = comp.pct === 100;
+    const toggleRow = document.querySelector('.toggle-row');
+    if (!toggleRow) return;
+
+    const banner = document.createElement('div');
+    banner.id = 'vendor-verify-banner';
+
+    if (!isComplete) {
+      // Incomplete profile — show progress + missing fields + CTA
+      const missingHtml = comp.missing.map(m =>
+        `<span style="display:inline-flex;align-items:center;gap:4px;background:rgba(224,92,92,.08);border:1px solid rgba(224,92,92,.2);border-radius:20px;padding:3px 8px;font-size:11px;color:var(--red);margin:2px">✗ ${m}</span>`
+      ).join('');
+      banner.style.cssText = 'margin:0 20px 16px;background:rgba(224,92,92,.06);border:1.5px solid rgba(224,92,92,.2);border-radius:14px;padding:14px 16px';
+      banner.innerHTML =
+        `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+          <div style="font-size:13px;font-weight:700;color:var(--red)">⚠️ Profile Incomplete (${comp.pct}%)</div>
+          <button onclick="openCompleteProfile()" style="padding:6px 14px;border-radius:10px;border:none;background:var(--accent);color:#000;font-size:12px;font-weight:700;cursor:pointer">Complete Profile →</button>
+        </div>
+        <div style="background:rgba(0,0,0,.06);border-radius:6px;height:6px;margin-bottom:10px;overflow:hidden">
+          <div style="width:${comp.pct}%;height:100%;background:var(--accent);border-radius:6px;transition:width .4s"></div>
+        </div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:8px">⚠️ Your kitchen <strong>cannot be approved or listed</strong> until your profile is complete. Missing:</div>
+        <div style="line-height:2">${missingHtml}</div>`;
+    } else if (!vendorProfile.is_approved) {
+      // Complete but awaiting admin review
+      banner.style.cssText = 'margin:0 20px 16px;background:rgba(245,166,35,.08);border:1px solid rgba(245,166,35,.2);border-radius:14px;padding:12px 16px;display:flex;gap:10px;align-items:center';
+      banner.innerHTML =
+        `<span style="font-size:18px">⏳</span>
+        <div>
+          <div style="font-size:13px;font-weight:600;color:var(--accent)">Pending Verification · Profile 100% complete</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:2px">Our team will review your kitchen within 24hrs</div>
+        </div>`;
+    }
+    // If approved and complete — no banner needed
+    if (!isComplete || !vendorProfile.is_approved) {
+      toggleRow.insertAdjacentElement('afterend', banner);
     }
   }
   renderVendorMenu();
@@ -3507,45 +3537,53 @@ function renderObStep(step){
 }
 function obNext(step){
   obStep=step+1;
-  // Auto-save progress after step 3 (location complete)
-  if(step===3) saveObProgress();
+  saveObProgress(); // auto-save at every step
   renderObStep(obStep);
 }
 function obBack(){if(obStep<=1){showScreen('screen-onboard');return;}obStep--;renderObStep(obStep);}
 
-// ── Save onboarding progress early so vendors don't lose data ──
+// ── Save onboarding progress at every step so vendors never lose data ──
 async function saveObProgress() {
   if (!userProfile?.id || userProfile.id.startsWith('demo-')) return;
   try {
-    // Extract current form data
-    const fn = document.getElementById('ob-fullname')?.value.trim() || '';
-    const phone = document.getElementById('ob-phone')?.value.trim() || '';
-    const bn = document.getElementById('ob-bizname')?.value.trim() || '';
-    const bio = document.getElementById('ob-bio')?.value.trim() || '';
+    const fn      = document.getElementById('ob-fullname')?.value.trim() || '';
+    const bn      = document.getElementById('ob-bizname')?.value.trim() || '';
+    const bio     = document.getElementById('ob-bio')?.value.trim() || '';
     const address = document.getElementById('ob-address')?.value.trim() || '';
-    const area = document.getElementById('ob-area')?.value.trim() || '';
-    const city = document.getElementById('ob-city')?.value.trim() || '';
-    const state = document.getElementById('ob-state')?.value || '';
+    const area    = document.getElementById('ob-area')?.value.trim() || '';
+    const city    = document.getElementById('ob-city')?.value.trim() || '';
+    const state   = document.getElementById('ob-state')?.value || '';
 
-    // Check if vendor already exists
+    // Build patch object — only include fields that have values
+    const patch = { updated_at: new Date().toISOString() };
+    if (bn)              patch.business_name  = bn;
+    if (bio)             patch.bio            = bio;
+    if (address)         patch.address        = address;
+    if (area)            patch.area           = area;
+    if (city)            patch.city           = city;
+    if (state)           patch.state          = state;
+    if (selectedFoods.length)  patch.food_types      = selectedFoods;
+    if (selectedDelivery)      patch.delivery_option = selectedDelivery;
+
+    // Update user full name if provided
+    if (fn) await sb.from('users').update({ full_name: fn }).eq('id', userProfile.id);
+
     const { data: existing } = await sb.from('vendors').select('id').eq('user_id', userProfile.id).maybeSingle();
 
     if (existing?.id) {
-      // Update existing
-      await sb.from('vendors').update({
-        business_name: bn, bio, address, area, city, state,
-        updated_at: new Date().toISOString()
-      }).eq('id', existing.id);
-      vendorProfile = { ...vendorProfile, business_name: bn, bio, address, area, city, state };
-    } else if (bn && address && city) {
-      // Create new vendor profile (minimal, just basic info)
+      await sb.from('vendors').update(patch).eq('id', existing.id);
+      vendorProfile = { ...vendorProfile, ...patch };
+    } else if (bn) {
+      // Create vendor record as soon as we have a name
       const { data: vd } = await sb.from('vendors').insert({
         user_id: userProfile.id,
         business_name: bn,
         bio: bio || '',
-        address, area, city, state,
-        is_available: true,
-        is_approved: false, // pending admin approval
+        address: address || '', area: area || '', city: city || '', state,
+        food_types: selectedFoods.length ? selectedFoods : [],
+        delivery_option: selectedDelivery || null,
+        is_available: false,
+        is_approved: false,
         emoji: '🍲'
       }).select().single();
       if (vd) vendorProfile = vd;
@@ -3567,6 +3605,72 @@ async function loadExistingVendor() {
   } catch (e) {}
   return false;
 }
+// ── Profile completion helpers ──────────────────────────────────
+function calcProfileCompletion(vendor, menuCount) {
+  const checks = [
+    { label: 'Kitchen photo',    done: !!vendor.logo_url },
+    { label: 'Kitchen name',     done: !!vendor.business_name },
+    { label: 'Bio / description',done: !!vendor.bio },
+    { label: 'Address',          done: !!vendor.address },
+    { label: 'Neighbourhood',    done: !!vendor.area },
+    { label: 'City',             done: !!vendor.city },
+    { label: 'Food categories',  done: !!(vendor.food_types && vendor.food_types.length > 0) },
+    { label: 'Delivery options', done: !!vendor.delivery_option },
+    { label: 'At least 1 menu item', done: menuCount > 0 },
+  ];
+  const done    = checks.filter(c => c.done).length;
+  const missing = checks.filter(c => !c.done).map(c => c.label);
+  return { pct: Math.round(done / checks.length * 100), done, total: checks.length, missing };
+}
+
+function prefillObForm() {
+  if (!vendorProfile) return;
+  const s = (id, val) => { const el = document.getElementById(id); if (el && val) el.value = val; };
+  s('ob-fullname', userProfile?.full_name);
+  s('ob-phone',    userProfile?.phone);
+  s('ob-bizname',  vendorProfile.business_name);
+  s('ob-bio',      vendorProfile.bio);
+  s('ob-address',  vendorProfile.address);
+  s('ob-area',     vendorProfile.area);
+  s('ob-city',     vendorProfile.city);
+  s('ob-state',    vendorProfile.state);
+  // Restore food types — parse type from onclick attribute
+  if (vendorProfile.food_types?.length) {
+    selectedFoods = [...vendorProfile.food_types];
+    document.querySelectorAll('#ob-step-4 .food-tile').forEach(el => {
+      const m = el.getAttribute('onclick')?.match(/toggleFood\(this,'([^']+)'\)/);
+      if (m && selectedFoods.includes(m[1])) el.classList.add('selected');
+    });
+    const n4 = document.getElementById('ob-next-4'); if (n4) n4.disabled = false;
+  }
+  // Restore delivery option — parse type from onclick attribute
+  if (vendorProfile.delivery_option) {
+    selectedDelivery = vendorProfile.delivery_option;
+    document.querySelectorAll('.delivery-opt').forEach(el => {
+      const m = el.getAttribute('onclick')?.match(/pickDelivery\(this,'([^']+)'\)/);
+      if (m) el.classList.toggle('selected', m[1] === selectedDelivery);
+    });
+    const n5 = document.getElementById('ob-next-5'); if (n5) n5.disabled = false;
+  }
+  // Restore logo preview
+  if (vendorProfile.logo_url) {
+    vendorLogoUrl = vendorProfile.logo_url;
+    const circle = document.getElementById('logo-circle');
+    if (circle) circle.style.backgroundImage = `url(${vendorLogoUrl})`;
+    const ph = document.getElementById('logo-placeholder'); if (ph) ph.style.display = 'none';
+  }
+  // Validate first step so Continue button enables
+  obValidate(1); obValidate(2); obValidate(3);
+}
+
+function openCompleteProfile() {
+  obStep = 1;
+  renderObStep(1);
+  showScreen('screen-vendor-ob');
+  // Prefill after DOM is visible
+  setTimeout(prefillObForm, 50);
+}
+
 function obValidate(step){
   let ok=false;
   if(step===1)ok=v('ob-fullname')&&v('ob-phone');
