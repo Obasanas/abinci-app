@@ -4,7 +4,8 @@ const app = express();
 const PORT = process.env.PORT || 3003;
 
 const SB_URL = process.env.SUPABASE_URL || 'https://kikeyhwbziumyhcnsvhi.supabase.co';
-const SB_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY || '';
+const SB_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtpa2V5aHdieml1bXloY25zdmhpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI4OTk5OTMsImV4cCI6MjA4ODQ3NTk5M30.4R9XP1DOx358SJE0VPm3y8NimoCoVKVcJqPDSvLiHJc';
+const SB_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY || SB_ANON;
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'abinci2025admin';
 
 app.use(express.json());
@@ -61,7 +62,7 @@ app.post('/api/admin-auth', (req, res) => {
 // ── Customers endpoints ───────────────────────────────────────
 app.get('/api/admin/customers', requireAdmin, async (req, res) => {
   try {
-    const data = await sbGet('users?role=eq.customer&order=created_at.desc&limit=100&select=id,full_name,phone,created_at,is_suspended');
+    const data = await sbGet('users?role=eq.customer&order=created_at.desc&limit=100&select=id,full_name,phone,created_at');
     res.json({ customers: Array.isArray(data) ? data : [] });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });

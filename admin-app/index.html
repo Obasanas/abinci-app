@@ -931,7 +931,7 @@ async function renderCustomers(el){
             +(c.is_suspended
               ?'<button onclick="activateCustomer(\''+c.id+'\')" style="padding:5px 10px;border-radius:8px;border:none;background:#2e9e5c;color:#fff;font-size:11px;font-weight:700;cursor:pointer">Activate</button>'
               :'<button onclick="suspendCustomer(\''+c.id+'\')" style="padding:5px 10px;border-radius:8px;border:none;background:#f59e0b;color:#000;font-size:11px;font-weight:700;cursor:pointer">Suspend</button>')
-            +'</div></td></tr>';
+            +'</div></td></tr>';  // is_suspended defaults to false if column missing
         }).join('')+'</tbody></table></div>';
     }
     el.innerHTML=html;
