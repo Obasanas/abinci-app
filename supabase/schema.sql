@@ -18,9 +18,14 @@ CREATE TABLE IF NOT EXISTS public.users (
   role        TEXT NOT NULL DEFAULT 'customer'
                 CHECK (role IN ('customer','vendor','rider','admin')),
   avatar_url  TEXT,
+  is_suspended BOOLEAN NOT NULL DEFAULT FALSE,
   created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+-- Add is_suspended column if it doesn't exist (for existing databases)
+ALTER TABLE IF EXISTS public.users
+ADD COLUMN IF NOT EXISTS is_suspended BOOLEAN NOT NULL DEFAULT FALSE;
 
 -- ── otp_codes ─────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS public.otp_codes (

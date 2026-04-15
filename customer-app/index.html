@@ -2353,6 +2353,11 @@ function changeQty(i, delta) {
 }
 async function placeOrderInApp() {
   if(!cartVendor)return;
+  // Check if customer is suspended
+  if(userProfile?.is_suspended){
+    showToast('Your account has been suspended. Contact support for details.','err');
+    return;
+  }
   const note=document.getElementById('cart-note')?.value.trim()||'';
   const deliveryAddress=document.getElementById('cart-address')?.value.trim()||'';
   // Validate delivery address for delivery orders
@@ -3944,6 +3949,7 @@ function handleFoodImgUpload(input,zoneId,previewId){
     <button class="admin-tab" id="atab-orders" onclick="switchAdminTab('orders')">Orders</button>
     <button class="admin-tab" id="atab-riders" onclick="switchAdminTab('riders')">Riders</button>
     <button class="admin-tab" id="atab-vendors" onclick="switchAdminTab('vendors')">Vendors</button>
+    <button class="admin-tab" id="atab-customers" onclick="switchAdminTab('customers')">Customers</button>
   </div>
   <!-- Tab content -->
   <div style="padding:0 20px" id="admin-tab-content">
@@ -4359,7 +4365,7 @@ async function loadAdminDash() {
 
 async function switchAdminTab(tab) {
   adminCurrentTab = tab;
-  ['approvals','orders','riders','vendors'].forEach(t => {
+  ['approvals','orders','riders','vendors','customers'].forEach(t => {
     document.getElementById('atab-'+t)?.classList.toggle('active', t === tab);
   });
   const el = document.getElementById('admin-tab-content');
@@ -4369,6 +4375,7 @@ async function switchAdminTab(tab) {
   else if (tab === 'orders') await renderAdminOrders(el);
   else if (tab === 'riders') await renderAdminRiders(el);
   else if (tab === 'vendors') await renderAdminVendors(el);
+  else if (tab === 'customers') await renderAdminCustomers(el);
 }
 
 async function renderAdminApprovals(el) {
@@ -4471,6 +4478,39 @@ async function renderAdminVendors(el) {
   } catch(e) { el.innerHTML = '<div style="padding:20px;text-align:center;color:var(--muted);font-size:13px">Error loading vendors</div>'; }
 }
 
+async function renderAdminCustomers(el) {
+  try {
+    const { data: customers } = await sb.from('users')
+      .select('id, full_name, phone, created_at, is_suspended')
+      .eq('role', 'customer')
+      .order('created_at', { ascending: false }).limit(50);
+    if (!customers?.length) {
+      el.innerHTML = '<div style="padding:20px;text-align:center;color:var(--muted);font-size:13px">No customers</div>';
+      return;
+    }
+    el.innerHTML = '<div style="display:flex;flex-direction:column;gap:10px">' + customers.map(c => `
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px;display:flex;justify-content:space-between;align-items:center">
+        <div style="flex:1">
+          <div style="font-size:14px;font-weight:700">${c.full_name || 'Customer'}</div>
+          <div style="font-size:12px;color:var(--muted)">📞 ${c.phone || '—'}</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:4px">Joined: ${new Date(c.created_at).toLocaleDateString()}</div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
+          ${c.is_suspended ? '<span class="pending-badge" style="font-size:10px;background:rgba(224,92,92,.08);color:var(--red)">🚫 Suspended</span>' : '<span style="font-size:10px;color:var(--green)">✓ Active</span>'}
+          <div style="display:flex;gap:6px">
+            ${c.is_suspended
+              ? `<button onclick="activateCustomer('${c.id}')" style="padding:6px 12px;border-radius:10px;border:none;background:var(--green);color:#fff;font-size:11px;font-weight:700;cursor:pointer">Activate</button>`
+              : `<button onclick="suspendCustomer('${c.id}')" style="padding:6px 12px;border-radius:10px;border:none;background:var(--yellow);color:#000;font-size:11px;font-weight:700;cursor:pointer">Suspend</button>`}
+            <button onclick="deactivateCustomer('${c.id}')" style="padding:6px 12px;border-radius:10px;border:none;background:var(--red);color:#fff;font-size:11px;font-weight:700;cursor:pointer">Deactivate</button>
+          </div>
+        </div>
+      </div>`).join('') + '</div>';
+  } catch(e) {
+    console.error('renderAdminCustomers error:', e);
+    el.innerHTML = '<div style="padding:20px;text-align:center;color:var(--muted);font-size:13px">Error loading customers</div>';
+  }
+}
+
 async function approveVendor(vendorId) {
   await sb.from('vendors').update({ is_approved: true }).eq('id', vendorId).catch(() => {});
   showToast('Vendor approved ✓');
@@ -4529,6 +4569,27 @@ async function viewAdminVendor(vendorId) {
         ${v.is_approved ? `<button onclick="suspendVendor('${v.id}');navBack('screen-admin-dash')" style="flex:1;padding:12px;border-radius:14px;border:none;background:var(--red);color:#fff;font-size:14px;font-weight:700;font-family:'DM Sans',sans-serif;cursor:pointer">Suspend</button>` : ''}
       </div>`;
   } catch(e) { el.innerHTML = '<div style="padding:20px;text-align:center;color:var(--muted);font-size:13px">Error loading vendor</div>'; }
+}
+
+async function suspendCustomer(customerId) {
+  if (!confirm('Suspend this customer?')) return;
+  await sb.from('users').update({ is_suspended: true }).eq('id', customerId);
+  showToast('Customer suspended');
+  await switchAdminTab('customers');
+}
+
+async function activateCustomer(customerId) {
+  if (!confirm('Activate this customer?')) return;
+  await sb.from('users').update({ is_suspended: false }).eq('id', customerId);
+  showToast('Customer activated');
+  await switchAdminTab('customers');
+}
+
+async function deactivateCustomer(customerId) {
+  if (!confirm('Permanently deactivate this customer account?')) return;
+  await sb.from('users').delete().eq('id', customerId);
+  showToast('Customer account deleted');
+  await switchAdminTab('customers');
 }
 
 /* ============================================================
