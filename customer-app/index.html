@@ -3950,6 +3950,7 @@ function handleFoodImgUpload(input,zoneId,previewId){
     <button class="admin-tab" id="atab-riders" onclick="switchAdminTab('riders')">Riders</button>
     <button class="admin-tab" id="atab-vendors" onclick="switchAdminTab('vendors')">Vendors</button>
     <button class="admin-tab" id="atab-customers" onclick="switchAdminTab('customers')">Customers</button>
+    <button class="admin-tab" id="atab-reports" onclick="switchAdminTab('reports')">Reports</button>
   </div>
   <!-- Tab content -->
   <div style="padding:0 20px" id="admin-tab-content">
@@ -4365,7 +4366,7 @@ async function loadAdminDash() {
 
 async function switchAdminTab(tab) {
   adminCurrentTab = tab;
-  ['approvals','orders','riders','vendors','customers'].forEach(t => {
+  ['approvals','orders','riders','vendors','customers','reports'].forEach(t => {
     document.getElementById('atab-'+t)?.classList.toggle('active', t === tab);
   });
   const el = document.getElementById('admin-tab-content');
@@ -4376,6 +4377,7 @@ async function switchAdminTab(tab) {
   else if (tab === 'riders') await renderAdminRiders(el);
   else if (tab === 'vendors') await renderAdminVendors(el);
   else if (tab === 'customers') await renderAdminCustomers(el);
+  else if (tab === 'reports') await renderAdminReports(el);
 }
 
 async function renderAdminApprovals(el) {
@@ -4509,6 +4511,68 @@ async function renderAdminCustomers(el) {
     console.error('renderAdminCustomers error:', e);
     el.innerHTML = '<div style="padding:20px;text-align:center;color:var(--muted);font-size:13px">Error loading customers</div>';
   }
+}
+
+async function renderAdminReports(el) {
+  try {
+    const { data: reports } = await sb.from('customer_reports')
+      .select('*, users(full_name, phone)')
+      .order('created_at', { ascending: false });
+
+    if (!reports?.length) {
+      el.innerHTML = '<div style="padding:20px;text-align:center;color:var(--muted);font-size:13px">No reports yet</div>';
+      return;
+    }
+
+    const reasonLabels = {
+      'rude': 'Rude / Disrespectful',
+      'no_answer': 'Didn\'t Answer / Not Available',
+      'wrong_payment': 'Wrong Payment / Cheating',
+      'fraud': 'Fraud / Counterfeit Money',
+      'other': 'Other'
+    };
+
+    el.innerHTML = '<div style="display:flex;flex-direction:column;gap:12px">' + reports.map(r => `
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px;${r.status !== 'pending' ? 'opacity:0.6' : ''}">
+        <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:10px">
+          <div style="flex:1">
+            <div style="font-size:14px;font-weight:700">Report on Customer</div>
+            <div style="font-size:13px;color:var(--muted);margin-top:2px">Driver: ${r.users?.full_name || 'Unknown'}</div>
+          </div>
+          <span style="font-size:10px;padding:4px 8px;border-radius:6px;${r.status === 'pending' ? 'background:rgba(245,166,35,.12);color:var(--accent)' : 'background:rgba(76,175,125,.12);color:var(--green)'}">${r.status === 'pending' ? '⏳ Pending' : '✓ Resolved'}</span>
+        </div>
+        <div style="background:var(--surface2);border-radius:10px;padding:10px;font-size:12px;margin-bottom:10px">
+          <div style="color:var(--muted);margin-bottom:2px">Reason:</div>
+          <div style="font-weight:600;color:var(--red)">${reasonLabels[r.reason] || r.reason}</div>
+        </div>
+        ${r.details ? `<div style="font-size:12px;color:var(--muted);margin-bottom:10px;padding:8px;background:var(--surface2);border-radius:8px;border-left:2px solid var(--border)">📝 ${r.details}</div>` : ''}
+        <div style="font-size:11px;color:var(--muted);margin-bottom:10px">
+          Order: ${r.order_id ? r.order_id.substring(0, 8) + '…' : '—'} · ${new Date(r.created_at).toLocaleDateString()}
+        </div>
+        ${r.status === 'pending' ? `
+          <div style="display:flex;gap:8px">
+            <button onclick="resolveCustomerReport('${r.id}')" style="flex:1;padding:8px;border-radius:10px;border:none;background:var(--green);color:#fff;font-size:12px;font-weight:700;cursor:pointer">Resolve</button>
+            <button onclick="dismissCustomerReport('${r.id}')" style="flex:1;padding:8px;border-radius:10px;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:12px;font-weight:700;cursor:pointer">Dismiss</button>
+          </div>
+        ` : ''}
+      </div>
+    `).join('') + '</div>';
+  } catch(e) {
+    console.error('renderAdminReports error:', e);
+    el.innerHTML = '<div style="padding:20px;text-align:center;color:var(--muted);font-size:13px">Error loading reports</div>';
+  }
+}
+
+async function resolveCustomerReport(reportId) {
+  await sb.from('customer_reports').update({ status: 'resolved' }).eq('id', reportId).catch(() => {});
+  showToast('Report resolved ✓');
+  await switchAdminTab('reports');
+}
+
+async function dismissCustomerReport(reportId) {
+  await sb.from('customer_reports').update({ status: 'dismissed' }).eq('id', reportId).catch(() => {});
+  showToast('Report dismissed');
+  await switchAdminTab('reports');
 }
 
 async function approveVendor(vendorId) {

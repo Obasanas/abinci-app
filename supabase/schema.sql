@@ -163,6 +163,21 @@ CREATE TABLE IF NOT EXISTS public.push_tokens (
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+-- ── customer_reports ──────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS public.customer_reports (
+  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  customer_id   UUID NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
+  driver_id     UUID NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
+  order_id      UUID REFERENCES public.orders(id) ON DELETE SET NULL,
+  reason        TEXT NOT NULL CHECK (reason IN ('rude','no_answer','wrong_payment','fraud','other')),
+  details       TEXT,
+  status        TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending','reviewed','resolved','dismissed')),
+  created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  reviewed_by   UUID REFERENCES public.users(id) ON DELETE SET NULL,
+  reviewed_at   TIMESTAMPTZ,
+  notes         TEXT
+);
+
 -- ============================================================
 -- INDEXES
 -- ============================================================
@@ -181,6 +196,9 @@ CREATE INDEX IF NOT EXISTS idx_orders_status    ON public.orders(status, created
 CREATE INDEX IF NOT EXISTS idx_reviews_vendor   ON public.reviews(vendor_id, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_notif_user       ON public.notifications(user_id, is_read, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_push_user        ON public.push_tokens(user_id);
+CREATE INDEX IF NOT EXISTS idx_reports_customer ON public.customer_reports(customer_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_reports_driver   ON public.customer_reports(driver_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_reports_status   ON public.customer_reports(status, created_at DESC);
 
 -- ============================================================
 -- UPDATED_AT TRIGGER
@@ -260,7 +278,7 @@ DECLARE tbl TEXT;
 BEGIN
   FOREACH tbl IN ARRAY ARRAY[
     'users','otp_codes','vendors','menu_items','orders',
-    'reviews','notifications','push_tokens','riders'
+    'reviews','notifications','push_tokens','riders','customer_reports'
   ]
   LOOP
     EXECUTE format('ALTER TABLE public.%I ENABLE ROW LEVEL SECURITY;', tbl);
@@ -283,7 +301,7 @@ DECLARE tbl TEXT;
 BEGIN
   FOREACH tbl IN ARRAY ARRAY[
     'users','otp_codes','vendors','menu_items','orders',
-    'reviews','notifications','push_tokens','riders'
+    'reviews','notifications','push_tokens','riders','customer_reports'
   ]
   LOOP
     EXECUTE format(
@@ -342,6 +360,14 @@ CREATE POLICY "notif_update_own" ON public.notifications FOR UPDATE TO authentic
 CREATE POLICY "push_manage_own" ON public.push_tokens FOR ALL TO authenticated
   USING (user_id = auth.uid()) WITH CHECK (user_id = auth.uid());
 CREATE POLICY "push_anon_insert"ON public.push_tokens FOR INSERT TO anon WITH CHECK (TRUE);
+
+-- customer_reports
+CREATE POLICY "reports_driver_insert" ON public.customer_reports FOR INSERT TO authenticated WITH CHECK (driver_id = auth.uid());
+CREATE POLICY "reports_admin_read" ON public.customer_reports FOR SELECT TO authenticated
+  USING (EXISTS (SELECT 1 FROM public.users WHERE id = auth.uid() AND role = 'admin'));
+CREATE POLICY "reports_admin_update" ON public.customer_reports FOR UPDATE TO authenticated
+  USING (EXISTS (SELECT 1 FROM public.users WHERE id = auth.uid() AND role = 'admin'))
+  WITH CHECK (EXISTS (SELECT 1 FROM public.users WHERE id = auth.uid() AND role = 'admin'));
 
 -- ============================================================
 -- REALTIME (enable on key tables)

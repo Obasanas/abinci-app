@@ -603,6 +603,41 @@
   </div>
 </div>
 
+<!-- ===== REPORT CUSTOMER MODAL ===== -->
+<div class="modal" id="report-customer-modal" onclick="if(event.target.id==='report-customer-modal')closeReportModal()">
+  <div class="modal-content" style="max-width:400px">
+    <div class="modal-title">Report Customer</div>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:16px">Help us maintain a safe platform. Report any issues with this customer.</div>
+
+    <div class="form-group">
+      <label class="form-label">Customer</label>
+      <div id="report-customer-name" style="font-size:14px;font-weight:600;padding:10px;background:var(--surface2);border-radius:8px">—</div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Reason</label>
+      <select class="form-input" id="report-reason" required>
+        <option value="">Select a reason...</option>
+        <option value="rude">Rude / Disrespectful</option>
+        <option value="no_answer">Didn't Answer / Not Available</option>
+        <option value="wrong_payment">Wrong Payment / Tried to Cheat</option>
+        <option value="fraud">Fraud / Counterfeit Money</option>
+        <option value="other">Other</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Details <span style="color:var(--muted);font-weight:400">(optional)</span></label>
+      <textarea class="form-input" id="report-details" placeholder="Describe what happened..." style="resize:none;height:80px"></textarea>
+    </div>
+
+    <div style="display:flex;gap:8px">
+      <button onclick="closeReportModal()" style="flex:1;padding:12px;border-radius:12px;border:1px solid var(--border);background:transparent;color:var(--text);font-size:14px;font-weight:700;cursor:pointer">Cancel</button>
+      <button onclick="submitCustomerReport()" style="flex:1;padding:12px;border-radius:12px;border:none;background:var(--red);color:#fff;font-size:14px;font-weight:700;cursor:pointer">Submit Report</button>
+    </div>
+  </div>
+</div>
+
 <!-- ===== BOTTOM NAV ===== -->
 <nav class="bottom-nav" id="bottom-nav" style="display:none">
   <div class="nav-item active" id="nav-home" onclick="navTo('home')">
@@ -1577,7 +1612,8 @@ async function renderOrderDetail(orderId, isActive) {
     + '<span style="font-size:13px;color:var(--muted)">' + (o.delivery_type === 'delivery' ? '🛵 Delivery' : '🚶 Pickup') + '</span>'
     + '<span style="font-size:18px;font-weight:800;color:var(--accent)">' + formatCurrency(o.total_amount) + '</span>'
     + '</div>' + noteHtml + '</div>'
-    + acceptedHtml + collectHtml + acceptHtml;
+    + acceptedHtml + collectHtml + acceptHtml
+    + (isMyDelivery || isMyAccepted ? '<button onclick="openReportCustomerModal(\'' + o.id + '\',\'' + (o.customer_name || 'Customer').replace(/'/g, "\\'") + '\',\'' + (o.customer_id || '').replace(/'/g, "\\'") + '\')" style="width:100%;padding:12px;border-radius:14px;border:1px solid var(--border);background:transparent;color:var(--red);font-size:13px;font-weight:700;cursor:pointer;margin-top:10px">⚠️ Report Issue with Customer</button>' : '');
   // Resume countdown if this is an accepted order
   if (isMyAccepted && o.pickup_deadline) {
     startPickupCountdown(o.id, o.pickup_deadline);
@@ -1680,6 +1716,64 @@ async function loadEarnings() {
   } catch(e) {
     console.error('loadEarnings:', e.message);
     document.getElementById('trips-list').innerHTML = '<div style="padding:20px;text-align:center;color:var(--muted);font-size:13px">Could not load trips</div>';
+  }
+}
+
+// ── Customer Reporting ─────────────────────────────────────────
+let currentReportOrder = null;
+let currentReportCustomerId = null;
+
+function openReportCustomerModal(orderId, customerName, customerId) {
+  currentReportOrder = orderId;
+  currentReportCustomerId = customerId;
+  document.getElementById('report-customer-name').textContent = customerName || 'Customer';
+  document.getElementById('report-reason').value = '';
+  document.getElementById('report-details').value = '';
+  document.getElementById('report-customer-modal').style.display = 'flex';
+}
+
+function closeReportModal() {
+  document.getElementById('report-customer-modal').style.display = 'none';
+  currentReportOrder = null;
+  currentReportCustomerId = null;
+}
+
+async function submitCustomerReport() {
+  const reason = document.getElementById('report-reason').value;
+  if (!reason) {
+    showToast('Please select a reason', 'err');
+    return;
+  }
+  const details = document.getElementById('report-details').value.trim();
+
+  if (!driverProfile || !currentReportCustomerId) {
+    showToast('Error: Could not load driver info', 'err');
+    return;
+  }
+
+  const btn = event.target;
+  btn.textContent = 'Submitting…';
+  btn.disabled = true;
+
+  try {
+    const { error } = await sb.from('customer_reports').insert({
+      customer_id: currentReportCustomerId,
+      driver_id: driverProfile.id,
+      order_id: currentReportOrder,
+      reason: reason,
+      details: details || null,
+      status: 'pending'
+    });
+
+    if (error) throw new Error(error.message);
+    showToast('Report submitted. Thanks for helping us maintain safety! ✓');
+    closeReportModal();
+  } catch(e) {
+    console.error('Report submission error:', e);
+    showToast('Failed to submit report', 'err');
+  } finally {
+    btn.textContent = 'Submit Report';
+    btn.disabled = false;
   }
 }
 
