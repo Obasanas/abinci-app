@@ -291,6 +291,7 @@ async function adminLogin(){
     var data=await res.json();
     if(data.ok){
       localStorage.setItem('abinci_admin','1');
+      localStorage.setItem('abinci_admin_key', pass);
       document.getElementById('screen-login').style.display='none';
       document.getElementById('screen-dashboard').classList.remove('hidden');
       loadStats();
@@ -301,9 +302,17 @@ async function adminLogin(){
 }
 function adminLogout(){
   localStorage.removeItem('abinci_admin');
+  localStorage.removeItem('abinci_admin_key');
   document.getElementById('admin-pass').value='';
   document.getElementById('screen-login').style.display='';
   document.getElementById('screen-dashboard').classList.add('hidden');
+}
+function adminKey(){ return localStorage.getItem('abinci_admin_key')||''; }
+async function adminFetch(url, opts){
+  opts = opts||{};
+  opts.headers = Object.assign({'Content-Type':'application/json','x-admin-key':adminKey()}, opts.headers||{});
+  if(opts.body && typeof opts.body !== 'string') opts.body = JSON.stringify(opts.body);
+  return fetch(url, opts).then(function(r){ return r.json(); });
 }
 
 // ── Stats ─────────────────────────────────────────────
@@ -855,10 +864,8 @@ async function markPaidVendor(btn){
 // ── REPORTS PAGE ──────────────────────────────────────
 async function renderReports(el){
   try {
-    var r=await sb.from('customer_reports')
-      .select('id,reason,details,status,created_at,customer_id,order_id,users!customer_reports_driver_id_fkey(full_name)')
-      .order('created_at',{ascending:false});
-    var reports=r.data||[];
+    var r=await adminFetch('/api/admin/reports');
+    var reports=r.reports||[];
     var pending=reports.filter(function(x){return x.status==='pending';});
     var rb=document.getElementById('reports-badge');
     if(rb){rb.textContent=pending.length||'';rb.style.display=pending.length?'inline':'none';}
@@ -874,7 +881,7 @@ async function renderReports(el){
           return '<div class="content-card" style="'+(isPending?'':'opacity:.6')+'">'
             +'<div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:12px">'
             +'<div><div style="font-size:14px;font-weight:700">Customer Report</div>'
-            +'<div style="font-size:12px;color:#8a8680;margin-top:2px">By driver: '+(rep.users&&rep.users.full_name||'Unknown')+'</div></div>'
+            +'<div style="font-size:12px;color:#8a8680;margin-top:2px">By driver: '+(rep.driver&&rep.driver.full_name||'Unknown')+'</div></div>'
             +'<span style="font-size:11px;padding:4px 10px;border-radius:20px;'+(isPending?'background:#fff8ec;color:#c07a00;border:1px solid #fde68a':'background:#f0faf5;color:#2e9e5c;border:1px solid #c6e8d5')+'">'
             +(isPending?'⏳ Pending':'✓ '+rep.status.charAt(0).toUpperCase()+rep.status.slice(1))+'</span></div>'
             +'<div style="background:#f9fafb;border-radius:10px;padding:10px 14px;margin-bottom:10px">'
@@ -893,19 +900,19 @@ async function renderReports(el){
   } catch(e){ el.innerHTML='<div style="padding:20px;color:#dc2626">Error loading reports: '+e.message+'</div>'; }
 }
 async function resolveReport(id){
-  await sb.from('customer_reports').update({status:'resolved'}).eq('id',id);
+  await adminFetch('/api/admin/reports/'+id,{method:'PATCH',body:{status:'resolved'}});
   toast('Report resolved ✓'); switchPage('reports');
 }
 async function dismissReport(id){
-  await sb.from('customer_reports').update({status:'dismissed'}).eq('id',id);
+  await adminFetch('/api/admin/reports/'+id,{method:'PATCH',body:{status:'dismissed'}});
   toast('Report dismissed'); switchPage('reports');
 }
 
 // ── CUSTOMERS PAGE ────────────────────────────────────
 async function renderCustomers(el){
   try {
-    var r=await sb.from('users').select('id,full_name,phone,created_at,is_suspended').eq('role','customer').order('created_at',{ascending:false}).limit(100);
-    var customers=r.data||[];
+    var r=await adminFetch('/api/admin/customers');
+    var customers=r.customers||[];
     var html='<div class="page-header"><div><div class="section-title">Customers</div>'
       +'<div class="section-sub">'+customers.length+' registered customers</div></div></div>';
     if(!customers.length){
@@ -931,12 +938,12 @@ async function renderCustomers(el){
   } catch(e){ el.innerHTML='<div style="padding:20px;color:#dc2626">Error loading customers: '+e.message+'</div>'; }
 }
 async function activateCustomer(id){
-  await sb.from('users').update({is_suspended:false}).eq('id',id);
+  await adminFetch('/api/admin/customers/'+id+'/activate',{method:'PATCH'});
   toast('Customer activated ✓'); switchPage('customers');
 }
 async function suspendCustomer(id){
   if(!confirm('Suspend this customer?')) return;
-  await sb.from('users').update({is_suspended:true}).eq('id',id);
+  await adminFetch('/api/admin/customers/'+id+'/suspend',{method:'PATCH'});
   toast('Customer suspended'); switchPage('customers');
 }
 
