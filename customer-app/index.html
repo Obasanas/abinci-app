@@ -3514,6 +3514,7 @@ async function addMenuItem() {
   }
   vendorMenuItems.push(item); renderVendorMenu();
   const dmc=document.getElementById('dash-menu-count'); if(dmc)dmc.textContent=vendorMenuItems.length;
+  renderVendorDash(); // refresh completion banner now that menu has an item
   closeModal('menu-modal');
   ['nm-name','nm-price','nm-desc','nm-plates'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   showToast('Dish added ✓');
@@ -3523,6 +3524,7 @@ async function removeMenuItem(i) {
   if(item?.id)await sb.from('menu_items').delete().eq('id',item.id).catch(()=>{});
   vendorMenuItems.splice(i,1); renderVendorMenu();
   const dmc=document.getElementById('dash-menu-count'); if(dmc)dmc.textContent=vendorMenuItems.length;
+  renderVendorDash(); // refresh completion banner
 }
 
 /* ============================================================
