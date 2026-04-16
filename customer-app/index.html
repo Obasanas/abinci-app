@@ -319,7 +319,7 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif}
                  align-items:center;justify-content:center;gap:8px;cursor:pointer;
                  transition:all .2s;position:relative;overflow:hidden;background:var(--surface2)}
 .img-upload-zone:hover{border-color:var(--accent);background:rgba(245,166,35,.04)}
-.img-upload-zone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.img-upload-zone input[type=file]{display:none}
 .img-upload-zone .upload-icon{font-size:28px}
 .img-upload-zone .upload-label{font-size:13px;font-weight:600;color:var(--muted)}
 .img-upload-zone .upload-sub{font-size:11px;color:var(--muted);opacity:.7}
@@ -1249,7 +1249,7 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif}
     <div class="modal-close" onclick="closeModal('menu-modal')">✕</div>
     <div class="modal-title">Add Menu Item</div>
     <div class="form-group"><label class="form-label">Dish Photo (optional)</label>
-      <div class="img-upload-zone" id="dash-food-upload-zone" onclick="document.getElementById('dash-food-img-input').click()"><div class="upload-icon">📸</div><div class="upload-label">Tap to upload a photo</div><div class="upload-sub">JPG or PNG · Shows on your menu</div><input type="file" id="dash-food-img-input" accept="image/*" style="position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%" onchange="handleFoodImgUpload(this,'dash-food-upload-zone','dash-food-preview')"></div>
+      <label class="img-upload-zone" id="dash-food-upload-zone"><div class="upload-icon">📸</div><div class="upload-label">Tap to upload a photo</div><div class="upload-sub">JPG or PNG · Shows on your menu</div><input type="file" id="dash-food-img-input" accept="image/*" style="display:none" onchange="handleFoodImgUpload(this,'dash-food-upload-zone','dash-food-preview')"></label>
       <input type="hidden" id="dash-food-preview">
     </div>
     <div class="form-group"><label class="form-label">Dish Name *</label><input class="form-input" id="nm-name" placeholder="e.g. Jollof Rice"></div>
@@ -1266,7 +1266,7 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif}
     <div class="modal-close" onclick="closeModal('ob-menu-modal')">✕</div>
     <div class="modal-title">Add a Dish</div>
     <div class="form-group"><label class="form-label">Dish Photo (optional)</label>
-      <div class="img-upload-zone" id="ob-food-upload-zone" onclick="document.getElementById('ob-food-img-input').click()"><div class="upload-icon">📸</div><div class="upload-label">Tap to upload a photo</div><div class="upload-sub">JPG or PNG · Shows on your menu</div><input type="file" id="ob-food-img-input" accept="image/*" style="position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%" onchange="handleFoodImgUpload(this,'ob-food-upload-zone','ob-food-preview')"></div>
+      <label class="img-upload-zone" id="ob-food-upload-zone"><div class="upload-icon">📸</div><div class="upload-label">Tap to upload a photo</div><div class="upload-sub">JPG or PNG · Shows on your menu</div><input type="file" id="ob-food-img-input" accept="image/*" style="display:none" onchange="handleFoodImgUpload(this,'ob-food-upload-zone','ob-food-preview')"></label>
       <input type="hidden" id="ob-food-preview">
     </div>
     <div class="form-group"><label class="form-label">Dish Name *</label><input class="form-input" id="om-name" placeholder="e.g. Jollof Rice"></div>
@@ -1285,12 +1285,12 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif}
     <div style="font-size:13px;color:var(--muted);margin-bottom:20px">Tell customers what you're cooking and when it'll be ready</div>
     <div class="form-group">
       <label class="form-label">Food Photo (recommended)</label>
-      <div class="img-upload-zone" id="ann-img-zone" onclick="document.getElementById('ann-img-input').click()">
+      <label class="img-upload-zone" id="ann-img-zone">
         <div class="upload-icon">📸</div>
         <div class="upload-label">Tap to add a mouth-watering photo</div>
         <div class="upload-sub">This appears on your vendor card to attract orders</div>
-        <input type="file" id="ann-img-input" accept="image/*" style="position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%" onchange="handleAnnImgUpload(this)">
-      </div>
+        <input type="file" id="ann-img-input" accept="image/*" style="display:none" onchange="handleAnnImgUpload(this)">
+      </label>
       <input type="hidden" id="ann-img-preview">
     </div>
     <div class="form-group">
@@ -2725,7 +2725,7 @@ async function postAvailability() {
     // Reset form
     ['av-dish','av-desc','av-portions'].forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; });
     const zone = document.getElementById('ann-img-zone');
-    if (zone) { zone.classList.remove('has-image'); zone.innerHTML = '<div class="upload-icon">📸</div><div class="upload-label">Tap to add a mouth-watering photo</div><div class="upload-sub">This appears on your vendor card to attract orders</div><input type="file" id="ann-img-input" accept="image/*" style="position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%" onchange="handleAnnImgUpload(this)">'; }
+    if (zone) { zone.classList.remove('has-image'); zone.innerHTML = '<div class="upload-icon">📸</div><div class="upload-label">Tap to add a mouth-watering photo</div><div class="upload-sub">This appears on your vendor card to attract orders</div><input type="file" id="ann-img-input" accept="image/*" style="display:none" onchange="handleAnnImgUpload(this)">'; }
     document.getElementById('ann-img-preview').value = '';
     renderAnnouncementBanner();
   } catch(e) { showToast('Error: ' + e.message, 'err'); }
@@ -2743,7 +2743,7 @@ function handleAnnImgUpload(input) {
       zone.classList.add('has-image');
       zone.innerHTML = '<img src="' + compressed + '" style="width:100%;height:160px;object-fit:cover;display:block;border-radius:14px">'
         + '<div style="position:absolute;bottom:8px;right:8px;background:rgba(15,14,12,.8);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:5px 10px;font-size:11px;font-weight:600">Change Photo</div>'
-        + '<input type="file" accept="image/*" style="position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%" onchange="handleAnnImgUpload(this)">';
+        + '<input type="file" accept="image/*" style="display:none" onchange="handleAnnImgUpload(this)">';
     }
     const h = document.getElementById('ann-img-preview');
     if (h) h.value = compressed;
@@ -3494,7 +3494,7 @@ async function savePlates(i) {
 function openAddMenuModal() {
   const zone=document.getElementById('dash-food-upload-zone'); if(!zone)return;
   zone.classList.remove('has-image');
-  zone.innerHTML='<div class="upload-icon">📸</div><div class="upload-label">Tap to upload a photo</div><div class="upload-sub">JPG or PNG · Shows on your menu</div><input type="file" id="dash-food-img-input" accept="image/*" style="position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%" onchange="handleFoodImgUpload(this,\'dash-food-upload-zone\',\'dash-food-preview\')">';
+  zone.innerHTML='<div class="upload-icon">📸</div><div class="upload-label">Tap to upload a photo</div><div class="upload-sub">JPG or PNG · Shows on your menu</div><input type="file" id="dash-food-img-input" accept="image/*" style="display:none" onchange="handleFoodImgUpload(this,\'dash-food-upload-zone\',\'dash-food-preview\')">';
   const dp=document.getElementById('dash-food-preview'); if(dp)dp.value='';
   document.getElementById('menu-modal').classList.add('open');
 }
@@ -3717,7 +3717,7 @@ function renderObMenuList(){
 function openObMenuModal(){
   const zone=document.getElementById('ob-food-upload-zone');
   zone.classList.remove('has-image');
-  zone.innerHTML='<div class="upload-icon">📸</div><div class="upload-label">Tap to upload a photo</div><div class="upload-sub">JPG or PNG · Shows on your menu</div><input type="file" id="ob-food-img-input" accept="image/*" style="position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%" onchange="handleFoodImgUpload(this,\'ob-food-upload-zone\',\'ob-food-preview\')">';
+  zone.innerHTML='<div class="upload-icon">📸</div><div class="upload-label">Tap to upload a photo</div><div class="upload-sub">JPG or PNG · Shows on your menu</div><input type="file" id="ob-food-img-input" accept="image/*" style="display:none" onchange="handleFoodImgUpload(this,\'ob-food-upload-zone\',\'ob-food-preview\')">';
   document.getElementById('ob-food-preview').value='';
   document.getElementById('ob-menu-modal').classList.add('open');
 }
@@ -3919,9 +3919,9 @@ function handleFoodImgUpload(input,zoneId,previewId){
   const zone=document.getElementById(zoneId);
   if(zone) zone.innerHTML='<div style="display:flex;align-items:center;justify-content:center;width:100%;height:160px;font-size:12px;color:var(--text2)">Processing…</div>';
   compressImageFile(file, 800, 0.78, function(compressed){
-    if(!compressed){ showToast('Could not process image — try a JPG or PNG','err'); if(zone){zone.classList.remove('has-image');zone.innerHTML='<div class="upload-icon">📸</div><div class="upload-label">Tap to upload a photo</div><div class="upload-sub">JPG or PNG · Shows on your menu</div><input type="file" accept="image/*" style="position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%" onchange="handleFoodImgUpload(this,\''+zoneId+'\',\''+previewId+'\')">';} return; }
+    if(!compressed){ showToast('Could not process image — try a JPG or PNG','err'); if(zone){zone.classList.remove('has-image');zone.innerHTML='<div class="upload-icon">📸</div><div class="upload-label">Tap to upload a photo</div><div class="upload-sub">JPG or PNG · Shows on your menu</div><input type="file" accept="image/*" style="display:none" onchange="handleFoodImgUpload(this,\''+zoneId+'\',\''+previewId+'\')">';} return; }
     if(zone){ zone.classList.add('has-image');
-      zone.innerHTML='<img src="'+compressed+'" style="width:100%;height:160px;object-fit:cover;display:block;border-radius:14px"><div style="position:absolute;bottom:8px;right:8px;background:rgba(15,14,12,.8);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:5px 10px;font-size:11px;font-weight:600;backdrop-filter:blur(8px)">Change Photo</div><input type="file" accept="image/*" style="position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%" onchange="handleFoodImgUpload(this,\''+zoneId+'\',\''+previewId+'\')">';
+      zone.innerHTML='<img src="'+compressed+'" style="width:100%;height:160px;object-fit:cover;display:block;border-radius:14px"><div style="position:absolute;bottom:8px;right:8px;background:rgba(15,14,12,.8);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:5px 10px;font-size:11px;font-weight:600;backdrop-filter:blur(8px)">Change Photo</div><input type="file" accept="image/*" style="display:none" onchange="handleFoodImgUpload(this,\''+zoneId+'\',\''+previewId+'\')">';
     }
     const h=document.getElementById(previewId);if(h)h.value=compressed;
   });
