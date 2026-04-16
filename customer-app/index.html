@@ -3840,45 +3840,66 @@ function goToDashboard(){
   IMAGE UPLOAD TO SUPABASE STORAGE
 ============================================================ */
 async function uploadImageToStorage(base64DataUrl, bucket, path) {
-  if (!base64DataUrl || !base64DataUrl.startsWith('data:')) return null;
+  // Already a remote URL — nothing to upload
+  if (!base64DataUrl) return null;
+  if (!base64DataUrl.startsWith('data:')) return base64DataUrl;
   try {
     const res = await fetch(base64DataUrl);
     const blob = await res.blob();
     const ext = blob.type.includes('png') ? 'png' : 'jpg';
-    const filePath = path + '_' + Date.now() + '.' + ext;
+    const filePath = path + '.' + ext;
     const { data, error } = await sb.storage.from(bucket).upload(filePath, blob, {
       contentType: blob.type, upsert: true
     });
     if (error) {
       console.warn('Storage upload failed:', error.message, '— using base64 fallback');
-      return base64DataUrl; // fallback: store base64 directly in DB
+      return base64DataUrl;
     }
     const { data: urlData } = sb.storage.from(bucket).getPublicUrl(filePath);
-    console.log('Uploaded to storage:', urlData?.publicUrl);
     return urlData?.publicUrl || base64DataUrl;
   } catch(e) {
     console.warn('Upload error:', e.message, '— using base64 fallback');
-    return base64DataUrl; // fallback: store base64 directly in DB
+    return base64DataUrl;
   }
+}
+
+// Compress an image data-url to a max width and JPEG quality
+// Keeps file sizes under ~150KB so they upload and load reliably on mobile
+function compressImage(dataUrl, maxW, quality, cb) {
+  const img = new Image();
+  img.onload = function() {
+    const scale = Math.min(1, maxW / img.width);
+    const w = Math.round(img.width * scale), h = Math.round(img.height * scale);
+    const canvas = document.createElement('canvas');
+    canvas.width = w; canvas.height = h;
+    canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+    cb(canvas.toDataURL('image/jpeg', quality));
+  };
+  img.onerror = function(){ cb(dataUrl); }; // fallback: original
+  img.src = dataUrl;
 }
 
 function handleLogoUpload(input){
   if(!input.files||!input.files[0])return;
   const r=new FileReader();
   r.onload=e=>{
-    vendorLogoUrl=e.target.result;
-    const c=document.getElementById('logo-circle');
-    c.innerHTML='<img src="'+vendorLogoUrl+'" style="width:100%;height:100%;object-fit:cover;border-radius:50%"><div class="logo-edit-badge" style="position:absolute;bottom:0;right:0;width:24px;height:24px;background:var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;pointer-events:none">✎</div><input type="file" id="logo-file-input" accept="image/*" style="display:none" onchange="handleLogoUpload(this)">';
-    c.onclick=()=>document.getElementById('logo-file-input').click();
+    compressImage(e.target.result, 600, 0.80, function(compressed){
+      vendorLogoUrl=compressed;
+      const c=document.getElementById('logo-circle');
+      c.innerHTML='<img src="'+compressed+'" style="width:100%;height:100%;object-fit:cover;border-radius:50%"><div class="logo-edit-badge" style="position:absolute;bottom:0;right:0;width:24px;height:24px;background:var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;pointer-events:none">✎</div><input type="file" id="logo-file-input" accept="image/*" style="display:none" onchange="handleLogoUpload(this)">';
+      c.onclick=()=>document.getElementById('logo-file-input').click();
+    });
   };r.readAsDataURL(input.files[0]);
 }
 function handleFoodImgUpload(input,zoneId,previewId){
   if(!input.files||!input.files[0])return;
   const r=new FileReader();
   r.onload=e=>{
-    const zone=document.getElementById(zoneId);zone.classList.add('has-image');
-    zone.innerHTML='<img src="'+e.target.result+'" style="width:100%;height:160px;object-fit:cover;display:block;border-radius:14px"><div style="position:absolute;bottom:8px;right:8px;background:rgba(15,14,12,.8);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:5px 10px;font-size:11px;font-weight:600;backdrop-filter:blur(8px)">Change Photo</div><input type="file" accept="image/*" style="position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%" onchange="handleFoodImgUpload(this,\''+zoneId+'\',\''+previewId+'\')">';
-    const h=document.getElementById(previewId);if(h)h.value=e.target.result;
+    compressImage(e.target.result, 800, 0.78, function(compressed){
+      const zone=document.getElementById(zoneId);zone.classList.add('has-image');
+      zone.innerHTML='<img src="'+compressed+'" style="width:100%;height:160px;object-fit:cover;display:block;border-radius:14px"><div style="position:absolute;bottom:8px;right:8px;background:rgba(15,14,12,.8);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:5px 10px;font-size:11px;font-weight:600;backdrop-filter:blur(8px)">Change Photo</div><input type="file" accept="image/*" style="position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%" onchange="handleFoodImgUpload(this,\''+zoneId+'\',\''+previewId+'\')">';
+      const h=document.getElementById(previewId);if(h)h.value=compressed;
+    });
   };r.readAsDataURL(input.files[0]);
 }
 

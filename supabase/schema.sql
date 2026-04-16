@@ -392,6 +392,9 @@ DROP POLICY IF EXISTS "media_owner_manage" ON storage.objects;
 
 CREATE POLICY "media_public_read" ON storage.objects
   FOR SELECT TO anon, authenticated USING (bucket_id = 'abinci-media');
+-- Allow anon uploads: app uses custom OTP auth (no Supabase session), so users are always anon role
+CREATE POLICY "media_anon_upload" ON storage.objects
+  FOR INSERT TO anon WITH CHECK (bucket_id = 'abinci-media');
 CREATE POLICY "media_auth_upload" ON storage.objects
   FOR INSERT TO authenticated WITH CHECK (bucket_id = 'abinci-media');
 CREATE POLICY "media_owner_manage" ON storage.objects
