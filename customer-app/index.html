@@ -4680,7 +4680,7 @@ async function dismissCustomerReport(reportId) {
 }
 
 async function approveVendor(vendorId) {
-  await sb.from('vendors').update({ is_approved: true }).eq('id', vendorId).catch(() => {});
+  await sb.from('vendors').update({ is_approved: true, is_available: true }).eq('id', vendorId).catch(() => {});
   showToast('Vendor approved ✓');
   await loadAdminDash();
 }

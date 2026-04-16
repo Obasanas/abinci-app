@@ -78,7 +78,7 @@ router.get('/vendors/pending', async (req, res) => {
 router.patch('/vendors/:id/approve', async (req, res) => {
   try {
     const { data, error } = await sb.from('vendors')
-      .update({ is_approved: true })
+      .update({ is_approved: true, is_available: true })
       .eq('id', req.params.id)
       .select().single();
     if (error) return res.status(500).json({ error: error.message });

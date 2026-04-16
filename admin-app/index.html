@@ -820,7 +820,7 @@ async function renderCommission(el){
 
 // ── Actions ───────────────────────────────────────────
 async function approveVendor(id){
-  var r=await sb.from('vendors').update({is_approved:true}).eq('id',id);
+  var r=await sb.from('vendors').update({is_approved:true,is_available:true}).eq('id',id);
   if(r.error){ toast('Error: '+r.error.message,'err'); return; }
   toast('Vendor approved ✓'); loadStats(); switchPage('approvals');
 }
