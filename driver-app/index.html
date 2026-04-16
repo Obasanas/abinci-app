@@ -1787,6 +1787,15 @@ function navTo(tab) {
 </script>
 
   <script>
+    const VAPID_PUBLIC_KEY = 'BEa-0auMM6KppXO6458e6J08mDXI1bj11fnR-Cc80t57hLd9Y-jkN7NWZvQ6ZLw3bNIdHnAth_AGRXCeGRV_LnE';
+
+    function urlBase64ToUint8Array(base64String) {
+      const padding = '='.repeat((4 - base64String.length % 4) % 4);
+      const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+      const rawData = window.atob(base64);
+      return Uint8Array.from([...rawData].map(c => c.charCodeAt(0)));
+    }
+
     let _swReg = null;
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
@@ -1796,16 +1805,47 @@ function navTo(tab) {
       });
     }
 
+    async function subscribeToPush() {
+      try {
+        if (!_swReg) return;
+        if (!VAPID_PUBLIC_KEY || VAPID_PUBLIC_KEY.startsWith('REPLACE_')) return;
+        let sub = await _swReg.pushManager.getSubscription();
+        if (!sub) {
+          sub = await _swReg.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
+          });
+        }
+        if (sub && window.driverProfile?.user_id) {
+          const key = sub.getKey('p256dh');
+          const auth = sub.getKey('auth');
+          if (!key || !auth) return;
+          const p256dh = btoa(String.fromCharCode(...new Uint8Array(key)));
+          const authStr = btoa(String.fromCharCode(...new Uint8Array(auth)));
+          await sb.from('push_tokens').upsert({
+            user_id: window.driverProfile.user_id,
+            endpoint: sub.endpoint,
+            p256dh,
+            auth: authStr,
+          }, { onConflict: 'endpoint' });
+        }
+      } catch(e) { console.warn('subscribeToPush error:', e.message); }
+    }
+
     async function requestPushPermission() {
       if (!('Notification' in window)) return;
       if (Notification.permission === 'denied') return;
       if (Notification.permission !== 'granted') {
         const perm = await Notification.requestPermission();
         if (perm !== 'granted') return;
+        await subscribeToPush();
+        showBrowserNotif('abinci Driver 🛵', 'Notifications on! You will be alerted when new orders are ready.');
+      } else {
+        await subscribeToPush();
       }
-      showBrowserNotif('abinci Driver 🛵', 'Notifications on! You will be alerted when new orders are ready.');
     }
     window.requestPushPermission = requestPushPermission;
+    window.subscribeToPush = subscribeToPush;
     // PWA install prompt
     let deferredPrompt;
     window.addEventListener('beforeinstallprompt', e => {
