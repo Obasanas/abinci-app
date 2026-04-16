@@ -355,14 +355,21 @@ CREATE POLICY "reviews_authenticated_ins" ON public.reviews FOR INSERT TO authen
 CREATE POLICY "reviews_anon_insert"       ON public.reviews FOR INSERT TO anon WITH CHECK (TRUE);
 
 -- notifications
-CREATE POLICY "notif_read_own"   ON public.notifications FOR SELECT TO authenticated USING (user_id = auth.uid());
-CREATE POLICY "notif_insert_own" ON public.notifications FOR INSERT TO authenticated WITH CHECK (user_id = auth.uid());
-CREATE POLICY "notif_update_own" ON public.notifications FOR UPDATE TO authenticated USING (user_id = auth.uid());
+-- App uses custom OTP auth (no Supabase session), anon role used for all client ops.
+-- Service role (server/edge function) inserts; client reads its own by user_id filter.
+CREATE POLICY "notif_read_own"    ON public.notifications FOR SELECT TO authenticated USING (user_id = auth.uid());
+CREATE POLICY "notif_insert_own"  ON public.notifications FOR INSERT TO authenticated WITH CHECK (user_id = auth.uid());
+CREATE POLICY "notif_update_own"  ON public.notifications FOR UPDATE TO authenticated USING (user_id = auth.uid());
+CREATE POLICY "notif_anon_select" ON public.notifications FOR SELECT TO anon USING (TRUE);
+CREATE POLICY "notif_anon_insert" ON public.notifications FOR INSERT TO anon WITH CHECK (TRUE);
+CREATE POLICY "notif_anon_update" ON public.notifications FOR UPDATE TO anon USING (TRUE);
 
 -- push_tokens
-CREATE POLICY "push_manage_own" ON public.push_tokens FOR ALL TO authenticated
+CREATE POLICY "push_manage_own"  ON public.push_tokens FOR ALL TO authenticated
   USING (user_id = auth.uid()) WITH CHECK (user_id = auth.uid());
-CREATE POLICY "push_anon_insert"ON public.push_tokens FOR INSERT TO anon WITH CHECK (TRUE);
+CREATE POLICY "push_anon_insert" ON public.push_tokens FOR INSERT TO anon WITH CHECK (TRUE);
+CREATE POLICY "push_anon_update" ON public.push_tokens FOR UPDATE TO anon USING (TRUE);
+CREATE POLICY "push_anon_select" ON public.push_tokens FOR SELECT TO anon USING (TRUE);
 
 -- customer_reports
 CREATE POLICY "reports_driver_insert" ON public.customer_reports FOR INSERT TO authenticated WITH CHECK (driver_id = auth.uid());

@@ -1880,7 +1880,7 @@ function renderVendorDetail() {
   document.getElementById('detail-menu').innerHTML = cv.menu.length
     ? cv.menu.map((m,i)=>'<div class="menu-item" id="mi-'+i+'" onclick="addToCart('+i+')" style="cursor:pointer;'+(m.plates===0?'opacity:.6':'')+'">'
         +(m.imgUrl
-          ?'<div style="padding:0;overflow:hidden;height:80px;background:var(--surface2)"><img src="'+m.imgUrl+'" style="width:100%;height:80px;object-fit:cover;display:block" loading="lazy"></div>'
+          ?'<div style="padding:0;overflow:hidden;height:80px;background:var(--surface2)"><img src="'+m.imgUrl+'" style="width:100%;height:80px;object-fit:cover;display:block" loading="lazy" onerror="this.parentElement.innerHTML=\'<div class=menu-emoji>'+m.emoji+'</div>\'"></div>'
           :'<div class="menu-emoji">'+m.emoji+'</div>')
         +'<div class="menu-details"><div class="menu-name">'+m.name+'</div><div class="menu-price">'+m.price+'</div><div class="menu-desc">'+m.desc+'</div>'
         +'<div id="mi-badge-'+i+'">'+(m.plates!=null?(m.plates>0
@@ -2734,19 +2734,20 @@ async function postAvailability() {
 
 function handleAnnImgUpload(input) {
   if (!input.files || !input.files[0]) return;
-  const r = new FileReader();
-  r.onload = e => {
-    const zone = document.getElementById('ann-img-zone');
+  const file = input.files[0];
+  const zone = document.getElementById('ann-img-zone');
+  if (zone) zone.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;width:100%;height:160px;font-size:12px;color:var(--text2)">Processing…</div>';
+  compressImageFile(file, 800, 0.78, function(compressed) {
+    if (!compressed) { showToast('Could not process image — try a JPG or PNG', 'err'); return; }
     if (zone) {
       zone.classList.add('has-image');
-      zone.innerHTML = '<img src="' + e.target.result + '" style="width:100%;height:160px;object-fit:cover;display:block;border-radius:14px">'
+      zone.innerHTML = '<img src="' + compressed + '" style="width:100%;height:160px;object-fit:cover;display:block;border-radius:14px">'
         + '<div style="position:absolute;bottom:8px;right:8px;background:rgba(15,14,12,.8);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:5px 10px;font-size:11px;font-weight:600">Change Photo</div>'
         + '<input type="file" accept="image/*" style="position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%" onchange="handleAnnImgUpload(this)">';
     }
     const h = document.getElementById('ann-img-preview');
-    if (h) h.value = e.target.result;
-  };
-  r.readAsDataURL(input.files[0]);
+    if (h) h.value = compressed;
+  });
 }
 
 async function loadActiveAnnouncement() {
@@ -3414,13 +3415,14 @@ function pickEditDelivery(el, type) {
 }
 function handleProfileImgUpload(input) {
   if(!input.files||!input.files[0]) return;
-  const r=new FileReader();
-  r.onload=e=>{
-    profileImgUrl=e.target.result;
+  compressImageFile(input.files[0], 400, 0.82, function(compressed) {
+    if(!compressed) { showToast('Could not process image','err'); return; }
+    profileImgUrl=compressed;
     const av=document.getElementById('edit-avatar-display');
-    if(av) av.innerHTML='<img src="'+profileImgUrl+'" style="width:80px;height:80px;border-radius:50%;object-fit:cover">';
-    document.getElementById('edit-avatar-url').value=profileImgUrl;
-  };r.readAsDataURL(input.files[0]);
+    if(av) av.innerHTML='<img src="'+compressed+'" style="width:80px;height:80px;border-radius:50%;object-fit:cover">';
+    const urlField=document.getElementById('edit-avatar-url');
+    if(urlField) urlField.value=compressed;
+  });
 }
 async function saveProfileEdit() {
   const btn=document.getElementById('profile-save-btn');
@@ -3468,7 +3470,7 @@ function renderVendorMenu() {
   el.innerHTML=vendorMenuItems.length
     ?vendorMenuItems.map((item,i)=>'<div class="menu-row" style="margin-bottom:10px;flex-wrap:wrap;gap:8px">'
         +'<div class="menu-row-left" style="flex:1;min-width:0">'
-        +(item.imgUrl?'<img src="'+item.imgUrl+'" style="width:52px;height:52px;border-radius:10px;object-fit:cover;flex-shrink:0">':'<span style="width:52px;height:52px;border-radius:10px;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0">'+( item.emoji||'🍽️')+'</span>')
+        +(item.imgUrl?'<img src="'+item.imgUrl+'" style="width:52px;height:52px;border-radius:10px;object-fit:cover;flex-shrink:0" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'"><span style="width:52px;height:52px;border-radius:10px;background:var(--surface2);display:none;align-items:center;justify-content:center;font-size:26px;flex-shrink:0">'+( item.emoji||'🍽️')+'</span>':'<span style="width:52px;height:52px;border-radius:10px;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0">'+( item.emoji||'🍽️')+'</span>')
         +'<div style="flex:1;min-width:0"><div style="font-size:14px;font-weight:600">'+item.name+'</div>'
         +'<div style="font-size:12px;color:var(--muted)">₦'+item.price+(item.desc?' · '+item.desc:'')+'</div>'
         +'<div style="display:flex;align-items:center;gap:6px;margin-top:6px">'
@@ -3510,11 +3512,11 @@ async function addMenuItem() {
         const imgPath = 'vendors/' + vendorProfile.id + '/menu/' + Date.now();
         imageUrl = await uploadImageToStorage(localImgUrl, 'abinci-media', imgPath);
       }
-      item.imgUrl = imageUrl || localImgUrl; // fallback to base64 if upload fails
+      item.imgUrl = imageUrl; // null if upload failed — don't store base64 in DB
       const r=await sb.from('menu_items').insert({
         vendor_id:vendorProfile.id,name:item.name,price:parseFloat(item.price)||0,
         description:item.desc,emoji:item.emoji,
-        plates_available:plates,image_url:imageUrl,is_available:true
+        plates_available:plates,image_url:imageUrl||null,is_available:true
       }).select().single();
       if(r.data)item.id=r.data.id;
     }catch(e){console.warn('Menu item save error:',e);}
@@ -3843,64 +3845,86 @@ async function uploadImageToStorage(base64DataUrl, bucket, path) {
   // Already a remote URL — nothing to upload
   if (!base64DataUrl) return null;
   if (!base64DataUrl.startsWith('data:')) return base64DataUrl;
+  // Guard against empty canvas output (iOS silent failure returns 'data:,')
+  if (base64DataUrl === 'data:,' || base64DataUrl.length < 500) return null;
   try {
     const res = await fetch(base64DataUrl);
-    const blob = await res.blob();
-    const ext = blob.type.includes('png') ? 'png' : 'jpg';
-    const filePath = path + '.' + ext;
+    const rawBlob = await res.blob();
+    // Force image/jpeg — blob.type from fetch(dataUrl) is unreliable on iOS
+    // (can be 'application/octet-stream') and Supabase would serve wrong Content-Type
+    const blob = new Blob([await rawBlob.arrayBuffer()], { type: 'image/jpeg' });
+    const filePath = path + '.jpg';
     const { data, error } = await sb.storage.from(bucket).upload(filePath, blob, {
-      contentType: blob.type, upsert: true
+      contentType: 'image/jpeg', upsert: true
     });
     if (error) {
-      console.warn('Storage upload failed:', error.message, '— using base64 fallback');
-      return base64DataUrl;
+      console.warn('Storage upload failed:', error.message);
+      return null; // Do NOT fall back to base64 — storing MBs of base64 in DB breaks the app
     }
     const { data: urlData } = sb.storage.from(bucket).getPublicUrl(filePath);
-    return urlData?.publicUrl || base64DataUrl;
+    return urlData?.publicUrl || null;
   } catch(e) {
-    console.warn('Upload error:', e.message, '— using base64 fallback');
-    return base64DataUrl;
+    console.warn('Upload error:', e.message);
+    return null;
   }
 }
 
-// Compress an image data-url to a max width and JPEG quality
-// Keeps file sizes under ~150KB so they upload and load reliably on mobile
-function compressImage(dataUrl, maxW, quality, cb) {
+// Compress a File object to a max width and JPEG quality.
+// Uses URL.createObjectURL instead of FileReader.readAsDataURL — avoids loading
+// the entire photo as a base64 string in JS memory, which silently crashes on iOS
+// with large iPhone photos (canvas returns "data:," with no error).
+// cb is called with the compressed JPEG data-url, or null on failure.
+function compressImageFile(file, maxW, quality, cb) {
+  const objectUrl = URL.createObjectURL(file);
   const img = new Image();
   img.onload = function() {
-    const scale = Math.min(1, maxW / img.width);
-    const w = Math.round(img.width * scale), h = Math.round(img.height * scale);
-    const canvas = document.createElement('canvas');
-    canvas.width = w; canvas.height = h;
-    canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-    cb(canvas.toDataURL('image/jpeg', quality));
+    URL.revokeObjectURL(objectUrl); // free native memory immediately
+    try {
+      const scale = Math.min(1, maxW / img.width);
+      const w = Math.round(img.width * scale);
+      const h = Math.round(img.height * scale);
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) { cb(null); return; } // iOS canvas memory limit hit
+      ctx.drawImage(img, 0, 0, w, h);
+      const result = canvas.toDataURL('image/jpeg', quality);
+      // iOS returns 'data:,' when canvas silently fails — treat as error
+      if (!result || result === 'data:,' || result.length < 500) { cb(null); return; }
+      cb(result);
+    } catch(e) { cb(null); }
   };
-  img.onerror = function(){ cb(dataUrl); }; // fallback: original
-  img.src = dataUrl;
+  img.onerror = function() { URL.revokeObjectURL(objectUrl); cb(null); };
+  img.src = objectUrl;
 }
 
 function handleLogoUpload(input){
   if(!input.files||!input.files[0])return;
-  const r=new FileReader();
-  r.onload=e=>{
-    compressImage(e.target.result, 600, 0.80, function(compressed){
-      vendorLogoUrl=compressed;
-      const c=document.getElementById('logo-circle');
+  const file=input.files[0];
+  const loadingHtml='<div style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;border-radius:50%;background:var(--surface2);font-size:11px;color:var(--text2)">Processing…</div>';
+  const c=document.getElementById('logo-circle');
+  if(c) c.innerHTML=loadingHtml;
+  compressImageFile(file, 600, 0.80, function(compressed){
+    if(!compressed){ showToast('Could not process image — try a JPG or PNG','err'); return; }
+    vendorLogoUrl=compressed;
+    if(c){
       c.innerHTML='<img src="'+compressed+'" style="width:100%;height:100%;object-fit:cover;border-radius:50%"><div class="logo-edit-badge" style="position:absolute;bottom:0;right:0;width:24px;height:24px;background:var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;pointer-events:none">✎</div><input type="file" id="logo-file-input" accept="image/*" style="display:none" onchange="handleLogoUpload(this)">';
       c.onclick=()=>document.getElementById('logo-file-input').click();
-    });
-  };r.readAsDataURL(input.files[0]);
+    }
+  });
 }
 function handleFoodImgUpload(input,zoneId,previewId){
   if(!input.files||!input.files[0])return;
-  const r=new FileReader();
-  r.onload=e=>{
-    compressImage(e.target.result, 800, 0.78, function(compressed){
-      const zone=document.getElementById(zoneId);zone.classList.add('has-image');
+  const file=input.files[0];
+  const zone=document.getElementById(zoneId);
+  if(zone) zone.innerHTML='<div style="display:flex;align-items:center;justify-content:center;width:100%;height:160px;font-size:12px;color:var(--text2)">Processing…</div>';
+  compressImageFile(file, 800, 0.78, function(compressed){
+    if(!compressed){ showToast('Could not process image — try a JPG or PNG','err'); if(zone){zone.classList.remove('has-image');zone.innerHTML='<div class="upload-icon">📸</div><div class="upload-label">Tap to upload a photo</div><div class="upload-sub">JPG or PNG · Shows on your menu</div><input type="file" accept="image/*" style="position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%" onchange="handleFoodImgUpload(this,\''+zoneId+'\',\''+previewId+'\')">';} return; }
+    if(zone){ zone.classList.add('has-image');
       zone.innerHTML='<img src="'+compressed+'" style="width:100%;height:160px;object-fit:cover;display:block;border-radius:14px"><div style="position:absolute;bottom:8px;right:8px;background:rgba(15,14,12,.8);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:5px 10px;font-size:11px;font-weight:600;backdrop-filter:blur(8px)">Change Photo</div><input type="file" accept="image/*" style="position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%" onchange="handleFoodImgUpload(this,\''+zoneId+'\',\''+previewId+'\')">';
-      const h=document.getElementById(previewId);if(h)h.value=compressed;
-    });
-  };r.readAsDataURL(input.files[0]);
+    }
+    const h=document.getElementById(previewId);if(h)h.value=compressed;
+  });
 }
 
 /* ============================================================
