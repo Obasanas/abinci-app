@@ -249,17 +249,17 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:#f4f5f7;color:
 <div id="toast"></div>
 
 <!-- Rejection modal -->
-<div id="reject-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;display:none;align-items:center;justify-content:center;padding:20px">
+<div id="reject-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;align-items:center;justify-content:center;padding:20px">
   <div style="background:#fff;border-radius:20px;padding:28px;width:100%;max-width:420px;box-shadow:0 20px 60px rgba(0,0,0,.3)">
-    <div style="font-size:18px;font-weight:700;margin-bottom:6px">Reject Vendor</div>
-    <div style="font-size:13px;color:#8a8680;margin-bottom:20px">This vendor will be notified of the rejection. You can approve them later if they fix the issues.</div>
+    <div style="font-size:18px;font-weight:700;margin-bottom:6px" id="reject-modal-title">Reject Application</div>
+    <div style="font-size:13px;color:#8a8680;margin-bottom:20px">Provide a reason — they can re-apply after fixing the issues.</div>
     <div style="margin-bottom:16px">
       <label style="font-size:12px;font-weight:600;color:#666;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:6px">Reason for rejection</label>
-      <textarea id="reject-reason-input" placeholder="e.g. Missing food photos, incomplete address, unclear business name…" style="width:100%;border:1.5px solid #e5e7eb;border-radius:12px;padding:12px;font-size:14px;font-family:'DM Sans',sans-serif;resize:none;height:100px;outline:none;color:#1a1a1a"></textarea>
+      <textarea id="reject-reason-input" placeholder="e.g. Missing food photos, incomplete address…" style="width:100%;border:1.5px solid #e5e7eb;border-radius:12px;padding:12px;font-size:14px;font-family:'DM Sans',sans-serif;resize:none;height:100px;outline:none;color:#1a1a1a"></textarea>
     </div>
     <div style="display:flex;gap:10px">
       <button onclick="closeRejectModal()" style="flex:1;padding:12px;border-radius:12px;border:1.5px solid #e5e7eb;background:#fff;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">Cancel</button>
-      <button onclick="confirmRejectVendor()" style="flex:1;padding:12px;border-radius:12px;border:none;background:#e05c5c;color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif">✕ Confirm Reject</button>
+      <button onclick="confirmReject()" style="flex:1;padding:12px;border-radius:12px;border:none;background:#e05c5c;color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif">✕ Confirm Reject</button>
     </div>
   </div>
 </div>
@@ -556,115 +556,122 @@ async function loadActivityFeed(){
 }
 
 // ── APPROVALS PAGE ────────────────────────────────────
+var _approvalFilter='all';
+var _allApprovalVendors=[], _allApprovalDrivers=[];
+
 async function renderApprovals(el){
+  _approvalFilter='all';
   var vr=await sb.from('vendors').select('*,users(full_name,phone)').order('created_at',{ascending:false});
-  var dr=await sb.from('riders').select('*,users(full_name,phone)').eq('is_approved',false).order('created_at',{ascending:false});
-  var vendors=vr.data||[], drivers=dr.data||[];
-  // Separate vendors into 4 buckets — rejected = has rejection_reason set
-  var approved=vendors.filter(function(v){return v.is_approved;}),
-      rejected=vendors.filter(function(v){return !v.is_approved&&v.rejection_reason;}),
-      pending=vendors.filter(function(v){return !v.is_approved&&!v.rejection_reason&&v.address&&v.food_types&&v.food_types.length;}),
-      incomplete=vendors.filter(function(v){return !v.is_approved&&!v.rejection_reason&&(!v.address||!v.food_types||!v.food_types.length);});
+  var dr=await sb.from('riders').select('*,users(full_name,phone)').order('created_at',{ascending:false});
+  _allApprovalVendors=vr.data||[];
+  _allApprovalDrivers=dr.data||[];
+  renderApprovalsTable(el);
+}
 
-  if(!approved.length&&!pending.length&&!incomplete.length&&!drivers.length){
-    el.innerHTML='<div class="empty"><div class="empty-icon">✅</div><div class="empty-title">All caught up!</div><div class="empty-sub">No pending approvals at the moment.</div></div>';
-    return;
-  }
-  var totalPending=pending.length+incomplete.length+drivers.length;
-  var html='<div class="page-header"><div><div class="section-title">Approvals & Registration</div><div class="section-sub">'+totalPending+' vendor'+(totalPending!==1?'s':'')+' need attention</div></div></div>';
+function renderApprovalsTable(el){
+  var vendors=_allApprovalVendors, drivers=_allApprovalDrivers;
+  var vApproved=vendors.filter(function(v){return v.is_approved;});
+  var vRejected=vendors.filter(function(v){return !v.is_approved&&v.rejection_reason;});
+  var vPending=vendors.filter(function(v){return !v.is_approved&&!v.rejection_reason&&v.address&&v.food_types&&v.food_types.length;});
+  var vIncomplete=vendors.filter(function(v){return !v.is_approved&&!v.rejection_reason&&(!v.address||!v.food_types||!v.food_types.length);});
+  var dApproved=drivers.filter(function(d){return d.is_approved;});
+  var dPending=drivers.filter(function(d){return !d.is_approved&&!d.rejection_reason;});
+  var dRejected=drivers.filter(function(d){return !d.is_approved&&d.rejection_reason;});
 
-  if(incomplete.length){
-    html+='<div class="approval-section-label">⚠️ Incomplete Registrations ('+incomplete.length+')</div>';
-    incomplete.forEach(function(v){
-      html+='<div class="approval-card">'
-        +'<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px">'
-        +'<div style="display:flex;align-items:center;gap:12px">'
-        +(v.logo_url?'<img src="'+v.logo_url+'" style="width:44px;height:44px;border-radius:10px;object-fit:cover;border:1px solid #e5e7eb">':'<div style="width:44px;height:44px;border-radius:10px;background:#fff8ec;display:flex;align-items:center;justify-content:center;font-size:22px">'+(v.emoji||'🍲')+'</div>')
-        +'<div><div style="font-size:15px;font-weight:700">'+v.business_name+'</div>'
-        +'<div style="font-size:12px;color:#8a8680;margin-top:2px">'+(v.users&&v.users.full_name||'—')+' · '+(v.users&&v.users.phone||'—')+'</div></div></div>'
-        +'<span class="badge-warn">📝 In Progress</span></div>'
-        +'<div class="kyc-grid">'
-        +'<div class="kyc-item"><label>Business Name</label><span>'+v.business_name+'</span></div>'
-        +'<div class="kyc-item"><label>Location</label><span>'+(v.area?v.area+', ':'')+''+(v.city||'—')+'</span></div>'
-        +'<div class="kyc-item"><label>Food Types</label><span>'+((v.food_types||[]).length>0?v.food_types.join(', '):'⚠️ Not set')+'</span></div>'
-        +'<div class="kyc-item"><label>Delivery Option</label><span>'+(v.delivery_option||'⚠️ Not set')+'</span></div>'
-        +(v.bio?'<div class="kyc-item full"><label>Bio</label><span style="line-height:1.5">'+v.bio+'</span></div>':'')
-        +'<div class="kyc-item full"><label style="color:#8a8680;font-size:12px">Registered</label><span style="font-size:12px;color:#8a8680">'+fmtDate(v.created_at)+'</span></div>'
-        +'</div>'
-        +'<div class="action-row">'
-        +'<button class="btn-approve" onclick="approveVendor(\''+v.id+'\')">✓ Approve Anyway</button>'
-        +'<button class="btn-reject" onclick="rejectVendor(\''+v.id+'\')">✕ Reject</button>'
-        +'</div></div>';
-    });
+  var rows=[];
+  var f=_approvalFilter;
+  function addV(list,status){ list.forEach(function(v){ rows.push({type:'vendor',id:v.id,name:v.business_name,sub:(v.users&&v.users.full_name||'—'),phone:(v.users&&v.users.phone||'—'),detail:(v.food_types||[]).slice(0,2).join(', ')||(v.area||'—'),location:(v.area?v.area+', ':'')+''+(v.city||''),status:status,reason:v.rejection_reason,date:v.created_at}); }); }
+  function addD(list,status){ list.forEach(function(d){ rows.push({type:'driver',id:d.id,name:(d.users&&d.users.full_name||'Driver'),sub:(d.vehicle_type||'—')+(d.vehicle_plate?' · '+d.vehicle_plate:''),phone:(d.users&&d.users.phone||'—'),detail:d.service_area||'—',location:d.service_area||'—',status:status,reason:d.rejection_reason,date:d.kyc_submitted_at||d.created_at}); }); }
+
+  if(f==='all'){ addV(vPending,'pending'); addD(dPending,'pending'); addV(vIncomplete,'in_progress'); addV(vRejected,'rejected'); addD(dRejected,'rejected'); }
+  else if(f==='vendors'){ addV(vPending,'pending'); addV(vIncomplete,'in_progress'); }
+  else if(f==='drivers'){ addD(dPending,'pending'); }
+  else if(f==='in_progress'){ addV(vIncomplete,'in_progress'); }
+  else if(f==='rejected'){ addV(vRejected,'rejected'); addD(dRejected,'rejected'); }
+  else if(f==='approved'){ addV(vApproved,'approved'); addD(dApproved,'approved'); }
+
+  rows.sort(function(a,b){
+    var o={pending:0,in_progress:1,rejected:2,approved:3};
+    if(o[a.status]!==o[b.status]) return o[a.status]-o[b.status];
+    return new Date(b.date)-new Date(a.date);
+  });
+
+  var pendingCount=vPending.length+dPending.length;
+  var inProgressCount=vIncomplete.length;
+  var rejectedCount=vRejected.length+dRejected.length;
+  var approvedCount=vApproved.length+dApproved.length;
+
+  function fpill(label,count,val){
+    var a=_approvalFilter===val;
+    return '<button class="filter-pill'+(a?' active':'')+'" onclick="filterApprovals(\''+val+'\')">'+label
+      +(count?' <span style="display:inline-flex;align-items:center;justify-content:center;min-width:16px;height:16px;border-radius:8px;background:'+(a?'rgba(245,166,35,.4)':'rgba(0,0,0,.08)')+';font-size:10px;padding:0 4px">'+count+'</span>':'')
+      +'</button>';
   }
-  if(pending.length){
-    html+='<div class="approval-section-label">🍲 Vendor Applications ('+pending.length+')</div>';
-    pending.forEach(function(v){
-      html+='<div class="approval-card">'
-        +'<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px">'
-        +'<div style="display:flex;align-items:center;gap:12px">'
-        +(v.logo_url?'<img src="'+v.logo_url+'" style="width:44px;height:44px;border-radius:10px;object-fit:cover;border:1px solid #e5e7eb">':'<div style="width:44px;height:44px;border-radius:10px;background:#fff8ec;display:flex;align-items:center;justify-content:center;font-size:22px">'+(v.emoji||'🍲')+'</div>')
-        +'<div><div style="font-size:15px;font-weight:700">'+v.business_name+'</div>'
-        +'<div style="font-size:12px;color:#8a8680;margin-top:2px">'+(v.users&&v.users.full_name||'—')+' · '+(v.users&&v.users.phone||'—')+'</div></div></div>'
-        +'<span class="badge-warn">Pending Review</span></div>'
-        +'<div class="kyc-grid">'
-        +'<div class="kyc-item"><label>Food Types</label><span>'+((v.food_types||[]).join(', ')||'—')+'</span></div>'
-        +'<div class="kyc-item"><label>Location</label><span>'+(v.area||'—')+', '+(v.city||'—')+'</span></div>'
-        +'<div class="kyc-item"><label>Delivery</label><span>'+(v.delivery_option||'—')+'</span></div>'
-        +'<div class="kyc-item"><label>Min Order</label><span>'+(v.min_order?fmt(v.min_order):'—')+'</span></div>'
-        +(v.bio?'<div class="kyc-item full"><label>Bio</label><span style="line-height:1.5">'+v.bio+'</span></div>':'')
-        +'<div class="kyc-item"><label>Address</label><span>'+(v.address||'—')+'</span></div>'
-        +'</div>'
-        +'<div class="action-row">'
-        +'<button class="btn-approve" onclick="approveVendor(\''+v.id+'\')">✓ Approve Vendor</button>'
-        +'<button class="btn-reject" onclick="rejectVendor(\''+v.id+'\')">✕ Reject</button>'
-        +'</div></div>';
-    });
+  function sbadge(s){
+    if(s==='pending')     return '<span class="badge-warn">⏳ Pending</span>';
+    if(s==='in_progress') return '<span style="display:inline-flex;align-items:center;background:#f4f5f7;color:#555;border:1px solid #e5e7eb;border-radius:20px;padding:3px 8px;font-size:11px;font-weight:600">📝 In Progress</span>';
+    if(s==='rejected')    return '<span class="badge-red">✕ Rejected</span>';
+    if(s==='approved')    return '<span class="badge-ok">✓ Approved</span>';
   }
-  if(rejected.length){
-    html+='<div class="approval-section-label" style="color:#e05c5c">✕ Rejected Vendors ('+rejected.length+')</div>';
-    rejected.forEach(function(v){
-      html+='<div class="approval-card" style="opacity:.7">'
-        +'<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px">'
-        +'<div style="display:flex;align-items:center;gap:12px">'
-        +(v.logo_url?'<img src="'+v.logo_url+'" style="width:44px;height:44px;border-radius:10px;object-fit:cover;border:1px solid #e5e7eb">':'<div style="width:44px;height:44px;border-radius:10px;background:#fff8ec;display:flex;align-items:center;justify-content:center;font-size:22px">'+(v.emoji||'🍲')+'</div>')
-        +'<div><div style="font-size:15px;font-weight:700">'+v.business_name+'</div>'
-        +'<div style="font-size:12px;color:#8a8680;margin-top:2px">'+(v.users&&v.users.full_name||'—')+' · '+(v.users&&v.users.phone||'—')+'</div></div></div>'
-        +'<span style="font-size:11px;padding:3px 8px;border-radius:20px;background:#fef2f2;color:#dc2626;border:1px solid #fecaca;font-weight:600">✕ Rejected</span></div>'
-        +'<div style="background:#fef2f2;border-radius:10px;padding:10px 14px;font-size:13px;color:#dc2626;margin-bottom:12px"><strong>Reason:</strong> '+v.rejection_reason+'</div>'
-        +'<div class="action-row">'
-        +'<button class="btn-approve" onclick="approveVendor(\''+v.id+'\')">✓ Approve Anyway</button>'
-        +'</div></div>';
-    });
+
+  var html='<div class="page-header"><div><div class="section-title">Approvals</div>'
+    +'<div class="section-sub">'+pendingCount+' pending · '+inProgressCount+' in progress · '+rejectedCount+' rejected</div></div>'
+    +'<button class="tb-btn" onclick="switchPage(\'approvals\')">↻ Refresh</button></div>'
+    +'<div class="filter-row">'
+    +fpill('All',pendingCount+inProgressCount,'all')
+    +fpill('Vendors',vPending.length,'vendors')
+    +fpill('Drivers',dPending.length,'drivers')
+    +fpill('In Progress',inProgressCount,'in_progress')
+    +fpill('Rejected',rejectedCount,'rejected')
+    +fpill('Approved',approvedCount,'approved')
+    +'</div>';
+
+  if(!rows.length){
+    html+='<div class="empty"><div class="empty-icon">✅</div><div class="empty-title">Nothing here</div><div class="empty-sub">No items in this category.</div></div>';
+    el.innerHTML=html; return;
   }
-  if(drivers.length){
-    html+='<div class="approval-section-label">🛵 Driver KYC ('+drivers.length+')</div>';
-    drivers.forEach(function(d){
-      html+='<div class="approval-card">'
-        +'<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px">'
-        +'<div><div style="font-size:15px;font-weight:700">'+(d.users&&d.users.full_name||'Driver')+'</div>'
-        +'<div style="font-size:12px;color:#8a8680;margin-top:2px">'+(d.users&&d.users.phone||'—')+'</div></div>'
-        +'<span class="badge-warn">KYC Review</span></div>'
-        +'<div class="kyc-grid">'
-        +'<div class="kyc-item"><label>Vehicle</label><span>'+(d.vehicle_type||'—')+'</span></div>'
-        +'<div class="kyc-item"><label>Plate No.</label><span>'+(d.vehicle_plate||'—')+'</span></div>'
-        +'<div class="kyc-item"><label>Service Area</label><span>'+(d.service_area||'—')+'</span></div>'
-        +'<div class="kyc-item"><label>NIN</label><span>'+(d.nin||'—')+'</span></div>'
-        +'<div class="kyc-item"><label>Bank</label><span>'+(d.bank_name||'—')+'</span></div>'
-        +'<div class="kyc-item"><label>Account No.</label><span>'+(d.account_number||'—')+'</span></div>'
-        +'<div class="kyc-item full"><label>Account Name</label><span>'+(d.account_name||'—')+'</span></div>'
-        +'<div class="kyc-item full"><label>KYC Submitted</label><span>'+(d.kyc_submitted_at?fmtDate(d.kyc_submitted_at):'—')+'</span></div>'
-        +'</div>'
-        +'<div class="doc-row">'
-        +docThumb(d.doc_gov_id,'Gov ID')+docThumb(d.doc_selfie,'Selfie')+docThumb(d.doc_vehicle,'Vehicle')
-        +'</div>'
-        +'<div class="action-row">'
-        +'<button class="btn-approve" onclick="approveDriver(\''+d.id+'\')">✓ Approve Driver</button>'
-        +'<button class="btn-reject" onclick="rejectDriver(\''+d.id+'\')">✕ Reject</button>'
-        +'</div></div>';
-    });
-  }
+
+  html+='<div class="content-card" style="padding:0;overflow-x:auto">'
+    +'<table class="data-table"><thead><tr>'
+    +'<th style="padding:14px 16px 10px">Type</th>'
+    +'<th>Name</th>'
+    +'<th>Phone</th>'
+    +'<th>Details</th>'
+    +'<th>Status</th>'
+    +'<th>Date</th>'
+    +'<th style="text-align:right;padding:0 16px 10px">Actions</th>'
+    +'</tr></thead><tbody>'
+    +rows.map(function(row){
+      var typePill=row.type==='vendor'
+        ?'<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:#fff8ec;color:#c07a00;border:1px solid #fde68a;white-space:nowrap">🍲 Vendor</span>'
+        :'<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:#eff6ff;color:#3b82f6;border:1px solid #bfdbfe;white-space:nowrap">🛵 Driver</span>';
+      var acts='';
+      if(row.status==='pending'||row.status==='in_progress'){
+        if(row.type==='vendor') acts='<button class="btn-approve" style="padding:5px 11px;font-size:11px" onclick="approveVendor(\''+row.id+'\')">✓ Approve</button><button class="btn-reject" style="padding:5px 10px;font-size:11px;margin-left:4px" onclick="rejectVendor(\''+row.id+'\')">✕ Reject</button>';
+        else                   acts='<button class="btn-approve" style="padding:5px 11px;font-size:11px" onclick="approveDriver(\''+row.id+'\')">✓ Approve</button><button class="btn-reject" style="padding:5px 10px;font-size:11px;margin-left:4px" onclick="rejectDriver(\''+row.id+'\')">✕ Reject</button>';
+      } else if(row.status==='rejected'){
+        if(row.type==='vendor') acts='<button class="btn-neutral" style="padding:5px 10px;font-size:11px" onclick="approveVendor(\''+row.id+'\')">↩ Approve</button>';
+        else                    acts='<button class="btn-neutral" style="padding:5px 10px;font-size:11px" onclick="approveDriver(\''+row.id+'\')">↩ Approve</button>';
+      }
+      var reasonRow=row.reason
+        ?'<tr style="background:#fef2f2"><td colspan="7" style="padding:6px 16px 8px;font-size:12px;color:#dc2626"><strong>Reason:</strong> '+row.reason+'</td></tr>'
+        :'';
+      return '<tr>'
+        +'<td style="padding:12px 16px">'+typePill+'</td>'
+        +'<td><div style="font-weight:600;font-size:13px;white-space:nowrap">'+row.name+'</div>'
+        +'<div style="font-size:11px;color:#8a8680;margin-top:1px">'+row.sub+'</div></td>'
+        +'<td style="color:#555;font-size:12px;white-space:nowrap">'+row.phone+'</td>'
+        +'<td style="color:#6b7280;font-size:12px;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+row.detail+'</td>'
+        +'<td style="white-space:nowrap">'+sbadge(row.status)+'</td>'
+        +'<td style="color:#8a8680;font-size:12px;white-space:nowrap">'+fmtDate(row.date)+'</td>'
+        +'<td style="text-align:right;padding:12px 16px"><div style="display:flex;justify-content:flex-end;gap:4px">'+acts+'</div></td>'
+        +'</tr>'+reasonRow;
+    }).join('')+'</tbody></table></div>';
   el.innerHTML=html;
+}
+function filterApprovals(val){
+  _approvalFilter=val;
+  renderApprovalsTable(document.getElementById('page-content'));
 }
 
 function docThumb(src,label){
@@ -857,27 +864,35 @@ async function approveVendor(id){
   if(r.error){ toast('Error: '+r.error.message,'err'); return; }
   toast('Vendor approved ✓'); loadStats(); switchPage('approvals');
 }
-var _rejectVendorId=null;
+var _rejectId=null, _rejectType=null;
 function rejectVendor(id){
-  _rejectVendorId=id;
+  _rejectId=id; _rejectType='vendor';
+  document.getElementById('reject-modal-title').textContent='Reject Vendor';
+  document.getElementById('reject-reason-input').value='';
+  document.getElementById('reject-modal').style.display='flex';
+}
+function rejectDriver(id){
+  _rejectId=id; _rejectType='driver';
+  document.getElementById('reject-modal-title').textContent='Reject Driver';
   document.getElementById('reject-reason-input').value='';
   document.getElementById('reject-modal').style.display='flex';
 }
 function closeRejectModal(){
   document.getElementById('reject-modal').style.display='none';
-  _rejectVendorId=null;
+  _rejectId=null; _rejectType=null;
 }
-async function confirmRejectVendor(){
-  if(!_rejectVendorId) return;
+async function confirmReject(){
+  if(!_rejectId) return;
   var reason=document.getElementById('reject-reason-input').value.trim();
   if(!reason){ toast('Please enter a rejection reason','err'); return; }
   var btn=document.querySelector('#reject-modal button:last-child');
   btn.textContent='Rejecting…'; btn.disabled=true;
-  var r=await sb.from('vendors').update({is_approved:false,rejection_reason:reason}).eq('id',_rejectVendorId);
+  var table=_rejectType==='driver'?'riders':'vendors';
+  var r=await sb.from(table).update({rejection_reason:reason}).eq('id',_rejectId);
   btn.textContent='✕ Confirm Reject'; btn.disabled=false;
   if(r.error){ toast('Error: '+r.error.message,'err'); return; }
   closeRejectModal();
-  toast('Vendor rejected'); loadStats(); switchPage('approvals');
+  toast((_rejectType==='driver'?'Driver':'Vendor')+' rejected'); loadStats(); switchPage('approvals');
 }
 async function suspendVendor(id){
   if(!confirm('Suspend this vendor? They will be taken offline.')) return;
@@ -888,12 +903,6 @@ async function approveDriver(id){
   var r=await sb.from('riders').update({is_approved:true}).eq('id',id);
   if(r.error){ toast('Error: '+r.error.message,'err'); return; }
   toast('Driver approved ✓'); loadStats(); switchPage('approvals');
-}
-async function rejectDriver(id){
-  var reason=prompt('Reason for rejection (optional):');
-  if(reason===null) return;
-  await sb.from('riders').update({is_approved:false,rejection_reason:reason||null}).eq('id',id);
-  toast('Driver rejected'); switchPage('approvals');
 }
 async function suspendDriver(id){
   if(!confirm('Suspend this driver?')) return;
