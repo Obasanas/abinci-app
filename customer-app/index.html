@@ -3521,10 +3521,14 @@ async function addMenuItem() {
 }
 async function removeMenuItem(i) {
   const item=vendorMenuItems[i];
-  if(item?.id)await sb.from('menu_items').delete().eq('id',item.id).catch(()=>{});
+  if(item?.id){
+    const {error}=await sb.from('menu_items').delete().eq('id',item.id);
+    if(error){showToast('Could not delete item: '+error.message,'err');return;}
+  }
   vendorMenuItems.splice(i,1); renderVendorMenu();
   const dmc=document.getElementById('dash-menu-count'); if(dmc)dmc.textContent=vendorMenuItems.length;
-  renderVendorDash(); // refresh completion banner
+  renderVendorDash();
+  showToast('Item removed ✓');
 }
 
 /* ============================================================

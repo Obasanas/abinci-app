@@ -327,6 +327,9 @@ CREATE POLICY "menu_vendor_manage" ON public.menu_items FOR ALL TO authenticated
   USING (vendor_id IN (SELECT id FROM public.vendors WHERE user_id = auth.uid()))
   WITH CHECK (vendor_id IN (SELECT id FROM public.vendors WHERE user_id = auth.uid()));
 CREATE POLICY "menu_anon_insert"   ON public.menu_items FOR INSERT TO anon WITH CHECK (TRUE);
+-- App uses custom OTP auth (no Supabase session), so anon key is used for all vendor operations
+CREATE POLICY "menu_anon_update"   ON public.menu_items FOR UPDATE TO anon USING (TRUE) WITH CHECK (TRUE);
+CREATE POLICY "menu_anon_delete"   ON public.menu_items FOR DELETE TO anon USING (TRUE);
 
 -- riders
 CREATE POLICY "riders_public_read" ON public.riders FOR SELECT TO anon, authenticated USING (TRUE);
