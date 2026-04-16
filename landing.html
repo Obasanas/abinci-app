@@ -532,6 +532,116 @@
   .footer-logo span { color: var(--saffron); }
   footer p { font-size: 12px; color: rgba(253,246,233,.3); margin-top: 8px; }
 
+  /* ── FOOD GALLERY STRIP ── */
+  .gallery-section {
+    position: relative;
+    z-index: 2;
+    padding: 56px 0 48px;
+  }
+  .gallery-heading {
+    text-align: center;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--saffron);
+    margin-bottom: 24px;
+  }
+  .gallery-scroll {
+    display: flex;
+    gap: 14px;
+    padding: 0 24px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    max-width: 1200px;
+    margin: 0 auto;
+    justify-content: center;
+  }
+  .gallery-scroll::-webkit-scrollbar { display: none; }
+  @media (max-width: 768px) {
+    .gallery-scroll { justify-content: flex-start; }
+  }
+  .gallery-card {
+    flex-shrink: 0;
+    width: 180px;
+    height: 240px;
+    border-radius: 20px;
+    background-size: cover;
+    background-position: center;
+    background-color: var(--dark3);
+    position: relative;
+    overflow: hidden;
+    border: 1px solid rgba(245,166,35,.12);
+    transition: transform .4s, box-shadow .4s;
+    cursor: default;
+  }
+  .gallery-card:hover { transform: scale(1.04) translateY(-4px); box-shadow: 0 20px 50px rgba(0,0,0,.5); }
+  .gallery-card::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 55%;
+    background: linear-gradient(to top, rgba(13,10,7,.85), transparent);
+    pointer-events: none;
+  }
+  .gallery-card-label {
+    position: absolute;
+    bottom: 14px;
+    left: 14px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--cream);
+    z-index: 1;
+    pointer-events: none;
+  }
+  .gallery-card-sub {
+    position: absolute;
+    bottom: 0px;
+    left: 14px;
+    font-size: 10px;
+    color: rgba(253,246,233,.5);
+    z-index: 1;
+    margin-bottom: 2px;
+  }
+
+  /* ── CULTURE DISH WITH IMAGE ── */
+  .culture-dish.has-img {
+    padding: 0;
+    height: 110px;
+    overflow: hidden;
+  }
+  .culture-dish.has-img .dish-img {
+    width: 100%;
+    height: 75px;
+    object-fit: cover;
+    display: block;
+    border-radius: 12px 12px 0 0;
+  }
+  .culture-dish.has-img .dish-name {
+    font-size: 11px;
+    color: var(--muted);
+    font-weight: 500;
+    padding: 6px 8px 0;
+    text-align: center;
+  }
+
+  /* ── LIVE STATS ── */
+  .stat-num.loading { opacity: .4; }
+  .stat-badge {
+    display: inline-block;
+    background: rgba(245,166,35,.1);
+    border: 1px solid rgba(245,166,35,.2);
+    border-radius: 20px;
+    padding: 2px 10px;
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--saffron);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+
   /* ── TICKER ── */
   .ticker-wrap {
     position: relative;
@@ -648,6 +758,31 @@
   </div>
 </div>
 
+<!-- FOOD GALLERY -->
+<div class="gallery-section">
+  <div class="gallery-heading">Real Food · Real Kitchens</div>
+  <div class="gallery-scroll">
+    <div class="gallery-card" style="background-image:url('https://images.unsplash.com/photo-1567364816519-cbc7c5e5a37b?auto=format&fit=crop&w=400&q=80')">
+      <div class="gallery-card-label">Rice Bowl</div>
+    </div>
+    <div class="gallery-card" style="background-image:url('https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=400&q=80')">
+      <div class="gallery-card-label">Fresh Plates</div>
+    </div>
+    <div class="gallery-card" style="background-image:url('https://images.unsplash.com/photo-1544025162-d76538928566?auto=format&fit=crop&w=400&q=80')">
+      <div class="gallery-card-label">Suya & Grill</div>
+    </div>
+    <div class="gallery-card" style="background-image:url('https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=400&q=80')">
+      <div class="gallery-card-label">Stew & Soup</div>
+    </div>
+    <div class="gallery-card" style="background-image:url('https://images.unsplash.com/photo-1565557623262-b51c2513a641?auto=format&fit=crop&w=400&q=80')">
+      <div class="gallery-card-label">Jollof Rice</div>
+    </div>
+    <div class="gallery-card" style="background-image:url('https://images.unsplash.com/photo-1574484284602-00cc74fa7f85?auto=format&fit=crop&w=400&q=80')">
+      <div class="gallery-card-label">Home Cooking</div>
+    </div>
+  </div>
+</div>
+
 <!-- CULTURE SECTION -->
 <div class="culture-strip">
   <div class="culture-inner">
@@ -661,12 +796,30 @@
       </p>
     </div>
     <div class="culture-emojis">
-      <div class="culture-dish"><span>🫕</span><p>Miyan Kuka</p></div>
-      <div class="culture-dish"><span>🍝</span><p>Pasta</p></div>
-      <div class="culture-dish"><span>🍗</span><p>Suya</p></div>
-      <div class="culture-dish"><span>🍛</span><p>Jollof Rice</p></div>
-      <div class="culture-dish"><span>🌯</span><p>Shawarma</p></div>
-      <div class="culture-dish"><span>🌽</span><p>Masa</p></div>
+      <div class="culture-dish has-img">
+        <img class="dish-img" src="https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=300&q=75" alt="Miyan Kuka" loading="lazy" onerror="this.parentElement.classList.remove('has-img');this.parentElement.innerHTML='<span>🫕</span><p>Miyan Kuka</p>'">
+        <div class="dish-name">Miyan Kuka</div>
+      </div>
+      <div class="culture-dish has-img">
+        <img class="dish-img" src="https://images.unsplash.com/photo-1473093295043-cfd59e2b7cc9?auto=format&fit=crop&w=300&q=75" alt="Pasta" loading="lazy" onerror="this.parentElement.classList.remove('has-img');this.parentElement.innerHTML='<span>🍝</span><p>Pasta</p>'">
+        <div class="dish-name">Pasta</div>
+      </div>
+      <div class="culture-dish has-img">
+        <img class="dish-img" src="https://images.unsplash.com/photo-1544025162-d76538928566?auto=format&fit=crop&w=300&q=75" alt="Suya" loading="lazy" onerror="this.parentElement.classList.remove('has-img');this.parentElement.innerHTML='<span>🍗</span><p>Suya</p>'">
+        <div class="dish-name">Suya</div>
+      </div>
+      <div class="culture-dish has-img">
+        <img class="dish-img" src="https://images.unsplash.com/photo-1567364816519-cbc7c5e5a37b?auto=format&fit=crop&w=300&q=75" alt="Jollof Rice" loading="lazy" onerror="this.parentElement.classList.remove('has-img');this.parentElement.innerHTML='<span>🍛</span><p>Jollof Rice</p>'">
+        <div class="dish-name">Jollof Rice</div>
+      </div>
+      <div class="culture-dish has-img">
+        <img class="dish-img" src="https://images.unsplash.com/photo-1565557623262-b51c2513a641?auto=format&fit=crop&w=300&q=75" alt="Shawarma" loading="lazy" onerror="this.parentElement.classList.remove('has-img');this.parentElement.innerHTML='<span>🌯</span><p>Shawarma</p>'">
+        <div class="dish-name">Shawarma</div>
+      </div>
+      <div class="culture-dish has-img">
+        <img class="dish-img" src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=300&q=75" alt="Masa" loading="lazy" onerror="this.parentElement.classList.remove('has-img');this.parentElement.innerHTML='<span>🌽</span><p>Masa</p>'">
+        <div class="dish-name">Masa</div>
+      </div>
     </div>
   </div>
 </div>
@@ -700,22 +853,26 @@
     </div>
   </div>
 
-  <div class="stats-row">
+  <div class="stats-row" id="stats-row">
     <div>
-      <div class="stat-num">100%</div>
-      <div class="stat-label">Homemade</div>
+      <div class="stat-badge">Live</div>
+      <div class="stat-num loading" id="stat-vendors">—</div>
+      <div class="stat-label">Active Vendors</div>
     </div>
     <div>
-      <div class="stat-num">0</div>
-      <div class="stat-label">Restaurants</div>
+      <div class="stat-badge">Live</div>
+      <div class="stat-num loading" id="stat-orders">—</div>
+      <div class="stat-label">Orders Processed</div>
     </div>
     <div>
-      <div class="stat-num">3</div>
+      <div class="stat-badge">Growing</div>
+      <div class="stat-num loading" id="stat-customers">—</div>
+      <div class="stat-label">Customers</div>
+    </div>
+    <div>
+      <div class="stat-badge">& Expanding</div>
+      <div class="stat-num" id="stat-cities">3</div>
       <div class="stat-label">Cities</div>
-    </div>
-    <div>
-      <div class="stat-num">♾️</div>
-      <div class="stat-label">Recipes</div>
     </div>
   </div>
 </div>
@@ -813,10 +970,58 @@ const observer = new IntersectionObserver((entries) => {
     }
   });
 }, { threshold: 0.1 });
-document.querySelectorAll('.feature-card, .step, .culture-dish').forEach(el => {
+document.querySelectorAll('.feature-card, .step, .culture-dish, .gallery-card').forEach(el => {
   el.style.opacity = '0';
   observer.observe(el);
 });
+
+// ── Live stats from Supabase ──────────────────────────────────
+const _SB_URL  = 'https://kikeyhwbziumyhcnsvhi.supabase.co';
+const _SB_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtpa2V5aHdieml1bXloY25zdmhpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI4OTk5OTMsImV4cCI6MjA4ODQ3NTk5M30.4R9XP1DOx358SJE0VPm3y8NimoCoVKVcJqPDSvLiHJc';
+
+function animateCount(el, target) {
+  if (!el || target <= 0) { if (el) { el.textContent = target || '0'; el.classList.remove('loading'); } return; }
+  el.classList.remove('loading');
+  let current = 0;
+  const steps = 50;
+  const increment = Math.ceil(target / steps);
+  const interval = setInterval(() => {
+    current = Math.min(current + increment, target);
+    el.textContent = current >= 1000 ? (current / 1000).toFixed(1) + 'k' : current;
+    if (current >= target) { el.textContent = target >= 1000 ? (target / 1000).toFixed(1) + 'k' : target; clearInterval(interval); }
+  }, 28);
+}
+
+async function fetchLiveStats() {
+  try {
+    const h = { 'apikey': _SB_ANON, 'Prefer': 'count=exact', 'Range-Unit': 'items', 'Range': '0-0' };
+    const [vRes, oRes, cRes] = await Promise.all([
+      fetch(_SB_URL + '/rest/v1/vendors?is_approved=eq.true&select=id', { headers: h }),
+      fetch(_SB_URL + '/rest/v1/orders?select=id', { headers: h }),
+      fetch(_SB_URL + '/rest/v1/users?role=eq.customer&select=id', { headers: h }),
+    ]);
+    const count = r => parseInt((r.headers.get('content-range') || '').split('/')[1] || '0') || 0;
+    animateCount(document.getElementById('stat-vendors'),   count(vRes));
+    animateCount(document.getElementById('stat-orders'),    count(oRes));
+    animateCount(document.getElementById('stat-customers'), count(cRes));
+  } catch(e) {
+    // Network error — show zeros gracefully
+    ['stat-vendors','stat-orders','stat-customers'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) { el.textContent = '0'; el.classList.remove('loading'); }
+    });
+  }
+}
+
+// Trigger stats fetch when stats row scrolls into view
+const statsObserver = new IntersectionObserver((entries) => {
+  if (entries[0].isIntersecting) {
+    fetchLiveStats();
+    statsObserver.disconnect();
+  }
+}, { threshold: 0.3 });
+const statsRow = document.getElementById('stats-row');
+if (statsRow) statsObserver.observe(statsRow);
 </script>
 </body>
 </html>
