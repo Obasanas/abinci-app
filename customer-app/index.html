@@ -1636,19 +1636,26 @@ async function doVerifyOTP() {
     btn.textContent = 'Verify & Continue →'; btn.disabled = false;
   }
 }
+// Wrap a promise with a timeout so a slow Supabase call can't hang the app
+function withTimeout(promise, ms) {
+  return Promise.race([
+    promise,
+    new Promise(function(_, reject){ setTimeout(function(){ reject(new Error('timeout')); }, ms); })
+  ]);
+}
+
 async function autoRoute() {
   if (userProfile) {
     if (!currentRole) currentRole = userProfile.role;
     updateProfileUI();
     if (currentRole === 'vendor') {
       let vp = null;
-      try { const r = await sb.from('vendors').select('*').eq('user_id',userProfile.id).maybeSingle(); vp=r.data; } catch(e){}
+      try { const r = await withTimeout(sb.from('vendors').select('*').eq('user_id',userProfile.id).maybeSingle(), 6000); vp=r.data; } catch(e){}
       if (vp) {
         vendorProfile=vp; availability=vp.is_available;
         let mi = [];
-        try { const r = await sb.from('menu_items').select('id,name,price,description,emoji,plates_available,image_url,is_available').eq('vendor_id',vp.id); mi=r.data||[]; } catch(e){}
+        try { const r = await withTimeout(sb.from('menu_items').select('id,name,price,description,emoji,plates_available,image_url,is_available').eq('vendor_id',vp.id), 5000); mi=r.data||[]; } catch(e){}
         vendorMenuItems=mi.map(m=>({id:m.id,name:m.name,price:m.price,desc:m.description||'',emoji:m.emoji||'🍽️',plates:m.plates_available??null,imgUrl:m.image_url||null}));
-        // Start realtime subscription for vendor orders
         subscribeToOrders(vp.id);
       }
       renderVendorDash(); showScreen('screen-vendor-dash');
@@ -1660,9 +1667,9 @@ async function autoRoute() {
       document.getElementById('nav-chats').innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>Messages';
       document.getElementById('nav-profile').innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Profile';
     } else {
-      // Customer: subscribe to their order updates
       if (userProfile.id) subscribeToCustomerOrders(userProfile.id);
-      await loadVendors(); showScreen('screen-discover');
+      try { await withTimeout(loadVendors(), 6000); } catch(e) { renderVendors(DEMO_VENDORS); }
+      showScreen('screen-discover');
       document.getElementById('bottom-nav').style.display='flex';
     }
     // Load notifications + subscribe to realtime updates
@@ -3880,11 +3887,22 @@ function handleFoodImgUpload(input,zoneId,previewId){
 ============================================================ */
 // Check localStorage session first — skip OTP for returning users
 (async function init() {
-  // Show loading overlay immediately to prevent any flash
   const loadingEl = document.getElementById('app-loading');
   if (loadingEl) loadingEl.style.display = 'flex';
 
-  // Clear any obviously corrupt cache
+  // Hard timeout — if init hangs for any reason, force-show the app after 8s
+  const timeoutId = setTimeout(function() {
+    if (loadingEl && loadingEl.style.display !== 'none') {
+      loadingEl.style.display = 'none';
+      // If we have a cached user but something hung, at least show the right screen
+      if (currentRole === 'vendor') {
+        try { renderVendorDash(); showScreen('screen-vendor-dash'); document.getElementById('bottom-nav').style.display='flex'; } catch(e) {}
+      } else {
+        try { renderVendors(DEMO_VENDORS); showScreen('screen-discover'); document.getElementById('bottom-nav').style.display='flex'; } catch(e) {}
+      }
+    }
+  }, 8000);
+
   let cached = {};
   try { cached = JSON.parse(localStorage.getItem('vh_users') || '{}'); } catch(e) { localStorage.removeItem('vh_users'); }
 
@@ -3901,25 +3919,38 @@ function handleFoodImgUpload(input,zoneId,previewId){
     userProfile = cachedUser;
     currentRole = cachedUser.role;
     sbUser = { id: cachedUser.id };
-    await autoRoute();
+    try {
+      await autoRoute();
+    } catch(e) {
+      // autoRoute threw — still show something useful
+      console.error('autoRoute error:', e);
+      try {
+        if (currentRole === 'vendor') {
+          renderVendorDash(); showScreen('screen-vendor-dash'); document.getElementById('bottom-nav').style.display='flex';
+        } else {
+          renderVendors(DEMO_VENDORS); showScreen('screen-discover'); document.getElementById('bottom-nav').style.display='flex';
+        }
+      } catch(e2) {}
+    }
+    clearTimeout(timeoutId);
     if (loadingEl) loadingEl.style.display = 'none';
 
-    // Then silently refresh from DB in background
+    // Silently refresh from DB in background
     try {
       const { data } = await sb.from('users').select('*').eq('id', cachedUser.id).maybeSingle();
       if (data) {
         userProfile = data;
         currentRole = data.role;
-        // Update cache with fresh data
         const fresh = JSON.parse(localStorage.getItem('vh_users') || '{}');
         fresh[data.phone] = data;
         localStorage.setItem('vh_users', JSON.stringify(fresh));
         localStorage.setItem('vh_current_phone', data.phone);
       }
-    } catch(e) {} // silent — user is already on the right screen
+    } catch(e) {}
     return;
   }
-  // No session — show splash
+  // No session — show discover with demo vendors
+  clearTimeout(timeoutId);
   if (loadingEl) loadingEl.style.display = 'none';
   renderVendors(DEMO_VENDORS);
 })();
