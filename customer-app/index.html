@@ -3755,26 +3755,27 @@ async function obFinish(){
       let vd=null;
       if(existing?.id){
         // Update existing vendor profile
-        const{data:updated,error:updateErr}=await sb.from('vendors').update({
+        const updatePayload={
           business_name:bn,bio:document.getElementById('ob-bio').value.trim(),
           address:document.getElementById('ob-address').value.trim(),area,city,state,
           food_types:selectedFoods,delivery_option:selectedDelivery,
           min_order:minOrder?parseFloat(minOrder):null,
-          logo_url:logoPublicUrl,
-          is_available:false,is_approved:false
-        }).eq('id',existing.id).select().single();
+        };
+        if(logoPublicUrl) updatePayload.logo_url=logoPublicUrl;
+        const{data:updated,error:updateErr}=await sb.from('vendors').update(updatePayload).eq('id',existing.id).select().single();
         if(updateErr){ saveError=updateErr.message; console.error('Vendor update error:',updateErr); }
         else{ vd=updated; }
       }else{
         // Insert new vendor profile
-        const{data:inserted,error:insertErr}=await sb.from('vendors').insert({
+        const insertPayload={
           user_id:uid,business_name:bn,bio:document.getElementById('ob-bio').value.trim(),
           address:document.getElementById('ob-address').value.trim(),area,city,state,
           food_types:selectedFoods,delivery_option:selectedDelivery,
           min_order:minOrder?parseFloat(minOrder):null,
-          logo_url:logoPublicUrl,
           is_available:false,is_approved:false,emoji:'🍲'
-        }).select().single();
+        };
+        if(logoPublicUrl) insertPayload.logo_url=logoPublicUrl;
+        const{data:inserted,error:insertErr}=await sb.from('vendors').insert(insertPayload).select().single();
         if(insertErr){ saveError=insertErr.message; console.error('Vendor insert error:',insertErr); }
         else{ vd=inserted; }
       }
