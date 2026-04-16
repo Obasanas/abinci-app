@@ -248,6 +248,22 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:#f4f5f7;color:
 
 <div id="toast"></div>
 
+<!-- Rejection modal -->
+<div id="reject-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;display:none;align-items:center;justify-content:center;padding:20px">
+  <div style="background:#fff;border-radius:20px;padding:28px;width:100%;max-width:420px;box-shadow:0 20px 60px rgba(0,0,0,.3)">
+    <div style="font-size:18px;font-weight:700;margin-bottom:6px">Reject Vendor</div>
+    <div style="font-size:13px;color:#8a8680;margin-bottom:20px">This vendor will be notified of the rejection. You can approve them later if they fix the issues.</div>
+    <div style="margin-bottom:16px">
+      <label style="font-size:12px;font-weight:600;color:#666;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:6px">Reason for rejection</label>
+      <textarea id="reject-reason-input" placeholder="e.g. Missing food photos, incomplete address, unclear business name…" style="width:100%;border:1.5px solid #e5e7eb;border-radius:12px;padding:12px;font-size:14px;font-family:'DM Sans',sans-serif;resize:none;height:100px;outline:none;color:#1a1a1a"></textarea>
+    </div>
+    <div style="display:flex;gap:10px">
+      <button onclick="closeRejectModal()" style="flex:1;padding:12px;border-radius:12px;border:1.5px solid #e5e7eb;background:#fff;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">Cancel</button>
+      <button onclick="confirmRejectVendor()" style="flex:1;padding:12px;border-radius:12px;border:none;background:#e05c5c;color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif">✕ Confirm Reject</button>
+    </div>
+  </div>
+</div>
+
 <script>
 var SB_URL  = 'https://kikeyhwbziumyhcnsvhi.supabase.co';
 var SB_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtpa2V5aHdieml1bXloY25zdmhpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI4OTk5OTMsImV4cCI6MjA4ODQ3NTk5M30.4R9XP1DOx358SJE0VPm3y8NimoCoVKVcJqPDSvLiHJc';
@@ -544,10 +560,11 @@ async function renderApprovals(el){
   var vr=await sb.from('vendors').select('*,users(full_name,phone)').order('created_at',{ascending:false});
   var dr=await sb.from('riders').select('*,users(full_name,phone)').eq('is_approved',false).order('created_at',{ascending:false});
   var vendors=vr.data||[], drivers=dr.data||[];
-  // Separate approved, pending, and incomplete vendors
+  // Separate vendors into 4 buckets — rejected = has rejection_reason set
   var approved=vendors.filter(function(v){return v.is_approved;}),
-      pending=vendors.filter(function(v){return !v.is_approved&&v.address&&v.food_types;}),
-      incomplete=vendors.filter(function(v){return !v.is_approved&&(!v.address||!v.food_types);});
+      rejected=vendors.filter(function(v){return !v.is_approved&&v.rejection_reason;}),
+      pending=vendors.filter(function(v){return !v.is_approved&&!v.rejection_reason&&v.address&&v.food_types&&v.food_types.length;}),
+      incomplete=vendors.filter(function(v){return !v.is_approved&&!v.rejection_reason&&(!v.address||!v.food_types||!v.food_types.length);});
 
   if(!approved.length&&!pending.length&&!incomplete.length&&!drivers.length){
     el.innerHTML='<div class="empty"><div class="empty-icon">✅</div><div class="empty-title">All caught up!</div><div class="empty-sub">No pending approvals at the moment.</div></div>';
@@ -601,6 +618,22 @@ async function renderApprovals(el){
         +'<div class="action-row">'
         +'<button class="btn-approve" onclick="approveVendor(\''+v.id+'\')">✓ Approve Vendor</button>'
         +'<button class="btn-reject" onclick="rejectVendor(\''+v.id+'\')">✕ Reject</button>'
+        +'</div></div>';
+    });
+  }
+  if(rejected.length){
+    html+='<div class="approval-section-label" style="color:#e05c5c">✕ Rejected Vendors ('+rejected.length+')</div>';
+    rejected.forEach(function(v){
+      html+='<div class="approval-card" style="opacity:.7">'
+        +'<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px">'
+        +'<div style="display:flex;align-items:center;gap:12px">'
+        +(v.logo_url?'<img src="'+v.logo_url+'" style="width:44px;height:44px;border-radius:10px;object-fit:cover;border:1px solid #e5e7eb">':'<div style="width:44px;height:44px;border-radius:10px;background:#fff8ec;display:flex;align-items:center;justify-content:center;font-size:22px">'+(v.emoji||'🍲')+'</div>')
+        +'<div><div style="font-size:15px;font-weight:700">'+v.business_name+'</div>'
+        +'<div style="font-size:12px;color:#8a8680;margin-top:2px">'+(v.users&&v.users.full_name||'—')+' · '+(v.users&&v.users.phone||'—')+'</div></div></div>'
+        +'<span style="font-size:11px;padding:3px 8px;border-radius:20px;background:#fef2f2;color:#dc2626;border:1px solid #fecaca;font-weight:600">✕ Rejected</span></div>'
+        +'<div style="background:#fef2f2;border-radius:10px;padding:10px 14px;font-size:13px;color:#dc2626;margin-bottom:12px"><strong>Reason:</strong> '+v.rejection_reason+'</div>'
+        +'<div class="action-row">'
+        +'<button class="btn-approve" onclick="approveVendor(\''+v.id+'\')">✓ Approve Anyway</button>'
         +'</div></div>';
     });
   }
@@ -824,11 +857,27 @@ async function approveVendor(id){
   if(r.error){ toast('Error: '+r.error.message,'err'); return; }
   toast('Vendor approved ✓'); loadStats(); switchPage('approvals');
 }
-async function rejectVendor(id){
-  var reason=prompt('Reason for rejection (optional):');
-  if(reason===null) return;
-  await sb.from('vendors').update({is_approved:false,rejection_reason:reason||null}).eq('id',id);
-  toast('Vendor rejected'); switchPage('approvals');
+var _rejectVendorId=null;
+function rejectVendor(id){
+  _rejectVendorId=id;
+  document.getElementById('reject-reason-input').value='';
+  document.getElementById('reject-modal').style.display='flex';
+}
+function closeRejectModal(){
+  document.getElementById('reject-modal').style.display='none';
+  _rejectVendorId=null;
+}
+async function confirmRejectVendor(){
+  if(!_rejectVendorId) return;
+  var reason=document.getElementById('reject-reason-input').value.trim();
+  if(!reason){ toast('Please enter a rejection reason','err'); return; }
+  var btn=document.querySelector('#reject-modal button:last-child');
+  btn.textContent='Rejecting…'; btn.disabled=true;
+  var r=await sb.from('vendors').update({is_approved:false,rejection_reason:reason}).eq('id',_rejectVendorId);
+  btn.textContent='✕ Confirm Reject'; btn.disabled=false;
+  if(r.error){ toast('Error: '+r.error.message,'err'); return; }
+  closeRejectModal();
+  toast('Vendor rejected'); loadStats(); switchPage('approvals');
 }
 async function suspendVendor(id){
   if(!confirm('Suspend this vendor? They will be taken offline.')) return;
