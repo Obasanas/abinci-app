@@ -355,9 +355,13 @@
   .feature-card:hover::before { opacity: 1; }
 
   .feature-icon {
-    font-size: 48px;
+    width: 48px;
+    height: 48px;
     margin-bottom: 20px;
-    display: block;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--saffron);
     filter: drop-shadow(0 4px 12px rgba(245,166,35,.3));
   }
 
@@ -670,6 +674,7 @@
     to { transform: translateX(-50%); }
   }
 </style>
+<script src="/assets/icons.js"></script>
 </head>
 <body>
 
@@ -888,32 +893,32 @@
 
   <div class="features-grid">
     <div class="feature-card">
-      <span class="feature-icon">👩‍🍳</span>
+      <span class="feature-icon" data-icon="chef-hat" data-icon-size="40"></span>
       <div class="feature-title">Home Cooks Only</div>
       <p class="feature-desc">Every vendor is a real person cooking from their home kitchen. No chains, no shortcuts, no frozen food.</p>
     </div>
     <div class="feature-card">
-      <span class="feature-icon">📢</span>
+      <span class="feature-icon" data-icon="megaphone" data-icon-size="40"></span>
       <div class="feature-title">Pre-order System</div>
       <p class="feature-desc">Vendors announce tomorrow's menu. You pre-order tonight. Food is cooked fresh to your exact order.</p>
     </div>
     <div class="feature-card">
-      <span class="feature-icon">🛵</span>
+      <span class="feature-icon" data-icon="bike" data-icon-size="40"></span>
       <div class="feature-title">Fast Delivery</div>
       <p class="feature-desc">Our branded riders pick up and deliver. Track your order live from kitchen to doorstep.</p>
     </div>
     <div class="feature-card">
-      <span class="feature-icon">💬</span>
+      <span class="feature-icon" data-icon="message-circle" data-icon-size="40"></span>
       <div class="feature-title">Chat with Your Cook</div>
       <p class="feature-desc">Message vendors directly. Ask about ingredients, spice level, or special requests. It's personal.</p>
     </div>
     <div class="feature-card">
-      <span class="feature-icon">⭐</span>
+      <span class="feature-icon" data-icon="star" data-icon-size="40"></span>
       <div class="feature-title">Trusted Reviews</div>
       <p class="feature-desc">Real ratings from real customers. Find the best Miyan Kuka in your area in seconds.</p>
     </div>
     <div class="feature-card">
-      <span class="feature-icon">📲</span>
+      <span class="feature-icon" data-icon="share" data-icon-size="40"></span>
       <div class="feature-title">Share via WhatsApp</div>
       <p class="feature-desc">Vendors share their menu on WhatsApp. One tap brings your contacts straight to their page.</p>
     </div>
@@ -1025,6 +1030,14 @@ const statsObserver = new IntersectionObserver((entries) => {
 }, { threshold: 0.3 });
 const statsRow = document.getElementById('stats-row');
 if (statsRow) statsObserver.observe(statsRow);
+
+// Icon init
+document.addEventListener('DOMContentLoaded', function() {
+  document.querySelectorAll('[data-icon]').forEach(function(el) {
+    var size = parseInt(el.dataset.iconSize || el.dataset.size || '16');
+    el.innerHTML = ic(el.dataset.icon, size);
+  });
+});
 </script>
 </body>
 </html>

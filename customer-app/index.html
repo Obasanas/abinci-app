@@ -13,6 +13,7 @@
 <title>abinci.food</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,300;1,400&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/assets/icons.js"></script>
 
 <!-- ============================================================
   STYLES — grouped by concern, not by screen
@@ -320,7 +321,7 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif}
                  transition:all .2s;position:relative;overflow:hidden;background:var(--surface2)}
 .img-upload-zone:hover{border-color:var(--accent);background:rgba(245,166,35,.04)}
 .img-upload-zone input[type=file]{display:none}
-.img-upload-zone .upload-icon{font-size:28px}
+.img-upload-zone .upload-icon{width:28px;height:28px;display:flex;align-items:center;justify-content:center;color:var(--muted)}
 .img-upload-zone .upload-label{font-size:13px;font-weight:600;color:var(--muted)}
 .img-upload-zone .upload-sub{font-size:11px;color:var(--muted);opacity:.7}
 .img-upload-zone.has-image{border-style:solid;border-color:var(--accent);padding:0}
@@ -550,7 +551,7 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif}
       <div class="logo-upload-wrap">
         <div class="logo-upload-circle" id="logo-circle" onclick="document.getElementById('logo-file-input').click()">
           <div class="logo-placeholder" id="logo-placeholder">🍽️</div>
-          <div class="logo-edit-badge">✎</div>
+          <div class="logo-edit-badge" data-icon="edit-2" data-icon-size="12"></div>
           <input type="file" id="logo-file-input" accept="image/*" style="display:none" onchange="handleLogoUpload(this)">
         </div>
         <div class="logo-upload-info">
@@ -736,11 +737,11 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif}
       </div>
     </div>
     <div class="divider"></div>
-    <div class="section-label">🍽️ Menu</div>
-    <div id="cart-nudge" style="display:none;background:rgba(245,166,35,.08);border:1px solid rgba(245,166,35,.2);border-radius:12px;padding:10px 14px;font-size:12px;color:var(--accent);margin-bottom:10px">🛒 Tap any item to add to cart</div>
+    <div class="section-label" style="display:flex;align-items:center;gap:6px"><span data-icon="utensils" data-icon-size="14"></span> Menu</div>
+    <div id="cart-nudge" style="display:none;background:rgba(245,166,35,.08);border:1px solid rgba(245,166,35,.2);border-radius:12px;padding:10px 14px;font-size:12px;color:var(--accent);margin-bottom:10px;align-items:center;gap:6px"><span data-icon="shopping-cart" data-icon-size="13"></span> Tap any item to add to cart</div>
     <div class="menu-grid" id="detail-menu"></div>
     <div class="divider"></div>
-    <div class="section-label">⭐ Reviews</div>
+    <div class="section-label" style="display:flex;align-items:center;gap:6px"><span data-icon="star" data-icon-size="14"></span> Reviews</div>
     <div id="detail-reviews-list"></div>
     <button class="write-review-btn" onclick="openReviewModal()">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
@@ -749,7 +750,7 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif}
     <div style="height:90px"></div>
   </div>
   <div id="cart-fab" onclick="openCart()" style="display:none;position:fixed;bottom:24px;right:20px;background:var(--accent);color:#000;border-radius:50px;padding:12px 20px;font-size:14px;font-weight:700;font-family:'DM Sans',sans-serif;cursor:pointer;box-shadow:0 4px 20px rgba(245,166,35,.4);z-index:200;align-items:center;gap:8px">
-    🛒 <span id="cart-fab-label">Cart (0)</span>
+    <span data-icon="shopping-cart" data-icon-size="16"></span> <span id="cart-fab-label">Cart (0)</span>
   </div>
 </div>
 
@@ -816,10 +817,10 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif}
     <div class="toggle on" id="avail-toggle" onclick="toggleAvail()"></div>
   </div>
   <div class="dash-stat-row">
-    <div class="dash-stat"><div class="dash-stat-num" id="dash-rating">—</div><div class="dash-stat-label">⭐ Rating</div></div>
-    <div class="dash-stat"><div class="dash-stat-num" id="dash-reviews">0</div><div class="dash-stat-label">💬 Reviews</div></div>
-    <div class="dash-stat"><div class="dash-stat-num" id="dash-menu-count">0</div><div class="dash-stat-label">🍽️ Menu</div></div>
-    <div class="dash-stat"><div class="dash-stat-num" id="dash-orders-today">0</div><div class="dash-stat-label">📋 Orders</div></div>
+    <div class="dash-stat"><div class="dash-stat-num" id="dash-rating">—</div><div class="dash-stat-label" style="display:flex;align-items:center;justify-content:center;gap:4px"><span data-icon="star" data-icon-size="12"></span> Rating</div></div>
+    <div class="dash-stat"><div class="dash-stat-num" id="dash-reviews">0</div><div class="dash-stat-label" style="display:flex;align-items:center;justify-content:center;gap:4px"><span data-icon="message-circle" data-icon-size="12"></span> Reviews</div></div>
+    <div class="dash-stat"><div class="dash-stat-num" id="dash-menu-count">0</div><div class="dash-stat-label" style="display:flex;align-items:center;justify-content:center;gap:4px"><span data-icon="utensils" data-icon-size="12"></span> Menu</div></div>
+    <div class="dash-stat"><div class="dash-stat-num" id="dash-orders-today">0</div><div class="dash-stat-label" style="display:flex;align-items:center;justify-content:center;gap:4px"><span data-icon="clipboard" data-icon-size="12"></span> Orders</div></div>
   </div>
   <div style="padding:0 20px">
     <!-- Active Announcement Banner -->
@@ -844,19 +845,19 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif}
 
     <div class="section-label" style="margin-bottom:12px">Quick Actions</div>
     <div style="display:flex;flex-direction:column;gap:10px">
-      <div class="menu-row" onclick="showPostAvailability()" style="background:rgba(245,166,35,.06);border-color:rgba(245,166,35,.2)"><div class="menu-row-left"><span style="font-size:20px">📢</span>Post Availability</div><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></div>
-      <div class="menu-row" onclick="shareMenuWhatsApp()" style="background:rgba(37,211,102,.06);border-color:rgba(37,211,102,.2)"><div class="menu-row-left"><span style="font-size:20px">📲</span>Share Menu on WhatsApp</div><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></div>
-      <div class="menu-row" onclick="showScreen('screen-vendor-menu')"><div class="menu-row-left"><span style="font-size:20px">🍽️</span>Manage Menu</div><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></div>
+      <div class="menu-row" onclick="showPostAvailability()" style="background:rgba(245,166,35,.06);border-color:rgba(245,166,35,.2)"><div class="menu-row-left"><span data-icon="megaphone" data-icon-size="18"></span>Post Availability</div><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></div>
+      <div class="menu-row" onclick="shareMenuWhatsApp()" style="background:rgba(37,211,102,.06);border-color:rgba(37,211,102,.2)"><div class="menu-row-left"><span data-icon="share" data-icon-size="18"></span>Share Menu on WhatsApp</div><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></div>
+      <div class="menu-row" onclick="showScreen('screen-vendor-menu')"><div class="menu-row-left"><span data-icon="utensils" data-icon-size="18"></span>Manage Menu</div><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></div>
       <div class="menu-row" onclick="showVendorEarnings()">
-        <div class="menu-row-left"><span style="font-size:20px">💰</span>My Earnings</div>
+        <div class="menu-row-left"><span data-icon="wallet" data-icon-size="18"></span>My Earnings</div>
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
       </div>
-      <div class="menu-row" onclick="showVendorOrders()"><div class="menu-row-left"><span style="font-size:20px">📋</span>Incoming Orders <span id="dash-orders-badge" style="display:none;background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;margin-left:6px"></span></div><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></div>
+      <div class="menu-row" onclick="showVendorOrders()"><div class="menu-row-left"><span data-icon="clipboard" data-icon-size="18"></span>Incoming Orders <span id="dash-orders-badge" style="display:none;background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;margin-left:6px"></span></div><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></div>
       <div class="menu-row" onclick="openProfileEdit()">
-        <div class="menu-row-left"><span style="font-size:20px">✏️</span>Edit Profile</div>
+        <div class="menu-row-left"><span data-icon="edit-2" data-icon-size="18"></span>Edit Profile</div>
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
       </div>
-      <div class="menu-row" onclick="loadConversations();showScreen('screen-conversations')"><div class="menu-row-left"><span style="font-size:20px">💬</span>Messages</div><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></div>
+      <div class="menu-row" onclick="loadConversations();showScreen('screen-conversations')"><div class="menu-row-left"><span data-icon="message-circle" data-icon-size="18"></span>Messages</div><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></div>
     </div>
   </div>
 </div>
@@ -917,19 +918,19 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif}
 
     <!-- Vendor Info -->
     <div id="track-vendor-card" style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:16px;margin-bottom:12px">
-      <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">📍 Pickup From</div>
+      <div style="display:flex;align-items:center;gap:5px;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px"><span data-icon="map-pin" data-icon-size="13"></span> Pickup From</div>
       <div style="display:flex;justify-content:space-between;align-items:center">
         <div>
           <div style="font-size:15px;font-weight:700" id="track-vendor-name">—</div>
           <div style="font-size:12px;color:var(--muted);margin-top:2px" id="track-vendor-area">—</div>
         </div>
-        <a id="track-vendor-call" href="#" style="display:none;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:8px 14px;font-size:12px;font-weight:600;color:var(--text);text-decoration:none">📞 Call</a>
+        <a id="track-vendor-call" href="#" style="display:none;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:8px 14px;font-size:12px;font-weight:600;color:var(--text);text-decoration:none;display:flex;align-items:center;gap:5px"><span data-icon="phone" data-icon-size="13"></span> Call</a>
       </div>
     </div>
 
     <!-- Rider Info — shows when out_for_delivery -->
     <div id="track-rider-card" style="display:none;background:var(--surface);border:1.5px solid rgba(91,156,246,.3);border-radius:16px;padding:16px;margin-bottom:12px">
-      <div style="font-size:11px;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">🛵 Your Rider</div>
+      <div style="display:flex;align-items:center;gap:5px;font-size:11px;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px"><span data-icon="bike" data-icon-size="13"></span> Your Rider</div>
       <div style="display:flex;justify-content:space-between;align-items:center">
         <div style="display:flex;align-items:center;gap:12px">
           <div style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700" id="track-rider-avatar">R</div>
@@ -938,13 +939,13 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif}
             <div style="font-size:12px;color:var(--muted);margin-top:2px" id="track-rider-vehicle">—</div>
           </div>
         </div>
-        <a id="track-rider-call" href="#" style="background:var(--blue);border:none;border-radius:10px;padding:8px 14px;font-size:12px;font-weight:600;color:#fff;text-decoration:none">📞 Call</a>
+        <a id="track-rider-call" href="#" style="background:var(--blue);border:none;border-radius:10px;padding:8px 14px;font-size:12px;font-weight:600;color:#fff;text-decoration:none;display:flex;align-items:center;gap:5px"><span data-icon="phone" data-icon-size="13"></span> Call</a>
       </div>
     </div>
 
     <!-- Order Summary -->
     <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:16px;margin-bottom:12px">
-      <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">🛒 Order Summary</div>
+      <div style="display:flex;align-items:center;gap:5px;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px"><span data-icon="shopping-cart" data-icon-size="13"></span> Order Summary</div>
       <div id="track-items" style="font-size:13px;color:var(--muted);margin-bottom:10px"></div>
       <div style="display:flex;justify-content:space-between;align-items:center;padding-top:10px;border-top:1px solid var(--border)">
         <span style="font-size:13px;color:var(--muted)" id="track-delivery-type">🛵 Delivery</span>
@@ -1025,11 +1026,11 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif}
     <div id="prof-verify-badge" style="margin-top:8px;display:none"></div>
   </div>
   <div style="padding:20px;display:flex;flex-direction:column;gap:8px">
-    <div class="menu-row" onclick="showScreen('screen-notifications')"><div class="menu-row-left"><span style="font-size:20px">🔔</span>Notifications<span id="profile-notif-count" style="display:none;background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;margin-left:6px"></span></div><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></div>
-    <div class="menu-row" onclick="showMyReviews()"><div class="menu-row-left"><span style="font-size:20px">⭐</span>My Reviews</div><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></div>
-    <div class="menu-row" onclick="showSavedVendors()"><div class="menu-row-left"><span style="font-size:20px">❤️</span>Saved Vendors</div><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></div>
-    <div class="menu-row" onclick="showScreen('screen-settings')"><div class="menu-row-left"><span style="font-size:20px">⚙️</span>Settings</div><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></div>
-    <div class="menu-row" onclick="signOut()"><div class="menu-row-left" style="color:var(--red)"><span style="font-size:20px">🚪</span>Sign Out</div></div>
+    <div class="menu-row" onclick="showScreen('screen-notifications')"><div class="menu-row-left"><span data-icon="bell" data-icon-size="18"></span>Notifications<span id="profile-notif-count" style="display:none;background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;margin-left:6px"></span></div><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></div>
+    <div class="menu-row" onclick="showMyReviews()"><div class="menu-row-left"><span data-icon="star" data-icon-size="18"></span>My Reviews</div><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></div>
+    <div class="menu-row" onclick="showSavedVendors()"><div class="menu-row-left"><span data-icon="heart" data-icon-size="18"></span>Saved Vendors</div><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></div>
+    <div class="menu-row" onclick="showScreen('screen-settings')"><div class="menu-row-left"><span data-icon="shield" data-icon-size="18"></span>Settings</div><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></div>
+    <div class="menu-row" onclick="signOut()"><div class="menu-row-left" style="color:var(--red)"><span data-icon="log-out" data-icon-size="18"></span>Sign Out</div></div>
   </div>
 </div>
 
@@ -1046,7 +1047,7 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif}
   </div>
   <div id="notif-list">
     <div style="padding:60px 20px;text-align:center;color:var(--muted)">
-      <div style="font-size:48px;margin-bottom:12px">🔔</div>
+      <div style="margin-bottom:12px;color:var(--muted)"><span data-icon="bell" data-icon-size="40"></span></div>
       <div style="font-size:15px;font-weight:600">No notifications yet</div>
       <div style="font-size:13px;margin-top:6px">Order updates and alerts will appear here</div>
     </div>
@@ -1069,7 +1070,7 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif}
     <div style="text-align:center;margin-bottom:28px">
       <div class="profile-edit-avatar" onclick="document.getElementById('profile-img-input').click()">
         <div class="avatar-init" id="edit-avatar-display" style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:32px;font-weight:700">C</div>
-        <div class="profile-edit-badge">✎</div>
+        <div class="profile-edit-badge" data-icon="edit-2" data-icon-size="12"></div>
         <input type="file" id="profile-img-input" accept="image/*" style="display:none" onchange="handleProfileImgUpload(this)">
       </div>
       <div style="font-size:12px;color:var(--muted);margin-top:8px">Tap to change photo</div>
@@ -1249,7 +1250,7 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif}
     <div class="modal-close" onclick="closeModal('menu-modal')">✕</div>
     <div class="modal-title">Add Menu Item</div>
     <div class="form-group"><label class="form-label">Dish Photo (optional)</label>
-      <label class="img-upload-zone" id="dash-food-upload-zone"><div class="upload-icon">📸</div><div class="upload-label">Tap to upload a photo</div><div class="upload-sub">JPG or PNG · Shows on your menu</div><input type="file" id="dash-food-img-input" accept="image/*" style="display:none" onchange="handleFoodImgUpload(this,'dash-food-upload-zone','dash-food-preview')"></label>
+      <label class="img-upload-zone" id="dash-food-upload-zone"><div class="upload-icon" data-icon="camera" data-icon-size="28"></div><div class="upload-label">Tap to upload a photo</div><div class="upload-sub">JPG or PNG · Shows on your menu</div><input type="file" id="dash-food-img-input" accept="image/*" style="display:none" onchange="handleFoodImgUpload(this,'dash-food-upload-zone','dash-food-preview')"></label>
       <input type="hidden" id="dash-food-preview">
     </div>
     <div class="form-group"><label class="form-label">Dish Name *</label><input class="form-input" id="nm-name" placeholder="e.g. Jollof Rice"></div>
@@ -1266,7 +1267,7 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif}
     <div class="modal-close" onclick="closeModal('ob-menu-modal')">✕</div>
     <div class="modal-title">Add a Dish</div>
     <div class="form-group"><label class="form-label">Dish Photo (optional)</label>
-      <label class="img-upload-zone" id="ob-food-upload-zone"><div class="upload-icon">📸</div><div class="upload-label">Tap to upload a photo</div><div class="upload-sub">JPG or PNG · Shows on your menu</div><input type="file" id="ob-food-img-input" accept="image/*" style="display:none" onchange="handleFoodImgUpload(this,'ob-food-upload-zone','ob-food-preview')"></label>
+      <label class="img-upload-zone" id="ob-food-upload-zone"><div class="upload-icon" data-icon="camera" data-icon-size="28"></div><div class="upload-label">Tap to upload a photo</div><div class="upload-sub">JPG or PNG · Shows on your menu</div><input type="file" id="ob-food-img-input" accept="image/*" style="display:none" onchange="handleFoodImgUpload(this,'ob-food-upload-zone','ob-food-preview')"></label>
       <input type="hidden" id="ob-food-preview">
     </div>
     <div class="form-group"><label class="form-label">Dish Name *</label><input class="form-input" id="om-name" placeholder="e.g. Jollof Rice"></div>
@@ -1286,7 +1287,7 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif}
     <div class="form-group">
       <label class="form-label">Food Photo (recommended)</label>
       <label class="img-upload-zone" id="ann-img-zone">
-        <div class="upload-icon">📸</div>
+        <div class="upload-icon" data-icon="camera" data-icon-size="28"></div>
         <div class="upload-label">Tap to add a mouth-watering photo</div>
         <div class="upload-sub">This appears on your vendor card to attract orders</div>
         <input type="file" id="ann-img-input" accept="image/*" style="display:none" onchange="handleAnnImgUpload(this)">
@@ -2725,7 +2726,7 @@ async function postAvailability() {
     // Reset form
     ['av-dish','av-desc','av-portions'].forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; });
     const zone = document.getElementById('ann-img-zone');
-    if (zone) { zone.classList.remove('has-image'); zone.innerHTML = '<div class="upload-icon">📸</div><div class="upload-label">Tap to add a mouth-watering photo</div><div class="upload-sub">This appears on your vendor card to attract orders</div><input type="file" id="ann-img-input" accept="image/*" style="display:none" onchange="handleAnnImgUpload(this)">'; }
+    if (zone) { zone.classList.remove('has-image'); zone.innerHTML = '<div class="upload-icon">'+ic('camera',28)+'</div><div class="upload-label">Tap to add a mouth-watering photo</div><div class="upload-sub">This appears on your vendor card to attract orders</div><input type="file" id="ann-img-input" accept="image/*" style="display:none" onchange="handleAnnImgUpload(this)">'; }
     document.getElementById('ann-img-preview').value = '';
     renderAnnouncementBanner();
   } catch(e) { showToast('Error: ' + e.message, 'err'); }
@@ -3494,7 +3495,7 @@ async function savePlates(i) {
 function openAddMenuModal() {
   const zone=document.getElementById('dash-food-upload-zone'); if(!zone)return;
   zone.classList.remove('has-image');
-  zone.innerHTML='<div class="upload-icon">📸</div><div class="upload-label">Tap to upload a photo</div><div class="upload-sub">JPG or PNG · Shows on your menu</div><input type="file" id="dash-food-img-input" accept="image/*" style="display:none" onchange="handleFoodImgUpload(this,\'dash-food-upload-zone\',\'dash-food-preview\')">';
+  zone.innerHTML='<div class="upload-icon">'+ic('camera',28)+'</div><div class="upload-label">Tap to upload a photo</div><div class="upload-sub">JPG or PNG · Shows on your menu</div><input type="file" id="dash-food-img-input" accept="image/*" style="display:none" onchange="handleFoodImgUpload(this,\'dash-food-upload-zone\',\'dash-food-preview\')">';
   const dp=document.getElementById('dash-food-preview'); if(dp)dp.value='';
   document.getElementById('menu-modal').classList.add('open');
 }
@@ -3717,7 +3718,7 @@ function renderObMenuList(){
 function openObMenuModal(){
   const zone=document.getElementById('ob-food-upload-zone');
   zone.classList.remove('has-image');
-  zone.innerHTML='<div class="upload-icon">📸</div><div class="upload-label">Tap to upload a photo</div><div class="upload-sub">JPG or PNG · Shows on your menu</div><input type="file" id="ob-food-img-input" accept="image/*" style="display:none" onchange="handleFoodImgUpload(this,\'ob-food-upload-zone\',\'ob-food-preview\')">';
+  zone.innerHTML='<div class="upload-icon">'+ic('camera',28)+'</div><div class="upload-label">Tap to upload a photo</div><div class="upload-sub">JPG or PNG · Shows on your menu</div><input type="file" id="ob-food-img-input" accept="image/*" style="display:none" onchange="handleFoodImgUpload(this,\'ob-food-upload-zone\',\'ob-food-preview\')">';
   document.getElementById('ob-food-preview').value='';
   document.getElementById('ob-menu-modal').classList.add('open');
 }
@@ -3908,7 +3909,7 @@ function handleLogoUpload(input){
     if(!compressed){ showToast('Could not process image — try a JPG or PNG','err'); return; }
     vendorLogoUrl=compressed;
     if(c){
-      c.innerHTML='<img src="'+compressed+'" style="width:100%;height:100%;object-fit:cover;border-radius:50%"><div class="logo-edit-badge" style="position:absolute;bottom:0;right:0;width:24px;height:24px;background:var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;pointer-events:none">✎</div><input type="file" id="logo-file-input" accept="image/*" style="display:none" onchange="handleLogoUpload(this)">';
+      c.innerHTML='<img src="'+compressed+'" style="width:100%;height:100%;object-fit:cover;border-radius:50%"><div class="logo-edit-badge" style="position:absolute;bottom:0;right:0;width:24px;height:24px;background:var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;pointer-events:none;color:#000">'+ic('edit-2',12)+'</div><input type="file" id="logo-file-input" accept="image/*" style="display:none" onchange="handleLogoUpload(this)">';
       c.onclick=()=>document.getElementById('logo-file-input').click();
     }
   });
@@ -3919,7 +3920,7 @@ function handleFoodImgUpload(input,zoneId,previewId){
   const zone=document.getElementById(zoneId);
   if(zone) zone.innerHTML='<div style="display:flex;align-items:center;justify-content:center;width:100%;height:160px;font-size:12px;color:var(--text2)">Processing…</div>';
   compressImageFile(file, 800, 0.78, function(compressed){
-    if(!compressed){ showToast('Could not process image — try a JPG or PNG','err'); if(zone){zone.classList.remove('has-image');zone.innerHTML='<div class="upload-icon">📸</div><div class="upload-label">Tap to upload a photo</div><div class="upload-sub">JPG or PNG · Shows on your menu</div><input type="file" accept="image/*" style="display:none" onchange="handleFoodImgUpload(this,\''+zoneId+'\',\''+previewId+'\')">';} return; }
+    if(!compressed){ showToast('Could not process image — try a JPG or PNG','err'); if(zone){zone.classList.remove('has-image');zone.innerHTML='<div class="upload-icon">'+ic('camera',28)+'</div><div class="upload-label">Tap to upload a photo</div><div class="upload-sub">JPG or PNG · Shows on your menu</div><input type="file" accept="image/*" style="display:none" onchange="handleFoodImgUpload(this,\''+zoneId+'\',\''+previewId+'\')">';} return; }
     if(zone){ zone.classList.add('has-image');
       zone.innerHTML='<img src="'+compressed+'" style="width:100%;height:160px;object-fit:cover;display:block;border-radius:14px"><div style="position:absolute;bottom:8px;right:8px;background:rgba(15,14,12,.8);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:5px 10px;font-size:11px;font-weight:600;backdrop-filter:blur(8px)">Change Photo</div><input type="file" accept="image/*" style="display:none" onchange="handleFoodImgUpload(this,\''+zoneId+'\',\''+previewId+'\')">';
     }
@@ -5004,7 +5005,7 @@ async function showVendorEarnings() {
 
     // ── VAPID public key — replace with your key from: npx web-push generate-vapid-keys ──
     // See supabase/functions/push-notify/README.md for full setup instructions
-    const VAPID_PUBLIC_KEY = 'BEa-0auMM6KppXO6458e6J08mDXI1bj11fnR-Cc80t57hLd9Y-jkN7NWZvQ6ZLw3bNIdHnAth_AGRXCeGRV_LnE';
+    const VAPID_PUBLIC_KEY = 'BAN9n-zw-PTCVZO1i_RR1CCz5APOqFDjX0Eyj-MQ3GHJboi5jldXYgFEr_WkjsttP73zd59iNVAgJlIAm85pDZE';
 
     function urlBase64ToUint8Array(base64String) {
       const padding = '='.repeat((4 - base64String.length % 4) % 4);
@@ -5142,6 +5143,17 @@ async function showVendorEarnings() {
         document.getElementById('ios-install-banner').style.display = 'block';
       }, 8000);
     }
+  </script>
+
+  <script>
+  // ── Icon init ─────────────────────────────────────────
+  // Replaces [data-icon] elements in static HTML with SVG
+  document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('[data-icon]').forEach(function(el) {
+      var size = parseInt(el.dataset.iconSize || el.dataset.size || '16');
+      el.innerHTML = ic(el.dataset.icon, size);
+    });
+  });
   </script>
 </body>
 </html>

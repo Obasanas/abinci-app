@@ -14,6 +14,7 @@
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="tokens.css">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/assets/icons.js"></script>
 <style>
 /* ── Driver-specific styles ── */
 .kyc-progress { display:flex; gap:0; margin-bottom:28px; }
@@ -90,7 +91,7 @@
 <!-- ===== SCREEN 1: ROLE / SPLASH ===== -->
 <div class="screen active" id="screen-splash">
   <div style="padding:60px 24px 0; text-align:center;">
-    <div style="font-size:64px; margin-bottom:16px">🛵</div>
+    <div style="margin-bottom:16px;color:var(--accent)" data-icon="bike" data-icon-size="64"></div>
     <div style="font-family:var(--font-head);font-size:32px;font-weight:800;margin-bottom:8px">abinci<span style="color:var(--accent)">.food</span></div>
     <div style="color:var(--muted);font-size:15px;margin-bottom:48px">Deliver food. Earn daily.</div>
     <button class="big-btn" style="margin-top:0" onclick="switchTab('signup');showScreen('screen-auth')">Register as Driver →</button>
@@ -103,7 +104,7 @@
 <!-- ===== SCREEN 2: AUTH ===== -->
 <div class="screen" id="screen-auth">
   <div style="background:linear-gradient(135deg,#1c1400,var(--bg));padding:56px 28px 32px">
-    <div style="font-size:40px;margin-bottom:12px">🛵</div>
+    <div style="margin-bottom:12px;color:var(--accent)" data-icon="bike" data-icon-size="40"></div>
     <div style="font-family:var(--font-head);font-size:26px;font-weight:800">Driver Portal</div>
     <div style="color:var(--muted);font-size:13px;margin-top:6px">abinci.food</div>
   </div>
@@ -270,7 +271,7 @@
       <div class="kyc-step active">Vehicle</div>
     </div>
     <div onclick="showScreen('screen-kyc-step2')" style="width:36px;height:36px;border-radius:50%;background:var(--surface);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;margin-bottom:20px">←</div>
-    <div style="font-size:40px;margin-bottom:12px">🛵</div>
+    <div style="margin-bottom:12px;color:var(--accent)" data-icon="bike" data-icon-size="40"></div>
     <div style="font-family:var(--font-head);font-size:24px;font-weight:800;margin-bottom:6px">Your vehicle</div>
     <div style="color:var(--muted);font-size:14px;margin-bottom:28px">Tell us about your delivery vehicle</div>
 
@@ -293,7 +294,7 @@
       <div class="form-group">
         <label class="form-label">Vehicle Photo</label>
         <div class="kyc-doc-upload" id="zone-vehicle" onclick="document.getElementById('file-vehicle').click()">
-          <div style="font-size:28px;margin-bottom:6px">🛵</div>
+          <div style="margin-bottom:6px;color:var(--accent)" data-icon="bike" data-icon-size="28"></div>
           <div style="font-size:13px;font-weight:600;color:var(--muted)" id="label-vehicle">Photo of your vehicle</div>
           <div style="font-size:11px;color:var(--muted);opacity:.7">Show plate number clearly</div>
           <input type="file" id="file-vehicle" accept="image/*" style="display:none" onchange="markDocUploaded('vehicle',this)">
@@ -325,7 +326,7 @@
 <!-- ===== SCREEN 7: KYC PENDING ===== -->
 <div class="screen" id="screen-kyc-pending">
   <div style="padding:80px 24px;text-align:center">
-    <div style="font-size:72px;margin-bottom:20px">⏳</div>
+    <div style="margin-bottom:20px;color:var(--accent)" data-icon="alert-triangle" data-icon-size="64"></div>
     <div style="font-family:var(--font-head);font-size:28px;font-weight:800;margin-bottom:10px">Application Submitted!</div>
     <div style="color:var(--muted);font-size:15px;line-height:1.7;margin-bottom:32px">Your KYC is under review. Our team will verify your documents within <strong style="color:var(--text)">24 hours</strong>. You'll get an SMS notification once approved.</div>
     <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:20px;margin-bottom:24px;text-align:left">
@@ -377,7 +378,7 @@
   <!-- Active delivery -->
   <div id="active-delivery-section" style="display:none;padding:0 20px 16px">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-      <div class="section-label" style="margin:0">🛵 Active Delivery</div>
+      <div class="section-label" style="margin:0;display:flex;align-items:center;gap:6px"><span data-icon="bike" data-icon-size="14"></span> Active Delivery</div>
       <span style="font-size:12px;color:var(--green)"><span class="realtime-dot"></span>Live</span>
     </div>
     <div class="order-card active" id="active-delivery-card"></div>
@@ -391,7 +392,7 @@
     </div>
     <div id="available-orders-list">
       <div style="padding:40px 0;text-align:center;color:var(--muted)">
-        <div style="font-size:40px;margin-bottom:10px">🛵</div>
+        <div style="margin-bottom:10px;color:var(--muted)" data-icon="bike" data-icon-size="40"></div>
         <div style="font-size:15px;font-weight:600">Go online to see orders</div>
         <div style="font-size:13px;margin-top:4px">Toggle the switch above to start receiving deliveries</div>
       </div>
@@ -496,23 +497,23 @@
       <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px">Personal Info</div>
       <div style="display:flex;flex-direction:column;gap:10px">
         <div style="display:flex;justify-content:space-between;align-items:center">
-          <span style="font-size:13px;color:var(--muted)">📱 Phone</span>
+          <span style="font-size:13px;color:var(--muted);display:flex;align-items:center;gap:4px"><span data-icon="smartphone" data-icon-size="13"></span> Phone</span>
           <span style="font-size:13px;font-weight:600" id="prof-phone">—</span>
         </div>
         <div style="display:flex;justify-content:space-between;align-items:center">
-          <span style="font-size:13px;color:var(--muted)">📍 City</span>
+          <span style="font-size:13px;color:var(--muted);display:flex;align-items:center;gap:4px"><span data-icon="map-pin" data-icon-size="13"></span> City</span>
           <span style="font-size:13px;font-weight:600" id="prof-city">—</span>
         </div>
         <div style="display:flex;justify-content:space-between;align-items:center">
-          <span style="font-size:13px;color:var(--muted)">🏍️ Vehicle</span>
+          <span style="font-size:13px;color:var(--muted);display:flex;align-items:center;gap:4px"><span data-icon="bike" data-icon-size="13"></span> Vehicle</span>
           <span style="font-size:13px;font-weight:600" id="prof-vehicle">—</span>
         </div>
         <div style="display:flex;justify-content:space-between;align-items:center">
-          <span style="font-size:13px;color:var(--muted)">🔢 Plate</span>
+          <span style="font-size:13px;color:var(--muted);display:flex;align-items:center;gap:4px"><span data-icon="id" data-icon-size="13"></span> Plate</span>
           <span style="font-size:13px;font-weight:600" id="prof-plate">—</span>
         </div>
         <div style="display:flex;justify-content:space-between;align-items:center">
-          <span style="font-size:13px;color:var(--muted)">📍 Service Area</span>
+          <span style="font-size:13px;color:var(--muted);display:flex;align-items:center;gap:4px"><span data-icon="map-pin" data-icon-size="13"></span> Service Area</span>
           <span style="font-size:13px;font-weight:600" id="prof-area">—</span>
         </div>
       </div>
@@ -526,15 +527,15 @@
       </div>
       <div style="display:flex;flex-direction:column;gap:10px">
         <div style="display:flex;justify-content:space-between;align-items:center">
-          <span style="font-size:13px;color:var(--muted)">🏦 Bank</span>
+          <span style="font-size:13px;color:var(--muted);display:flex;align-items:center;gap:4px"><span data-icon="landmark" data-icon-size="13"></span> Bank</span>
           <span style="font-size:13px;font-weight:600" id="prof-bank-name">—</span>
         </div>
         <div style="display:flex;justify-content:space-between;align-items:center">
-          <span style="font-size:13px;color:var(--muted)">💳 Account</span>
+          <span style="font-size:13px;color:var(--muted);display:flex;align-items:center;gap:4px"><span data-icon="credit-card" data-icon-size="13"></span> Account</span>
           <span style="font-size:13px;font-weight:600" id="prof-bank-acc">—</span>
         </div>
         <div style="display:flex;justify-content:space-between;align-items:center">
-          <span style="font-size:13px;color:var(--muted)">👤 Name</span>
+          <span style="font-size:13px;color:var(--muted);display:flex;align-items:center;gap:4px"><span data-icon="user" data-icon-size="13"></span> Name</span>
           <span style="font-size:13px;font-weight:600" id="prof-bank-accname">—</span>
         </div>
       </div>
@@ -548,11 +549,11 @@
 
     <!-- Actions -->
     <div class="menu-row" onclick="showScreen('screen-earnings')" style="margin-top:8px">
-      <div class="menu-row-left"><span style="font-size:20px">💰</span>My Earnings</div>
+      <div class="menu-row-left"><span data-icon="wallet" data-icon-size="18"></span>My Earnings</div>
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
     </div>
     <div class="menu-row" onclick="signOutDriver()">
-      <div class="menu-row-left" style="color:var(--red)"><span style="font-size:20px">🚪</span>Sign Out</div>
+      <div class="menu-row-left" style="color:var(--red)"><span data-icon="log-out" data-icon-size="18"></span>Sign Out</div>
     </div>
   </div>
 </div>
@@ -928,7 +929,7 @@ async function loadDriverProfile(user) {
   if (!driver.is_approved) {
     showScreen('screen-kyc-pending');
     const vb = document.getElementById('profile-verify-badge');
-    if (vb) vb.innerHTML = '<span class="badge-pending">⏳ Pending Approval</span>';
+    if (vb) vb.innerHTML = '<span class="badge-pending" style="display:inline-flex;align-items:center;gap:4px">'+ic('alert-triangle',11)+' Pending Approval</span>';
     return;
   }
 
@@ -1013,7 +1014,7 @@ async function loadProfileScreen() {
   const vb = document.getElementById('profile-verify-badge');
   if (vb) vb.innerHTML = driverProfile.is_approved
     ? '<span style="background:rgba(76,175,125,.15);color:var(--green);border:1px solid rgba(76,175,125,.3);border-radius:20px;padding:4px 12px;font-size:11px;font-weight:700">✓ Verified Driver</span>'
-    : '<span style="background:rgba(245,166,35,.1);color:var(--accent);border:1px solid rgba(245,166,35,.3);border-radius:20px;padding:4px 12px;font-size:11px;font-weight:700">⏳ Pending Approval</span>';
+    : '<span style="display:inline-flex;align-items:center;gap:4px;background:rgba(245,166,35,.1);color:var(--accent);border:1px solid rgba(245,166,35,.3);border-radius:20px;padding:4px 12px;font-size:11px;font-weight:700">'+ic('alert-triangle',11)+' Pending Approval</span>';
 
   s('prof-city', driverProfile.service_area || '—');
   s('prof-vehicle', driverProfile.vehicle_type || '—');
@@ -1309,7 +1310,7 @@ async function loadDashboardStats() {
         } catch(_) {}
       }
       if (card) {
-        card.innerHTML = '<div style="font-size:15px;font-weight:700;margin-bottom:4px">📍 Pickup: ' + vendorName + '</div>'
+        card.innerHTML = '<div style="display:flex;align-items:center;gap:5px;font-size:15px;font-weight:700;margin-bottom:4px">'+ic('map-pin',15)+' Pickup: ' + vendorName + '</div>'
           + '<div style="font-size:12px;color:var(--muted);margin-bottom:10px">👤 Deliver to: ' + (active.customer_name || 'Customer') + ' · ' + formatCurrency(active.total_amount) + '</div>'
           + '<button onclick="viewOrder(\'' + active.id + '\')" style="width:100%;padding:10px;border-radius:12px;border:none;background:var(--accent);color:#000;font-size:14px;font-weight:700;font-family:var(--font-head);cursor:pointer">View Active Delivery →</button>';
       }
@@ -1337,7 +1338,7 @@ async function loadAvailableOrders() {
 
   const nc = document.getElementById('nearby-count');
   if (!orders || !orders.length) {
-    el.innerHTML = '<div style="padding:40px 0;text-align:center;color:var(--muted)"><div style="font-size:40px;margin-bottom:10px">🛵</div><div style="font-size:15px;font-weight:600">No orders available</div><div style="font-size:13px;margin-top:4px">Ready orders appear here instantly</div></div>';
+    el.innerHTML = '<div style="padding:40px 0;text-align:center;color:var(--muted)"><div style="margin-bottom:10px">'+ic('bike',36)+'</div><div style="font-size:15px;font-weight:600">No orders available</div><div style="font-size:13px;margin-top:4px">Ready orders appear here instantly</div></div>';
     if (nc) nc.textContent = '';
     return;
   }
@@ -1358,7 +1359,7 @@ async function loadAvailableOrders() {
       <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:10px">
         <div>
           <div style="font-size:15px;font-weight:700">Vendor</div>
-          <div style="font-size:12px;color:var(--muted)">📍 Ready for pickup</div>
+          <div style="display:flex;align-items:center;gap:4px;font-size:12px;color:var(--muted)">${ic('map-pin',12)} Ready for pickup</div>
         </div>
         <div style="text-align:right">
           <div style="font-size:16px;font-weight:800;color:var(--accent)">${formatCurrency(DELIVERY_FEE)}</div>
@@ -1560,11 +1561,11 @@ async function renderOrderDetail(orderId, isActive) {
   }).join('') || '<span style="color:var(--muted);font-size:13px">No items listed</span>';
 
   const callVendor = (vendor && vendor.phone)
-    ? '<a href="tel:' + vendor.phone + '" style="display:inline-flex;align-items:center;gap:6px;margin-top:10px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:8px 14px;font-size:13px;color:var(--text);text-decoration:none">📞 Call Vendor</a>'
+    ? '<a href="tel:' + vendor.phone + '" style="display:inline-flex;align-items:center;gap:6px;margin-top:10px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:8px 14px;font-size:13px;color:var(--text);text-decoration:none">'+ic('phone',14)+' Call Vendor</a>'
     : '';
 
   const callCustomer = customerPhone
-    ? '<a href="tel:' + customerPhone + '" style="display:inline-flex;align-items:center;gap:6px;margin-top:10px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:8px 14px;font-size:13px;color:var(--text);text-decoration:none">📞 Call Customer</a>'
+    ? '<a href="tel:' + customerPhone + '" style="display:inline-flex;align-items:center;gap:6px;margin-top:10px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:8px 14px;font-size:13px;color:var(--text);text-decoration:none">'+ic('phone',14)+' Call Customer</a>'
     : '';
 
   const noteHtml = o.note ? '<div style="font-size:12px;color:var(--muted);margin-top:6px">📝 ' + o.note + '</div>' : '';
@@ -1595,25 +1596,25 @@ async function renderOrderDetail(orderId, isActive) {
   el.innerHTML =
     '<div class="status-track">' + stepsHtml + '</div>'
     + '<div class="order-card" style="margin-bottom:14px">'
-    + '<div style="font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">📍 Pickup From</div>'
+    + '<div style="display:flex;align-items:center;gap:5px;font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">'+ic('map-pin',13)+' Pickup From</div>'
     + '<div style="font-size:16px;font-weight:700">' + vendorName + '</div>'
     + (vendorAddr ? '<div style="font-size:13px;color:var(--muted);margin-top:4px">' + vendorAddr + '</div>' : '')
     + callVendor + '</div>'
     + '<div class="order-card" style="margin-bottom:14px">'
-    + '<div style="font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">👤 Deliver To</div>'
+    + '<div style="display:flex;align-items:center;gap:5px;font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">'+ic('user',13)+' Deliver To</div>'
     + '<div style="font-size:16px;font-weight:700">' + (o.customer_name || 'Customer') + '</div>'
-    + (customerPhone ? '<div style="font-size:13px;color:var(--muted);margin-top:4px">📞 ' + customerPhone + '</div>' : '')
-    + (o.delivery_address ? '<div style="font-size:13px;color:var(--muted);margin-top:4px">📍 ' + o.delivery_address + '</div>' : '')
+    + (customerPhone ? '<div style="display:flex;align-items:center;gap:4px;font-size:13px;color:var(--muted);margin-top:4px">'+ic('phone',13)+' ' + customerPhone + '</div>' : '')
+    + (o.delivery_address ? '<div style="display:flex;align-items:center;gap:4px;font-size:13px;color:var(--muted);margin-top:4px">'+ic('map-pin',13)+' ' + o.delivery_address + '</div>' : '')
     + callCustomer + '</div>'
     + '<div class="order-card" style="margin-bottom:14px">'
-    + '<div style="font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">🛒 Order Items</div>'
+    + '<div style="display:flex;align-items:center;gap:5px;font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">'+ic('shopping-cart',13)+' Order Items</div>'
     + '<div style="font-size:13px;margin-bottom:10px">' + itemsHtml + '</div>'
     + '<div style="display:flex;justify-content:space-between;align-items:center">'
-    + '<span style="font-size:13px;color:var(--muted)">' + (o.delivery_type === 'delivery' ? '🛵 Delivery' : '🚶 Pickup') + '</span>'
+    + '<span style="display:flex;align-items:center;gap:4px;font-size:13px;color:var(--muted)">' + (o.delivery_type === 'delivery' ? ic('bike',13)+' Delivery' : ic('navigation',13)+' Pickup') + '</span>'
     + '<span style="font-size:18px;font-weight:800;color:var(--accent)">' + formatCurrency(o.total_amount) + '</span>'
     + '</div>' + noteHtml + '</div>'
     + acceptedHtml + collectHtml + acceptHtml
-    + (isMyDelivery || isMyAccepted ? '<button onclick="openReportCustomerModal(\'' + o.id + '\',\'' + (o.customer_name || 'Customer').replace(/'/g, "\\'") + '\',\'' + (o.customer_id || '').replace(/'/g, "\\'") + '\')" style="width:100%;padding:12px;border-radius:14px;border:1px solid var(--border);background:transparent;color:var(--red);font-size:13px;font-weight:700;cursor:pointer;margin-top:10px">⚠️ Report Issue with Customer</button>' : '');
+    + (isMyDelivery || isMyAccepted ? '<button onclick="openReportCustomerModal(\'' + o.id + '\',\'' + (o.customer_name || 'Customer').replace(/'/g, "\\'") + '\',\'' + (o.customer_id || '').replace(/'/g, "\\'") + '\')" style="display:flex;align-items:center;justify-content:center;gap:6px;width:100%;padding:12px;border-radius:14px;border:1px solid var(--border);background:transparent;color:var(--red);font-size:13px;font-weight:700;cursor:pointer;margin-top:10px">'+ic('alert-triangle',14)+' Report Issue with Customer</button>' : '');
   // Resume countdown if this is an accepted order
   if (isMyAccepted && o.pickup_deadline) {
     startPickupCountdown(o.id, o.pickup_deadline);
@@ -1677,7 +1678,7 @@ async function loadEarnings() {
     const el = document.getElementById('trips-list');
     if (!el) return;
     if (!all.length) {
-      el.innerHTML = '<div style="padding:40px 0;text-align:center;color:var(--muted)"><div style="font-size:40px;margin-bottom:12px">🛵</div><div style="font-size:15px;font-weight:600">No completed trips yet</div><div style="font-size:13px;margin-top:6px">Completed deliveries will appear here</div></div>';
+      el.innerHTML = '<div style="padding:40px 0;text-align:center;color:var(--muted)"><div style="margin-bottom:12px">'+ic('bike',36)+'</div><div style="font-size:15px;font-weight:600">No completed trips yet</div><div style="font-size:13px;margin-top:6px">Completed deliveries will appear here</div></div>';
       return;
     }
 
@@ -1705,7 +1706,7 @@ async function loadEarnings() {
       return (isNew ? '<div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;padding:12px 0 8px">' + (isToday ? '📅 Today' : dateStr) + '</div>' : '')
         + '<div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--border)">'
         + '<div style="display:flex;align-items:center;gap:10px">'
-        + '<div style="width:36px;height:36px;border-radius:10px;background:rgba(76,175,125,.12);display:flex;align-items:center;justify-content:center;font-size:18px">🛵</div>'
+        + '<div style="width:36px;height:36px;border-radius:10px;background:rgba(76,175,125,.12);display:flex;align-items:center;justify-content:center;color:var(--green)">'+ic('bike',18)+'</div>'
         + '<div><div style="font-size:13px;font-weight:600">' + vendorName + '</div>'
         + '<div style="font-size:11px;color:var(--muted)">' + (t.customer_name || 'Customer') + ' · ' + timeStr + '</div></div></div>'
         + '<div style="text-align:right">'
@@ -1787,7 +1788,7 @@ function navTo(tab) {
 </script>
 
   <script>
-    const VAPID_PUBLIC_KEY = 'BEa-0auMM6KppXO6458e6J08mDXI1bj11fnR-Cc80t57hLd9Y-jkN7NWZvQ6ZLw3bNIdHnAth_AGRXCeGRV_LnE';
+    const VAPID_PUBLIC_KEY = 'BAN9n-zw-PTCVZO1i_RR1CCz5APOqFDjX0Eyj-MQ3GHJboi5jldXYgFEr_WkjsttP73zd59iNVAgJlIAm85pDZE';
 
     function urlBase64ToUint8Array(base64String) {
       const padding = '='.repeat((4 - base64String.length % 4) % 4);
@@ -1863,6 +1864,16 @@ function navTo(tab) {
       const btn = document.getElementById('pwa-install-btn');
       if (btn) btn.style.display = 'none';
     });
+  </script>
+
+  <script>
+  // ── Icon init ─────────────────────────────────────────
+  document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('[data-icon]').forEach(function(el) {
+      var size = parseInt(el.dataset.iconSize || el.dataset.size || '16');
+      el.innerHTML = ic(el.dataset.icon, size);
+    });
+  });
   </script>
 </body>
 </html>

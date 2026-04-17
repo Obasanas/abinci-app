@@ -9,6 +9,7 @@
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="/assets/icons.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{height:100%;font-family:'DM Sans',sans-serif;background:#f4f5f7;color:#1a1a1a;font-size:14px;line-height:1.5}
@@ -40,7 +41,7 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:#f4f5f7;color:
 .nav-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;margin:2px 8px;cursor:pointer;color:#8a8680;font-size:13px;font-weight:500;transition:all .2s;position:relative}
 .nav-item:hover{background:#1a1916;color:#f0ede8}
 .nav-item.active{background:#1e1500;color:#f5a623;font-weight:600}
-.nav-item .ni{font-size:16px;width:20px;text-align:center;flex-shrink:0}
+.nav-item .ni{width:20px;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:inherit}
 .nav-badge{margin-left:auto;background:#e05c5c;color:#fff;font-size:10px;font-weight:700;padding:2px 6px;border-radius:10px;min-width:18px;text-align:center}
 .sb-footer{margin-top:auto;padding:16px 20px;border-top:1px solid #1e1c19}
 .sb-signout{display:flex;align-items:center;gap:8px;color:#8a8680;font-size:13px;cursor:pointer;padding:8px;border-radius:8px;transition:all .2s}
@@ -192,38 +193,38 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:#f4f5f7;color:
     </div>
     <div class="sb-section">Main</div>
     <div class="nav-item active" id="nav-overview" onclick="switchPage('overview')">
-      <span class="ni">📊</span>Overview
+      <span class="ni" data-icon="bar-chart"></span>Overview
     </div>
     <div class="nav-item" id="nav-approvals" onclick="switchPage('approvals')">
-      <span class="ni">✅</span>Approvals
+      <span class="ni" data-icon="check-circle"></span>Approvals
       <span class="nav-badge" id="approvals-badge" style="display:none">0</span>
     </div>
     <div class="nav-item" id="nav-orders" onclick="switchPage('orders')">
-      <span class="ni">🛒</span>Orders
+      <span class="ni" data-icon="shopping-cart"></span>Orders
     </div>
     <div class="sb-section">People</div>
     <div class="nav-item" id="nav-vendors" onclick="switchPage('vendors')">
-      <span class="ni">🍲</span>Vendors
+      <span class="ni" data-icon="utensils"></span>Vendors
     </div>
     <div class="nav-item" id="nav-drivers" onclick="switchPage('drivers')">
-      <span class="ni">🛵</span>Drivers
+      <span class="ni" data-icon="bike"></span>Drivers
     </div>
     <div class="sb-section">Finance</div>
     <div class="nav-item" id="nav-commission" onclick="switchPage('commission')">
-      <span class="ni">💰</span>Commission
+      <span class="ni" data-icon="wallet"></span>Commission
       <span class="nav-badge" id="comm-badge" style="display:none">0</span>
     </div>
     <div class="sb-section">Community</div>
     <div class="nav-item" id="nav-reports" onclick="switchPage('reports')">
-      <span class="ni">⚠️</span>Reports
+      <span class="ni" data-icon="alert-triangle"></span>Reports
       <span class="nav-badge" id="reports-badge" style="display:none">0</span>
     </div>
     <div class="nav-item" id="nav-customers" onclick="switchPage('customers')">
-      <span class="ni">👥</span>Customers
+      <span class="ni" data-icon="users"></span>Customers
     </div>
     <div class="sb-footer">
       <div class="sb-signout" onclick="adminLogout()">
-        <span>🚪</span><span>Sign Out</span>
+        <span data-icon="log-out" style="display:flex;align-items:center"></span><span>Sign Out</span>
       </div>
     </div>
   </aside>
@@ -409,23 +410,23 @@ async function renderOverview(){
   el.innerHTML =
     // Stats
     '<div class="stats-row">'
-    +'<div class="stat-card"><div class="stat-icon" style="background:#fff8ec">🍲</div>'
+    +'<div class="stat-card"><div class="stat-icon" style="background:#fff8ec;color:#c07a00">'+ic('utensils',20)+'</div>'
     +'<div><div class="stat-num" id="ov-vendors">'+(s.vendors||'—')+'</div>'
     +'<div class="stat-label">Total Vendors</div>'
     +'<div class="stat-trend '+(s.pendingVendors?'neutral':'up')+'">'
-    +(s.pendingVendors?s.pendingVendors+' pending approval':'All verified ✓')+'</div></div></div>'
+    +(s.pendingVendors?s.pendingVendors+' pending approval':'All verified')+'</div></div></div>'
 
-    +'<div class="stat-card"><div class="stat-icon" style="background:#f0faf5">🛒</div>'
+    +'<div class="stat-card"><div class="stat-icon" style="background:#f0faf5;color:#2e9e5c">'+ic('shopping-cart',20)+'</div>'
     +'<div><div class="stat-num" id="ov-orders">'+(s.todayOrders||'0')+'</div>'
     +'<div class="stat-label">Orders Today</div>'
     +'<div class="stat-trend up">'+fmt(s.gmv||0)+' GMV</div></div></div>'
 
-    +'<div class="stat-card"><div class="stat-icon" style="background:#eff6ff">🛵</div>'
+    +'<div class="stat-card"><div class="stat-icon" style="background:#eff6ff;color:#3b82f6">'+ic('bike',20)+'</div>'
     +'<div><div class="stat-num" id="ov-drivers">'+(s.drivers||'—')+'</div>'
     +'<div class="stat-label">Active Drivers</div>'
     +'<div class="stat-trend up">'+(s.onlineDrivers||0)+' online now</div></div></div>'
 
-    +'<div class="stat-card"><div class="stat-icon" style="background:#fdf4ff">💰</div>'
+    +'<div class="stat-card"><div class="stat-icon" style="background:#fdf4ff;color:#a855f7">'+ic('wallet',20)+'</div>'
     +'<div><div class="stat-num" id="ov-comm">'+fmt(s.comm||0)+'</div>'
     +'<div class="stat-label">Today\'s Commission</div>'
     +'<div class="stat-trend neutral">12% of GMV</div></div></div>'
@@ -548,7 +549,7 @@ async function loadActivityFeed(){
   if(!el) return;
   var r=await sb.from('orders').select('id,customer_name,total_amount,status,created_at,vendors(business_name)').order('created_at',{ascending:false}).limit(6);
   var orders=r.data||[];
-  var icons={pending:'🛒',accepted:'✅',ready:'📦',out_for_delivery:'🛵',delivered:'🎉',rejected:'❌',cancelled:'❌'};
+  var icons={pending:ic('shopping-cart',16),accepted:ic('check-circle',16),ready:ic('package',16),out_for_delivery:ic('bike',16),delivered:ic('check-circle',16),rejected:ic('x-circle',16),cancelled:ic('x-circle',16)};
   var bgColors={pending:'#fff8ec',accepted:'#f0faf5',ready:'#eff6ff',out_for_delivery:'#eff6ff',delivered:'#f4f5f7',rejected:'#fef2f2',cancelled:'#fef2f2'};
   var badgeClass={pending:'badge-warn',accepted:'badge-ok',ready:'badge-ok',out_for_delivery:'badge-ok',delivered:'badge-ok',rejected:'badge-red',cancelled:'badge-red'};
   el.innerHTML=orders.map(function(o){
@@ -615,10 +616,10 @@ function renderApprovalsTable(el){
       +'</button>';
   }
   function sbadge(s){
-    if(s==='pending')     return '<span class="badge-warn">⏳ Pending</span>';
-    if(s==='in_progress') return '<span style="display:inline-flex;align-items:center;background:#f4f5f7;color:#555;border:1px solid #e5e7eb;border-radius:20px;padding:3px 8px;font-size:11px;font-weight:600">📝 In Progress</span>';
-    if(s==='rejected')    return '<span class="badge-red">✕ Rejected</span>';
-    if(s==='approved')    return '<span class="badge-ok">✓ Approved</span>';
+    if(s==='pending')     return '<span class="badge-warn">Pending</span>';
+    if(s==='in_progress') return '<span style="display:inline-flex;align-items:center;background:#f4f5f7;color:#555;border:1px solid #e5e7eb;border-radius:20px;padding:3px 8px;font-size:11px;font-weight:600">In Progress</span>';
+    if(s==='rejected')    return '<span class="badge-red">Rejected</span>';
+    if(s==='approved')    return '<span class="badge-ok">Approved</span>';
   }
 
   var html='<div class="page-header"><div><div class="section-title">Approvals</div>'
@@ -634,7 +635,7 @@ function renderApprovalsTable(el){
     +'</div>';
 
   if(!rows.length){
-    html+='<div class="empty"><div class="empty-icon">✅</div><div class="empty-title">Nothing here</div><div class="empty-sub">No items in this category.</div></div>';
+    html+='<div class="empty"><div class="empty-icon" style="color:#8a8680">'+ic('check-circle',32)+'</div><div class="empty-title">Nothing here</div><div class="empty-sub">No items in this category.</div></div>';
     el.innerHTML=html; return;
   }
 
@@ -650,8 +651,8 @@ function renderApprovalsTable(el){
     +'</tr></thead><tbody>'
     +rows.map(function(row){
       var typePill=row.type==='vendor'
-        ?'<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:#fff8ec;color:#c07a00;border:1px solid #fde68a;white-space:nowrap">🍲 Vendor</span>'
-        :'<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:#eff6ff;color:#3b82f6;border:1px solid #bfdbfe;white-space:nowrap">🛵 Driver</span>';
+        ?'<span style="display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:#fff8ec;color:#c07a00;border:1px solid #fde68a;white-space:nowrap">'+ic('utensils',11)+' Vendor</span>'
+        :'<span style="display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:#eff6ff;color:#3b82f6;border:1px solid #bfdbfe;white-space:nowrap">'+ic('bike',11)+' Driver</span>';
       var acts='';
       if(row.status==='pending'||row.status==='in_progress'){
         if(row.type==='vendor') acts='<button class="btn-approve" style="padding:5px 11px;font-size:11px" onclick="approveVendor(\''+row.id+'\')">✓ Approve</button><button class="btn-reject" style="padding:5px 10px;font-size:11px;margin-left:4px" onclick="rejectVendor(\''+row.id+'\')">✕ Reject</button>';
@@ -689,17 +690,17 @@ function openApprovalDetail(type, id){
   var html='';
   if(type==='vendor'){
     var v=item;
-    var statusLabel=v.is_approved?'<span class="badge-ok">✓ Approved</span>'
-      :v.rejection_reason?'<span class="badge-red">✕ Rejected</span>'
-      :(v.address&&v.food_types&&v.food_types.length)?'<span class="badge-warn">⏳ Pending Review</span>'
-      :'<span style="display:inline-flex;align-items:center;background:#f4f5f7;color:#555;border:1px solid #e5e7eb;border-radius:20px;padding:3px 8px;font-size:11px;font-weight:600">📝 In Progress</span>';
+    var statusLabel=v.is_approved?'<span class="badge-ok">Approved</span>'
+      :v.rejection_reason?'<span class="badge-red">Rejected</span>'
+      :(v.address&&v.food_types&&v.food_types.length)?'<span class="badge-warn">Pending Review</span>'
+      :'<span style="display:inline-flex;align-items:center;background:#f4f5f7;color:#555;border:1px solid #e5e7eb;border-radius:20px;padding:3px 8px;font-size:11px;font-weight:600">In Progress</span>';
     html='<div style="padding:24px 24px 0">'
       +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">'
       +'<div style="font-size:11px;font-weight:700;color:#8a8680;text-transform:uppercase;letter-spacing:.5px">Vendor Profile</div>'
       +'<button onclick="closeDetailModal()" style="background:none;border:none;font-size:20px;cursor:pointer;color:#8a8680;line-height:1;padding:0">✕</button></div>'
       +'<div style="display:flex;align-items:center;gap:14px;margin-bottom:20px">'
       +(v.logo_url?'<img src="'+v.logo_url+'" style="width:56px;height:56px;border-radius:12px;object-fit:cover;border:1px solid #e5e7eb;flex-shrink:0">'
-        :'<div style="width:56px;height:56px;border-radius:12px;background:#fff8ec;display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0">'+(v.emoji||'🍲')+'</div>')
+        :'<div style="width:56px;height:56px;border-radius:12px;background:#fff8ec;display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0;color:#c07a00">'+(v.emoji||ic('utensils',28))+'</div>')
       +'<div><div style="font-size:18px;font-weight:800;color:#0f0e0c">'+v.business_name+'</div>'
       +'<div style="font-size:13px;color:#8a8680;margin-top:2px">'+(v.users&&v.users.full_name||'—')+' · '+(v.users&&v.users.phone||'—')+'</div>'
       +'<div style="margin-top:6px">'+statusLabel+'</div>'
@@ -725,15 +726,15 @@ function openApprovalDetail(type, id){
       +'</div>';
   } else {
     var d=item;
-    var dStatusLabel=d.is_approved?'<span class="badge-ok">✓ Approved</span>'
-      :d.rejection_reason?'<span class="badge-red">✕ Rejected</span>'
-      :'<span class="badge-warn">⏳ KYC Review</span>';
+    var dStatusLabel=d.is_approved?'<span class="badge-ok">Approved</span>'
+      :d.rejection_reason?'<span class="badge-red">Rejected</span>'
+      :'<span class="badge-warn">KYC Review</span>';
     html='<div style="padding:24px 24px 0">'
       +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">'
       +'<div style="font-size:11px;font-weight:700;color:#8a8680;text-transform:uppercase;letter-spacing:.5px">Driver KYC</div>'
       +'<button onclick="closeDetailModal()" style="background:none;border:none;font-size:20px;cursor:pointer;color:#8a8680;line-height:1;padding:0">✕</button></div>'
       +'<div style="display:flex;align-items:center;gap:14px;margin-bottom:20px">'
-      +'<div style="width:56px;height:56px;border-radius:12px;background:#eff6ff;display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0">🛵</div>'
+      +'<div style="width:56px;height:56px;border-radius:12px;background:#eff6ff;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:#3b82f6">'+ic('bike',28)+'</div>'
       +'<div><div style="font-size:18px;font-weight:800;color:#0f0e0c">'+(d.users&&d.users.full_name||'Driver')+'</div>'
       +'<div style="font-size:13px;color:#8a8680;margin-top:2px">'+(d.users&&d.users.phone||'—')+'</div>'
       +'<div style="margin-top:6px">'+dStatusLabel+'</div>'
@@ -772,10 +773,10 @@ function closeDetailModal(){
 }
 
 function docThumb(src,label){
-  if(!src) return '<div class="doc-thumb-empty"><span style="font-size:20px;opacity:.3">📄</span><div class="doc-label">'+label+'</div></div>';
+  if(!src) return '<div class="doc-thumb-empty"><span style="opacity:.35;color:#8a8680">'+ic('file-text',22)+'</span><div class="doc-label">'+label+'</div></div>';
   return '<div class="doc-thumb" onclick="viewImg(\''+label+'\',this)">'
     +'<img src="'+src+'" data-full="'+src+'" style="width:100%;height:90px;object-fit:cover;border-radius:8px;border:1px solid #e5e7eb">'
-    +'<div class="doc-label">'+label+' 🔍</div></div>';
+    +'<div class="doc-label">'+label+'</div></div>';
 }
 function viewImg(label,el){
   var img=el.querySelector?el.querySelector('img'):el;
@@ -821,7 +822,7 @@ async function loadOrdersList(){
   if(_orderFilter!=='all') q=q.eq('status',_orderFilter);
   var r=await q;
   var orders=r.data||[];
-  if(!orders.length){ el.innerHTML='<div class="empty"><div class="empty-icon">🛒</div><div class="empty-title">No orders found</div><div class="empty-sub">Try a different filter.</div></div>'; return; }
+  if(!orders.length){ el.innerHTML='<div class="empty"><div class="empty-icon" style="color:#8a8680">'+ic('shopping-cart',32)+'</div><div class="empty-title">No orders found</div><div class="empty-sub">Try a different filter.</div></div>'; return; }
   el.innerHTML='<div class="content-card" style="overflow:auto"><table class="data-table"><thead><tr>'
     +'<th>#</th><th>Customer</th><th>Phone</th><th>Vendor</th><th>Items</th><th>Amount</th><th>Type</th><th>Status</th><th>Date</th>'
     +'</tr></thead><tbody>'
@@ -844,16 +845,16 @@ async function loadOrdersList(){
 async function renderVendors(el){
   var r=await sb.from('vendors').select('id,business_name,area,city,state,is_approved,is_available,rating,review_count,food_types,emoji,created_at,users(phone)').order('created_at',{ascending:false});
   var vendors=r.data||[];
-  if(!vendors.length){ el.innerHTML='<div class="empty"><div class="empty-icon">🍲</div><div class="empty-title">No vendors yet</div></div>'; return; }
+  if(!vendors.length){ el.innerHTML='<div class="empty"><div class="empty-icon" style="color:#8a8680">'+ic('utensils',32)+'</div><div class="empty-title">No vendors yet</div></div>'; return; }
   var approved=vendors.filter(function(v){return v.is_approved;}).length;
   el.innerHTML='<div class="page-header">'
     +'<div><div class="section-title">Vendors</div><div class="section-sub">'+vendors.length+' total · '+approved+' approved</div></div></div>'
     +vendors.map(function(v){
       return '<div class="list-row">'
-        +'<div class="list-avatar">'+(v.emoji||'🍲')+'</div>'
+        +'<div class="list-avatar" style="color:#c07a00">'+(v.emoji||ic('utensils',20))+'</div>'
         +'<div class="list-info">'
         +'<div class="list-name">'+v.business_name+'</div>'
-        +'<div class="list-sub">📍 '+(v.area||'—')+', '+(v.city||'—')+' · '+(v.food_types||[]).slice(0,2).join(', ')+(v.food_types&&v.food_types.length>2?' +more':'')+'</div>'
+        +'<div class="list-sub" style="display:flex;align-items:center;gap:3px">'+ic('map-pin',12)+' '+(v.area||'—')+', '+(v.city||'—')+' · '+(v.food_types||[]).slice(0,2).join(', ')+(v.food_types&&v.food_types.length>2?' +more':'')+'</div>'
         +'<div class="list-sub" style="margin-top:2px">★ '+(v.rating||'—')+' ('+( v.review_count||0)+' reviews) · '+(v.users&&v.users.phone||'—')+'</div>'
         +'</div>'
         +'<div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">'
@@ -870,14 +871,14 @@ async function renderVendors(el){
 async function renderDrivers(el){
   var r=await sb.from('riders').select('*,users(full_name,phone)').order('is_online',{ascending:false}).order('created_at',{ascending:false});
   var drivers=r.data||[];
-  if(!drivers.length){ el.innerHTML='<div class="empty"><div class="empty-icon">🛵</div><div class="empty-title">No drivers yet</div></div>'; return; }
+  if(!drivers.length){ el.innerHTML='<div class="empty"><div class="empty-icon" style="color:#8a8680">'+ic('bike',32)+'</div><div class="empty-title">No drivers yet</div></div>'; return; }
   var online=drivers.filter(function(d){return d.is_online;}).length;
   el.innerHTML='<div class="page-header">'
     +'<div><div class="section-title">Drivers</div><div class="section-sub">'+drivers.length+' total · <span style="color:#2e9e5c;font-weight:600">'+online+' online now</span></div></div>'
     +'<button class="tb-btn" onclick="switchPage(\'drivers\')">↻ Refresh</button></div>'
     +drivers.map(function(d){
       return '<div class="list-row" style="border-left:3px solid '+(d.is_online?'#2e9e5c':'#e5e7eb')+'">'
-        +'<div class="list-avatar" style="background:'+(d.is_online?'#f0faf5':'#f4f5f7')+'">🛵</div>'
+        +'<div class="list-avatar" style="background:'+(d.is_online?'#f0faf5':'#f4f5f7')+';color:'+(d.is_online?'#2e9e5c':'#8a8680')+'">'+ic('bike',20)+'</div>'
         +'<div class="list-info">'
         +'<div class="list-name">'+(d.users&&d.users.full_name||'Driver')+'</div>'
         +'<div class="list-sub">'+(d.users&&d.users.phone||'—')+' · '+(d.vehicle_type||'—')+(d.vehicle_plate?' ('+d.vehicle_plate+')':'')+'</div>'
@@ -949,10 +950,10 @@ async function renderCommission(el){
         }).join('')+'</tbody></table></div>';
     }
     if(!html.includes('comm-owed-card')&&!confirmed.length){
-      html+='<div class="empty"><div class="empty-icon">💰</div><div class="empty-title">No commission activity yet</div><div class="empty-sub">Logged automatically when orders are delivered.</div></div>';
+      html+='<div class="empty"><div class="empty-icon" style="color:#8a8680">'+ic('wallet',32)+'</div><div class="empty-title">No commission activity yet</div><div class="empty-sub">Logged automatically when orders are delivered.</div></div>';
     }
     el.innerHTML=html;
-  } catch(e){ el.innerHTML='<div class="empty"><div class="empty-icon">⚠️</div><div class="empty-title">Error loading commissions</div><div class="empty-sub">'+e.message+'</div></div>'; }
+  } catch(e){ el.innerHTML='<div class="empty"><div class="empty-icon" style="color:#8a8680">'+ic('alert-triangle',32)+'</div><div class="empty-title">Error loading commissions</div><div class="empty-sub">'+e.message+'</div></div>'; }
 }
 
 // ── Actions ───────────────────────────────────────────
@@ -1038,7 +1039,7 @@ async function renderReports(el){
             +'<div><div style="font-size:14px;font-weight:700">Customer Report</div>'
             +'<div style="font-size:12px;color:#8a8680;margin-top:2px">By driver: '+(rep.driver&&rep.driver.full_name||'Unknown')+'</div></div>'
             +'<span style="font-size:11px;padding:4px 10px;border-radius:20px;'+(isPending?'background:#fff8ec;color:#c07a00;border:1px solid #fde68a':'background:#f0faf5;color:#2e9e5c;border:1px solid #c6e8d5')+'">'
-            +(isPending?'⏳ Pending':'✓ '+rep.status.charAt(0).toUpperCase()+rep.status.slice(1))+'</span></div>'
+            +(isPending?'Pending':rep.status.charAt(0).toUpperCase()+rep.status.slice(1))+'</span></div>'
             +'<div style="background:#f9fafb;border-radius:10px;padding:10px 14px;margin-bottom:10px">'
             +'<div style="font-size:11px;color:#8a8680;margin-bottom:2px">Reason</div>'
             +'<div style="font-weight:700;color:#dc2626">'+(reasonLabels[rep.reason]||rep.reason)+'</div></div>'
@@ -1109,6 +1110,14 @@ if(localStorage.getItem('abinci_admin')==='1'){
   loadStats();
   switchPage('overview');
 }
+
+// ── Icon init ─────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', function() {
+  document.querySelectorAll('[data-icon]').forEach(function(el) {
+    var size = parseInt(el.dataset.iconSize || el.dataset.size || '16');
+    el.innerHTML = ic(el.dataset.icon, size);
+  });
+});
 </script>
 
 <script>
