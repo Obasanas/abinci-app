@@ -526,7 +526,9 @@ function loadStatusBreakdown(todayOrders){
 async function loadRecentOrders(){
   var el=document.getElementById('recent-orders-table');
   if(!el) return;
-  var r=await sb.from('orders').select('*,vendors(business_name)').order('created_at',{ascending:false}).limit(8);
+  var r;
+  try { r=await sb.from('orders').select('*,vendors(business_name)').order('created_at',{ascending:false}).limit(8); }
+  catch(e){ el.innerHTML='<div style="padding:16px;color:#dc2626;font-size:13px">Error: '+e.message+'</div>'; return; }
   var orders=r.data||[];
   if(!orders.length){ el.innerHTML='<div style="padding:20px;text-align:center;color:#8a8680;font-size:13px">No orders yet</div>'; return; }
   el.innerHTML='<table class="data-table"><thead><tr>'
@@ -547,7 +549,9 @@ async function loadRecentOrders(){
 async function loadActivityFeed(){
   var el=document.getElementById('activity-feed');
   if(!el) return;
-  var r=await sb.from('orders').select('id,customer_name,total_amount,status,created_at,vendors(business_name)').order('created_at',{ascending:false}).limit(6);
+  var r;
+  try { r=await sb.from('orders').select('id,customer_name,total_amount,status,created_at,vendors(business_name)').order('created_at',{ascending:false}).limit(6); }
+  catch(e){ el.innerHTML='<div style="padding:12px;color:#dc2626;font-size:13px">Error: '+e.message+'</div>'; return; }
   var orders=r.data||[];
   var icons={pending:ic('shopping-cart',16),accepted:ic('check-circle',16),ready:ic('package',16),out_for_delivery:ic('bike',16),delivered:ic('check-circle',16),rejected:ic('x-circle',16),cancelled:ic('x-circle',16)};
   var bgColors={pending:'#fff8ec',accepted:'#f0faf5',ready:'#eff6ff',out_for_delivery:'#eff6ff',delivered:'#f4f5f7',rejected:'#fef2f2',cancelled:'#fef2f2'};
@@ -569,11 +573,21 @@ var _allApprovalVendors=[], _allApprovalDrivers=[];
 
 async function renderApprovals(el){
   _approvalFilter='all';
-  var vr=await sb.from('vendors').select('*,users(full_name,phone)').order('created_at',{ascending:false});
-  var dr=await sb.from('riders').select('*,users(full_name,phone)').order('created_at',{ascending:false});
-  _allApprovalVendors=vr.data||[];
-  _allApprovalDrivers=dr.data||[];
-  renderApprovalsTable(el);
+  try {
+    var vr=await sb.from('vendors').select('*,users(full_name,phone)').order('created_at',{ascending:false});
+    var dr=await sb.from('riders').select('*,users(full_name,phone)').order('created_at',{ascending:false});
+    if(vr.error) throw new Error('Vendors: '+vr.error.message);
+    if(dr.error) console.warn('Riders query error (ignored):', dr.error.message);
+    _allApprovalVendors=vr.data||[];
+    _allApprovalDrivers=dr.data||[];
+    renderApprovalsTable(el);
+  } catch(e) {
+    console.error('renderApprovals error:', e);
+    el.innerHTML='<div class="empty"><div style="color:#8a8680">'+ic('alert-triangle',32)+'</div>'
+      +'<div class="empty-title" style="margin-top:12px">Could not load approvals</div>'
+      +'<div class="empty-sub" style="color:#dc2626;margin-top:6px">'+e.message+'</div>'
+      +'<button class="tb-btn" onclick="switchPage(\'approvals\')" style="margin-top:16px">↻ Retry</button></div>';
+  }
 }
 
 function renderApprovalsTable(el){
@@ -818,9 +832,18 @@ async function filterOrders(btn,status){
 async function loadOrdersList(){
   var el=document.getElementById('orders-list');
   if(!el) return;
-  var q=sb.from('orders').select('*,vendors(business_name)').order('created_at',{ascending:false}).limit(50);
-  if(_orderFilter!=='all') q=q.eq('status',_orderFilter);
-  var r=await q;
+  var r;
+  try {
+    var q=sb.from('orders').select('*,vendors(business_name)').order('created_at',{ascending:false}).limit(50);
+    if(_orderFilter!=='all') q=q.eq('status',_orderFilter);
+    r=await q;
+    if(r.error) throw new Error(r.error.message);
+  } catch(e) {
+    el.innerHTML='<div class="empty"><div style="color:#8a8680">'+ic('alert-triangle',32)+'</div>'
+      +'<div class="empty-title" style="margin-top:12px">Could not load orders</div>'
+      +'<div class="empty-sub" style="color:#dc2626;margin-top:6px">'+e.message+'</div></div>';
+    return;
+  }
   var orders=r.data||[];
   if(!orders.length){ el.innerHTML='<div class="empty"><div class="empty-icon" style="color:#8a8680">'+ic('shopping-cart',32)+'</div><div class="empty-title">No orders found</div><div class="empty-sub">Try a different filter.</div></div>'; return; }
   el.innerHTML='<div class="content-card" style="overflow:auto"><table class="data-table"><thead><tr>'
@@ -843,7 +866,18 @@ async function loadOrdersList(){
 
 // ── VENDORS PAGE ──────────────────────────────────────
 async function renderVendors(el){
-  var r=await sb.from('vendors').select('id,business_name,area,city,state,is_approved,is_available,rating,review_count,food_types,emoji,created_at,users(phone)').order('created_at',{ascending:false});
+  var r;
+  try {
+    r=await sb.from('vendors').select('id,business_name,area,city,state,is_approved,is_available,rating,review_count,food_types,emoji,created_at,users(phone)').order('created_at',{ascending:false});
+    if(r.error) throw new Error(r.error.message);
+  } catch(e) {
+    console.error('renderVendors error:', e);
+    el.innerHTML='<div class="empty"><div style="color:#8a8680">'+ic('alert-triangle',32)+'</div>'
+      +'<div class="empty-title" style="margin-top:12px">Could not load vendors</div>'
+      +'<div class="empty-sub" style="color:#dc2626;margin-top:6px">'+e.message+'</div>'
+      +'<button class="tb-btn" onclick="switchPage(\'vendors\')" style="margin-top:16px">↻ Retry</button></div>';
+    return;
+  }
   var vendors=r.data||[];
   if(!vendors.length){ el.innerHTML='<div class="empty"><div class="empty-icon" style="color:#8a8680">'+ic('utensils',32)+'</div><div class="empty-title">No vendors yet</div></div>'; return; }
   var approved=vendors.filter(function(v){return v.is_approved;}).length;
@@ -869,7 +903,18 @@ async function renderVendors(el){
 
 // ── DRIVERS PAGE ──────────────────────────────────────
 async function renderDrivers(el){
-  var r=await sb.from('riders').select('*,users(full_name,phone)').order('is_online',{ascending:false}).order('created_at',{ascending:false});
+  var r;
+  try {
+    r=await sb.from('riders').select('*,users(full_name,phone)').order('is_online',{ascending:false}).order('created_at',{ascending:false});
+    if(r.error) throw new Error(r.error.message);
+  } catch(e) {
+    console.error('renderDrivers error:', e);
+    el.innerHTML='<div class="empty"><div style="color:#8a8680">'+ic('alert-triangle',32)+'</div>'
+      +'<div class="empty-title" style="margin-top:12px">Could not load drivers</div>'
+      +'<div class="empty-sub" style="color:#dc2626;margin-top:6px">'+e.message+'</div>'
+      +'<button class="tb-btn" onclick="switchPage(\'drivers\')" style="margin-top:16px">↻ Retry</button></div>';
+    return;
+  }
   var drivers=r.data||[];
   if(!drivers.length){ el.innerHTML='<div class="empty"><div class="empty-icon" style="color:#8a8680">'+ic('bike',32)+'</div><div class="empty-title">No drivers yet</div></div>'; return; }
   var online=drivers.filter(function(d){return d.is_online;}).length;
