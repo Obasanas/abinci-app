@@ -10,9 +10,6 @@ const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'abinci2025admin';
 
 app.use(express.json());
 
-// Serve shared assets from parent directory
-app.use('/assets', express.static(path.join(__dirname, '../assets')));
-
 app.use(express.static(path.join(__dirname), {
   setHeaders: (res, filePath) => {
     if (filePath.endsWith('sw.js')) {

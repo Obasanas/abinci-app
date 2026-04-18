@@ -3,9 +3,6 @@ const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// Serve shared assets from parent directory
-app.use('/assets', express.static(path.join(__dirname, '../assets')));
-
 // Serve static files first — sw.js, manifest.json, icons must be served as-is
 app.use(express.static(path.join(__dirname), {
   setHeaders: (res, filePath) => {
