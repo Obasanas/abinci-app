@@ -622,10 +622,11 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif}
   <!-- Step 6 -->
   <div class="ob-body" id="ob-step-6" style="display:none">
     <div class="ob-icon">📋</div><div class="ob-title">Add your<br>menu items</div>
-    <div class="ob-subtitle">Add at least one dish to get started. Add more anytime from your dashboard.</div>
+    <div class="ob-subtitle">Add your dishes now, or skip and add them later from your dashboard.</div>
     <div id="ob-menu-list"></div>
     <button class="ob-add-btn" onclick="openObMenuModal()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add a dish</button>
     <button class="big-btn" id="ob-next-6" disabled onclick="obNext(6)" style="margin-top:16px">Continue →</button>
+    <div onclick="obNext(6)" style="margin-top:14px;text-align:center;font-size:13px;color:var(--muted);cursor:pointer;padding:6px">Skip, I'll add menu later →</div>
   </div>
   <!-- Step 7 -->
   <div class="ob-body" id="ob-step-7" style="display:none">
@@ -3818,7 +3819,7 @@ async function obFinish(){
     +'<div><div style="font-size:17px;font-weight:800">'+bn+'</div><div style="font-size:12px;color:var(--accent)">'+selectedFoods.join(' · ')+'</div></div></div>'
     +row('👤 Vendor',fn)+row('📍 Location',area+', '+city+(state?', '+state:''))
     +row('🚚 Fulfillment',dlLabel)
-    +row('🍽️ Menu',obMenuItems.length+' dishes')
+    +row('🍽️ Menu',obMenuItems.length>0?obMenuItems.length+' dish'+(obMenuItems.length===1?'':'es'):'Add from dashboard later')
     +(savedOk?'<div style="color:var(--green);font-size:13px;margin-top:10px">✓ Saved to database</div>'
              :'<div style="color:var(--red);font-size:12px;margin-top:10px;padding:8px;background:rgba(224,92,92,.08);border-radius:8px">✗ DB save failed: '+saveError+'</div>');
   vendorMenuItems=[...obMenuItems];
